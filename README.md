@@ -14,13 +14,24 @@ npm start
 
 ## 기존 Flutter 앱에 붙이기
 
-1. [`flutter/photocard_studio.dart`](flutter/photocard_studio.dart) 를 기존 앱의 `lib/` 로 복사
-2. 화면에서 이렇게 엽니다
+서비스 탭에서 포토카드 홈으로 진입:
 
 ```dart
 Navigator.of(context).push(
-  MaterialPageRoute(builder: (_) => const PhotocardStudioPage()),
+  MaterialPageRoute(
+    builder: (_) => PhotocardScope(
+      store: PhotocardStore(),
+      child: const PhotocardHomeScreen(),
+    ),
+  ),
 );
 ```
 
-외부 패키지 없이 동작합니다.
+오픈 애니메이션만 따로 열려면 기존 [`flutter/photocard_studio.dart`](flutter/photocard_studio.dart) 를 그대로 사용하면 됩니다. 애니메이션 코드는 수정하지 않았습니다.
+
+더미 서비스 전체 플로우:
+
+```bash
+cd flutter
+flutter run
+```

@@ -1,61 +1,47 @@
 import { useEffect, useRef } from 'react';
-import {
-  Animated,
-  Image,
-  PanResponder,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Animated, Image, PanResponder, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { CARD_RATIO, frames, type FrameId } from '../theme';
+import { CARD_RATIO, frames, rarities, type FrameId, type RarityId } from '../theme';
 
 type PhotoCardProps = {
-  imageUri: string | null;
+  imageSource?: ImageSourcePropType | null;
+  imageUri?: string | null;
   frameId: FrameId;
   caption: string;
   width: number;
   interactive?: boolean;
+  rarity?: RarityId;
 };
 
 export function PhotoCard({
+  imageSource,
   imageUri,
   frameId,
   caption,
   width,
   interactive = true,
+  rarity = 'rare',
 }: PhotoCardProps) {
   const height = width / CARD_RATIO;
   const frame = frames[frameId];
   const darkFrame = frameId === 'noir';
+  const rarityTone = rarities[rarity];
+  const source = imageSource ?? (imageUri && imageUri !== 'sample://gradient' ? { uri: imageUri } : null);
 
   const tiltX = useRef(new Animated.Value(0)).current;
   const tiltY = useRef(new Animated.Value(0)).current;
   const photoScale = useRef(new Animated.Value(1)).current;
-  const shine = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(shine, {
-        toValue: 1,
-        duration: 2800,
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [shine]);
-
-  useEffect(() => {
-    photoScale.setValue(0.86);
+    photoScale.setValue(0.92);
     Animated.spring(photoScale, {
       toValue: 1,
       friction: 7,
       tension: 86,
       useNativeDriver: true,
     }).start();
-  }, [imageUri, photoScale]);
+  }, [imageSource, imageUri, photoScale]);
 
   const interactiveRef = useRef(interactive);
   interactiveRef.current = interactive;
@@ -74,11 +60,6 @@ export function PhotoCard({
     }),
   ).current;
 
-  const shineX = shine.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-width, width],
-  });
-
   return (
     <Animated.View
       {...pan.panHandlers}
@@ -88,6 +69,7 @@ export function PhotoCard({
           width,
           height,
           backgroundColor: frame.border,
+          boxShadow: `0 20px 40px ${rarityTone.glow}66`,
           transform: [
             { perspective: 900 },
             {
@@ -106,8 +88,9 @@ export function PhotoCard({
         },
       ]}
     >
+      <LinearGradient colors={[...rarityTone.foil]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.foil} />
       <View style={[styles.photoWell, darkFrame && styles.photoWellDark]}>
-        {imageUri ? (
+        {source ? (
           <Animated.View style={[styles.fill, { transform: [{ scale: photoScale }] }]}>
             {imageUri === 'sample://gradient' ? (
               <LinearGradient
@@ -117,53 +100,46 @@ export function PhotoCard({
                 style={styles.photo}
               />
             ) : (
-              <Image source={{ uri: imageUri }} style={styles.photo} resizeMode="cover" />
+              <Image source={source} style={styles.photo} resizeMode="cover" />
             )}
           </Animated.View>
         ) : (
           <View style={styles.placeholder}>
             <Text style={styles.placeholderMark}>◇</Text>
-            <Text style={styles.placeholderText}>드래그하면 기울어지고{'\n'}사진을 넣으면 카드가 살아나요</Text>
+            <Text style={styles.placeholderText}>포토카드</Text>
           </View>
         )}
-        <Animated.View
-          style={[
-            styles.shine,
-            {
-              pointerEvents: 'none',
-              transform: [{ translateX: shineX }, { rotate: '18deg' }],
-            },
-          ]}
-        >
-          <LinearGradient
-            colors={['transparent', 'rgba(255,255,255,0.28)', 'transparent']}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={styles.fill}
-          />
-        </Animated.View>
       </View>
-      <View style={styles.captionBar}>
-        <Text numberOfLines={1} style={[styles.caption, { color: frame.caption }]}>
-          {caption.trim() || 'PHOTOCARD'}
-        </Text>
-      </View>
+      {caption.trim() ? (
+        <View style={styles.captionBar}>
+          <Text numberOfLines={1} style={[styles.caption, { color: frame.caption }]}>
+            {caption.trim()}
+          </Text>
+        </View>
+      ) : null}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 14,
-    padding: 10,
-    paddingBottom: 8,
-    boxShadow: '0 18px 32px rgba(28, 20, 16, 0.38)',
-    elevation: 12,
+    borderRadius: 16,
+    padding: 8,
+    paddingBottom: 6,
+    overflow: 'hidden',
+  },
+  foil: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    opacity: 0.9,
   },
   photoWell: {
     flex: 1,
     overflow: 'hidden',
-    borderRadius: 6,
+    borderRadius: 8,
     backgroundColor: '#E7D9C8',
   },
   photoWellDark: {
@@ -179,12 +155,6 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
-  },
-  shine: {
-    position: 'absolute',
-    top: -40,
-    bottom: -40,
-    width: 90,
   },
   placeholder: {
     flex: 1,
@@ -204,7 +174,7 @@ const styles = StyleSheet.create({
     color: 'rgba(58, 42, 34, 0.55)',
   },
   captionBar: {
-    height: 36,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },

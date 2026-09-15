@@ -18,10 +18,42 @@ export type FrameId = keyof typeof frames;
 export const CARD_RATIO = 55 / 85;
 
 export const rarities = {
-  common: { id: 'common', label: '일반', glow: '#D7DCE3' },
-  rare: { id: 'rare', label: '레어', glow: '#5EB1FF' },
-  epic: { id: 'epic', label: '에픽', glow: '#C084FC' },
-  legend: { id: 'legend', label: '레전드', glow: '#FFD166' },
+  common: {
+    id: 'common',
+    label: '일반',
+    badge: 'N',
+    line: '일상 속 한 장',
+    glow: '#F3F6FB',
+    foil: ['#F4F1EA', '#C9C2B3'] as const,
+    sparks: 8,
+  },
+  rare: {
+    id: 'rare',
+    label: '레어',
+    badge: 'R',
+    line: '눈이 머무는 순간',
+    glow: '#6EC4FF',
+    foil: ['#9ED8FF', '#2F6DFF'] as const,
+    sparks: 14,
+  },
+  epic: {
+    id: 'epic',
+    label: '에픽',
+    badge: 'SR',
+    line: '쉽게 손에 넣지 못할 장',
+    glow: '#E2A8FF',
+    foil: ['#F0C6FF', '#7A2BFF'] as const,
+    sparks: 20,
+  },
+  legend: {
+    id: 'legend',
+    label: '레전드',
+    badge: 'SSR',
+    line: '소장하고 싶은 한 장',
+    glow: '#FFD978',
+    foil: ['#FFE7A3', '#C4841A'] as const,
+    sparks: 28,
+  },
 } as const;
 
 export type RarityId = keyof typeof rarities;

@@ -4,6 +4,7 @@
   "main": "index.ts",
   "dependencies": {
     "expo": "~57.0.22",
+    "expo-haptics": "~57.0.3",
     "expo-image-picker": "~57.0.17",
     "expo-linear-gradient": "~57.0.2",
     "expo-media-library": "~57.0.5",
