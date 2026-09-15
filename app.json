@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "포토카드",
+    "slug": "photocard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#14100E"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#14100E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "backgroundColor": "#14100E"
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "포토카드를 만들려면 사진 접근이 필요해요.",
+          "cameraPermission": "포토카드를 만들려면 카메라 접근이 필요해요.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "만든 포토카드를 앨범에 저장하려면 권한이 필요해요.",
+          "savePhotosPermission": "만든 포토카드를 앨범에 저장하려면 권한이 필요해요."
+        }
+      ],
+      "expo-sharing"
+    ]
+  }
+}
