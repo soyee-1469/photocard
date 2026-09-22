@@ -2,8 +2,9 @@ import { Animated, Image, StyleSheet, View, type ImageSourcePropType } from 'rea
 
 import { PhotoCard } from './PhotoCard';
 import { EmberGlow } from './EmberGlow';
+import { SparkField } from './SparkField';
 import { fx } from '../assets/packFx';
-import { CARD_RATIO, type RarityId } from '../theme';
+import { CARD_RATIO, rarities, type RarityId } from '../theme';
 
 const PACK_W = 248;
 const CLOSED_H = Math.round((PACK_W * 525) / 340);
@@ -41,10 +42,16 @@ type PackCinematicProps = {
 };
 
 export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCinematicProps) {
+  const tone = rarities[rarity];
 
   const shake = clock.interpolate({
     inputRange: [0, 90, 200, 320, 430, END],
     outputRange: ['0deg', '0.7deg', '-0.6deg', '0.35deg', '0deg', '0deg'],
+  });
+
+  const sparkActive = clock.interpolate({
+    inputRange: [0, TEAR - 50, TEAR + 600, END],
+    outputRange: [0, 0, 1, 1],
   });
 
   const closedOpacity = clock.interpolate({
@@ -92,16 +99,25 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
     outputRange: [0.92, 0.92, 1, 1],
   });
 
-  const flipScaleX = clock.interpolate({
-    inputRange: [0, FLIP, FLIP + 170, FLIP + 200, FLIP + 430, END],
-    outputRange: [1, 1, 0.08, 0.08, 1, 1],
+  const cardRotate = clock.interpolate({
+    inputRange: [0, RISE, RISE + 80, RISE + 160, LAND, LAND + 40, LAND + 80, END],
+    outputRange: ['0deg', '0deg', '-2.5deg', '1.8deg', '-1.2deg', '0.6deg', '0deg', '0deg'],
+  });
+  const cardShift = clock.interpolate({
+    inputRange: [0, RISE, RISE + 80, RISE + 160, LAND, LAND + 40, LAND + 80, END],
+    outputRange: [0, 0, -6, 4, -2, 1, 0, 0],
+  });
+
+  const flipRotateY = clock.interpolate({
+    inputRange: [0, FLIP, FLIP + 430, END],
+    outputRange: ['180deg', '180deg', '540deg', '540deg'],
   });
   const backOp = clock.interpolate({
-    inputRange: [0, FLIP + 180, FLIP + 200, END],
+    inputRange: [0, FLIP + 180, FLIP + 215, END],
     outputRange: [1, 1, 0, 0],
   });
   const frontOp = clock.interpolate({
-    inputRange: [0, FLIP + 180, FLIP + 200, END],
+    inputRange: [0, FLIP + 180, FLIP + 215, END],
     outputRange: [0, 0, 1, 1],
   });
 
@@ -109,6 +125,10 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
     <Animated.View style={[styles.stage, { transform: [{ rotate: shake }] }]}>
       <Animated.View style={styles.emberSlot}>
         <EmberGlow strength={emberOp} />
+      </Animated.View>
+
+      <Animated.View style={[styles.sparkSlot, { opacity: sparkActive }]}>
+        <SparkField active={true} color={tone.glow} count={18} />
       </Animated.View>
 
       <Animated.View style={[styles.sleeve, { opacity: sleeveOp, transform: [{ translateY: sleeveY }] }]}>
@@ -142,15 +162,20 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
           styles.cardSlot,
           {
             opacity: cardOp,
-            transform: [{ translateY: cardY }, { scale: cardScale }],
+            transform: [
+              { translateY: cardY },
+              { translateX: cardShift },
+              { rotate: cardRotate },
+              { scale: cardScale },
+            ],
           },
         ]}
       >
-        <Animated.View style={[styles.flipBox, { transform: [{ scaleX: flipScaleX }] }]}>
+        <Animated.View style={[styles.flipBox, { transform: [{ perspective: 1200 }, { rotateY: flipRotateY }] }]}>
           <Animated.View style={[styles.face, { opacity: backOp }]}>
             <Image source={fx.cardBack} style={styles.faceImg} resizeMode="contain" />
           </Animated.View>
-          <Animated.View style={[styles.face, { opacity: frontOp }]}>
+          <Animated.View style={[styles.face, styles.faceFront, { opacity: frontOp }]}>
             {imageSource ? (
               <PhotoCard
                 imageSource={imageSource}
@@ -223,6 +248,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     pointerEvents: 'none',
   },
+  sparkSlot: {
+    position: 'absolute',
+    left: PACK_LEFT,
+    top: BODY_TOP,
+    width: PACK_W,
+    height: BODY_H,
+    zIndex: 15,
+    pointerEvents: 'none',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   top: {
     position: 'absolute',
     left: PACK_LEFT,
@@ -257,6 +293,10 @@ const styles = StyleSheet.create({
     left: 0,
     alignItems: 'center',
     justifyContent: 'center',
+    backfaceVisibility: 'hidden',
+  },
+  faceFront: {
+    transform: [{ rotateY: '180deg' }],
   },
   faceImg: {
     width: CARD_W,
