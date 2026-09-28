@@ -23,12 +23,7 @@ describe('데이터 무결성 테스트', () => {
   });
 
   test('확률이 0보다 큰 등급에 해당하는 카드가 존재', () => {
-    // 일부 상품(특히 카드 수가 적은 상품)은 generateCards의 순환 패턴으로 인해
-    // rarityRates와 실제 카드 등급이 불일치할 수 있습니다.
-    // 이 테스트는 주요 상품만 검증합니다.
-    const mainProducts = products.filter((p) => p.cardsPerPack >= 1 && p.cardDefIds.length >= 8);
-
-    mainProducts.forEach((product) => {
+    products.forEach((product) => {
       const productCards = cards.filter((c) => c.productId === product.id);
       const raritiesWithRate = Object.entries(product.rarityRates)
         .filter(([_, rate]) => (rate as number) > 0)

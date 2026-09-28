@@ -49,7 +49,7 @@ async function captureScreenshots() {
   await page.goto(BASE_URL);
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
-  
+
   // 내 카드 미리보기 섹션으로 스크롤
   const myCardsSection = page.locator('text=내 카드 미리보기');
   if (await myCardsSection.isVisible()) {
