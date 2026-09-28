@@ -14,21 +14,22 @@
     "check-provenance": "node scripts/check-provenance.mjs"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.1.0",
     "expo": "~57.0.22",
-    "expo-router": "~5.0.0",
     "expo-linear-gradient": "~57.0.2",
+    "expo-router": "~5.0.0",
     "expo-status-bar": "~57.0.1",
+    "query-string": "^9.5.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-web": "^0.21.2",
-    "@react-native-async-storage/async-storage": "^2.1.0"
+    "react-native-web": "^0.21.2"
   },
   "devDependencies": {
-    "@types/react": "~19.2.2",
-    "@types/jest": "^29.5.14",
     "@playwright/test": "^1.49.1",
+    "@types/jest": "^29.5.14",
+    "@types/react": "~19.2.2",
     "jest": "^29.7.0",
     "typescript": "~6.0.3"
   },

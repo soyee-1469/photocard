@@ -1,9 +1,9 @@
 import { type ImageSourcePropType } from 'react-native';
-import { type RarityId, type FrameId } from '../theme/tokens';
 
-export type { RarityId, FrameId };
+export type RarityId = 'common' | 'rare' | 'epic' | 'legend';
+export type FrameId = 'ivory' | 'noir' | 'rose' | 'lilac';
 
-export type ImageRef = ImageSourcePropType | { uri: string } | { require: string };
+export type ImageRef = ImageSourcePropType;
 
 export interface Artist {
   id: string;

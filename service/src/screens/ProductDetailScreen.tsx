@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useApi } from '../services/api/ApiProvider';
-import { type ProductDetail } from '../services/api/types';
+import { type ProductDetail, type RarityId } from '../services/api/types';
 import { colors, rarities } from '../theme/tokens';
 import { SaleBadge } from '../components/SaleBadge';
 import { ErrorState } from '../components/ErrorState';
@@ -87,7 +87,7 @@ export function ProductDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>등급별 획득 확률</Text>
           <View style={styles.rateTable}>
-            {(Object.keys(product.rarityRates) as Array<keyof typeof product.rarityRates>).map((rarityId) => {
+            {(Object.keys(product.rarityRates) as RarityId[]).map((rarityId) => {
               const rarity = rarities[rarityId];
               const rate = product.rarityRates[rarityId];
               return (
