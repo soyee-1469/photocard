@@ -22,23 +22,24 @@ export const Card: React.FC<CardProps> = ({ cardSrc }) => {
     : 0;
 
   // 108-138: Y-axis 3D spin (back -> front)
-  // Full rotation: 0deg -> 360deg
-  const spinProgress = interpolate(frame, [108, 138], [0, 1], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
-
-  const rotateY = spring({
-    frame: frame - 108,
-    fps,
-    from: 0,
-    to: 360,
-    config: { damping: 15, mass: 1 },
-  });
+  // Rotate to 180deg to show front, using interpolate for precise control
+  const rotateY = interpolate(
+    frame,
+    [108, 138],
+    [0, 180],
+    {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+      easing: (t) => {
+        // Ease out cubic for smooth deceleration
+        return 1 - Math.pow(1 - t, 3);
+      },
+    }
+  );
 
   // Determine which side to show
-  // 0-180deg: back, 180-360deg: front
-  const showFront = rotateY % 360 > 90 && rotateY % 360 < 270;
+  // 0-90deg: back, 90-270deg: front
+  const showFront = rotateY >= 90;
 
   // 138+: Card settles in center
   const finalY = interpolate(frame, [138, 150], [cardY, 0], {
@@ -59,16 +60,17 @@ export const Card: React.FC<CardProps> = ({ cardSrc }) => {
 
   if (frame < 78) return null;
 
-  const cardWidth = 450;
+  const cardWidth = 640;
   const cardHeight = cardWidth / CARD_RATIO;
 
-  // 150-180: Foil sheen passes across
+  // 150-170: Foil sheen passes across (more visible)
   const sheenProgress = interpolate(frame, [150, 170], [0, 1], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
   });
 
-  const sheenX = interpolate(sheenProgress, [0, 1], [-100, 200]);
+  const sheenX = interpolate(sheenProgress, [0, 1], [-50, 150]);
+  const sheenOpacity = interpolate(sheenProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   return (
     <AbsoluteFill
@@ -138,16 +140,22 @@ export const Card: React.FC<CardProps> = ({ cardSrc }) => {
             />
 
             {/* Foil sheen effect */}
-            {frame >= 150 && (
+            {frame >= 150 && frame <= 170 && (
               <div
                 style={{
                   position: 'absolute',
                   top: 0,
                   left: `${sheenX}%`,
-                  width: '30%',
+                  width: '40%',
                   height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 231, 163, 0.6), transparent)',
+                  background: `linear-gradient(90deg, 
+                    transparent, 
+                    rgba(255, 231, 163, ${sheenOpacity * 0.7}), 
+                    rgba(196, 132, 26, ${sheenOpacity * 0.9}),
+                    rgba(255, 231, 163, ${sheenOpacity * 0.7}),
+                    transparent)`,
                   pointerEvents: 'none',
+                  filter: 'blur(1px)',
                 }}
               />
             )}

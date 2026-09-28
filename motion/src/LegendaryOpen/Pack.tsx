@@ -24,6 +24,7 @@ export const Pack: React.FC = () => {
   });
 
   // 54-78: Tear sequence - pack_top changes: closed -> top_2 -> top_3 -> top_4
+  // More distinct timing for each tear stage
   // Fade out the entire pack as card emerges
   const packOpacity = interpolate(frame, [78, 90], [1, 0], {
     extrapolateLeft: 'clamp',
@@ -31,19 +32,19 @@ export const Pack: React.FC = () => {
   });
 
   let topImage = 'fx/pack_closed.png';
-  if (frame >= 54 && frame < 62) {
+  if (frame >= 54 && frame < 60) {
     topImage = 'fx/pack_closed.png';
-  } else if (frame >= 62 && frame < 70) {
+  } else if (frame >= 60 && frame < 68) {
     topImage = 'fx/pack_top_2.png';
-  } else if (frame >= 70 && frame < 78) {
+  } else if (frame >= 68 && frame < 76) {
     topImage = 'fx/pack_top_3.png';
-  } else if (frame >= 78) {
+  } else if (frame >= 76) {
     topImage = 'fx/pack_top_4.png';
   }
 
-  // Tear shake effect
+  // Tear shake effect - more pronounced
   const tearShake = frame >= 54 && frame < 78 
-    ? Math.sin(frame * 1.2) * 4 
+    ? Math.sin(frame * 1.5) * 6 
     : 0;
 
   if (frame >= 90) return null;

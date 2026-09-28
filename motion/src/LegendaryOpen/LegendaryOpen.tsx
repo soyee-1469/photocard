@@ -24,20 +24,28 @@ export const LegendaryOpen: React.FC<LegendaryOpenProps> = ({ cardSrc, title }) 
   // 138-150: Burst
   // 150-180: Hold with caption
 
-  // Background darkness fades in anticipation, then lights up during burst, then back to dark
-  const bgBrightness = interpolate(
+  // Background uses solid dark color with brightness overlay
+  const baseColor = '#1C1410'; // ink color from theme
+  const glowIntensity = interpolate(
     frame,
     [0, 30, 54, 138, 145, 180],
-    [0.05, 0.08, 0.15, 0.4, 0.15, 0.10],
+    [0, 0.05, 0.1, 0.3, 0.1, 0.05],
     { extrapolateRight: 'clamp' }
   );
 
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: `rgba(28, 20, 16, ${1 - bgBrightness})`,
+        backgroundColor: baseColor,
       }}
     >
+      {/* Gold glow overlay for brightness variation */}
+      <AbsoluteFill
+        style={{
+          background: `radial-gradient(circle at center, rgba(255, 217, 120, ${glowIntensity}), transparent 60%)`,
+          pointerEvents: 'none',
+        }}
+      />
       {/* Gold FX layer (glow, particles, ring, flash) */}
       <GoldFx />
 

@@ -49,11 +49,11 @@ export const Caption: React.FC<CaptionProps> = ({ title }) => {
         opacity: captionOpacity,
       }}
     >
-      {/* SSR Badge - top center */}
+      {/* SSR Badge - above card */}
       <div
         style={{
           position: 'absolute',
-          top: 180,
+          top: '28%',
           left: '50%',
           transform: `translate(-50%, ${badgeY}px)`,
           fontSize: 72,
@@ -71,7 +71,7 @@ export const Caption: React.FC<CaptionProps> = ({ title }) => {
       <div
         style={{
           position: 'absolute',
-          bottom: 340,
+          bottom: 280,
           left: '50%',
           transform: `translate(-50%, ${labelY}px)`,
           fontSize: 56,
@@ -88,7 +88,7 @@ export const Caption: React.FC<CaptionProps> = ({ title }) => {
       <div
         style={{
           position: 'absolute',
-          bottom: 260,
+          bottom: 200,
           left: '50%',
           transform: `translate(-50%, ${lineY}px)`,
           fontSize: 36,
