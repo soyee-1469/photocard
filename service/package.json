@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
     "check-provenance": "node scripts/check-provenance.mjs"
   },
   "dependencies": {
@@ -29,8 +31,10 @@
   "devDependencies": {
     "@playwright/test": "^1.49.1",
     "@types/jest": "^29.5.14",
+    "@types/node": "^26.6.3",
     "@types/react": "~19.2.2",
     "jest": "^29.7.0",
+    "serve": "^14.2.6",
     "typescript": "~6.0.3"
   },
   "private": true
