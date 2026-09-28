@@ -16,7 +16,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
   const album = albums.find((a) => a.id === product.albumId);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity testID={`product-card-${product.id}`} style={styles.card} onPress={onPress}>
       <View style={styles.imageContainer}>
         <Image source={product.image} style={styles.image} resizeMode="cover" />
         <SaleBadge status={product.saleStatus} />

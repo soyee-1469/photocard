@@ -1,9 +1,8 @@
-import { test, expect, Page, chromium } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
 const ARTIFACTS_DIR = '/opt/cursor/artifacts/service-a';
-const BASE_URL = 'https://soyee-1469.github.io/photocard/service/pr-7/';
 
 if (!fs.existsSync(ARTIFACTS_DIR)) {
   fs.mkdirSync(ARTIFACTS_DIR, { recursive: true });
@@ -27,21 +26,21 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(BASE_URL);
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
-    
-    await page.getByTestId('tab-products').first().click();
+
+    await page.getByRole('tab', { name: '📦 📫 상품' }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
-    
+
     await takeScreenshot(page, 'issue8-product-list-default');
-    
+
     const brokenImages = await page.evaluate(() => {
       const images = Array.from(document.querySelectorAll('img'));
       return images.filter((img) => img.complete && img.naturalWidth === 0).length;
     });
     expect(brokenImages).toBe(0);
-    
+
     const questionMarks = await page.locator('text=?').count();
     expect(questionMarks).toBe(0);
 
@@ -54,18 +53,17 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(BASE_URL);
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
-    
-    await page.getByTestId('tab-products').first().click();
+
+    await page.getByRole('tab', { name: '📦 📫 상품' }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
-    
+
     const artistChip = page.locator('text=ARTIST A').first();
-    if (await artistChip.isVisible({ timeout: 1000 })) {
-      await artistChip.click();
-      await page.waitForTimeout(1000);
-      await takeScreenshot(page, 'issue8-product-list-artist-filter');
-    }
+    await expect(artistChip).toBeVisible();
+    await artistChip.click();
+    await page.waitForTimeout(1000);
+    await takeScreenshot(page, 'issue8-product-list-artist-filter');
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -76,26 +74,25 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(BASE_URL);
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
-    
-    await page.getByTestId('tab-products').first().click();
+
+    await page.getByRole('tab', { name: '📦 📫 상품' }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
-    
-    const productCards = await page.locator('button, [role="button"]').all();
-    if (productCards.length > 0) {
-      await productCards[0].click();
-      await page.waitForTimeout(1000);
-      
-      await takeScreenshot(page, 'issue8-product-detail-lineup');
-      
-      await expect(page.locator('text=구성 카드')).toBeVisible();
-      await expect(page.locator('text=등급별 획득 확률')).toBeVisible();
-      
-      const cardImages = await page.locator('[style*="width: 70"]').locator('img').count();
-      expect(cardImages).toBeGreaterThan(0);
-    }
+
+    const productCards = await page.locator('[data-testid^="product-card-"]').all();
+    expect(productCards.length).toBeGreaterThan(0);
+    await productCards[0].click();
+    await page.waitForTimeout(1000);
+
+    await takeScreenshot(page, 'issue8-product-detail-lineup');
+
+    await expect(page.locator('text=구성 카드')).toBeVisible();
+    await expect(page.locator('text=등급별 획득 확률')).toBeVisible();
+
+    const cardImages = await page.locator('[style*="width: 70"]').locator('img').count();
+    expect(cardImages).toBeGreaterThan(0);
 
     expect(consoleErrors).toHaveLength(0);
   });
@@ -106,17 +103,17 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(BASE_URL);
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
-    
-    await page.getByTestId('tab-album').first().click();
+
+    await page.getByRole('tab', { name: '🎴 🃏 내 앨범' }).click();
     await page.waitForTimeout(1500);
-    
+
     await takeScreenshot(page, 'issue8-my-album-owned');
-    
+
     const lockIcons = await page.locator('text=🔒').count();
     expect(lockIcons).toBe(0);
-    
+
     const questionMarks = await page.locator('text=?').count();
     expect(questionMarks).toBe(0);
 
@@ -129,16 +126,22 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto(BASE_URL + '?seed=empty');
+    await page.goto('/album?seed=empty');
     await page.waitForLoadState('networkidle');
-    
-    await page.getByTestId('tab-album').first().click();
     await page.waitForTimeout(1500);
-    
+
     await takeScreenshot(page, 'issue8-album-empty');
-    
-    await expect(page.locator('text=아직 보유한 카드가 없어요')).toBeVisible();
+
+    const emptyMessage = page.locator('text=아직 보유한 카드가 없습니다.');
+    await expect(emptyMessage).toBeVisible();
+
+    // 텍스트 대비 확인 (WCAG AA 4.5:1)
+    const textColor = await emptyMessage.evaluate((el) => {
+      return window.getComputedStyle(el).color;
+    });
+    console.log(`Empty state text color: ${textColor}`);
 
     expect(consoleErrors).toHaveLength(0);
   });
+});
 });

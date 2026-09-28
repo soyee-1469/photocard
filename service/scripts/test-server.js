@@ -5,7 +5,7 @@ const path = require('path');
 
 const PORT = 8765;
 const DIST_DIR = path.join(__dirname, '..', 'dist');
-const BASE_PATH = '/photocard/service';
+const BASE_PATH = '/photocard/service/pr-7';
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -22,26 +22,26 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let urlPath = req.url.split('?')[0];
-  
+
   // Remove base path
   if (urlPath.startsWith(BASE_PATH)) {
     urlPath = urlPath.substring(BASE_PATH.length);
   }
-  
+
   if (urlPath === '' || urlPath === '/') {
     urlPath = '/index.html';
   }
-  
+
   let filePath = path.join(DIST_DIR, urlPath);
-  
+
   // If file doesn't exist and it's not a file request, serve index.html (SPA)
   if (!fs.existsSync(filePath) && !path.extname(filePath)) {
     filePath = path.join(DIST_DIR, 'index.html');
   }
-  
+
   const ext = path.extname(filePath);
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-  
+
   fs.readFile(filePath, (err, content) => {
     if (err) {
       if (err.code === 'ENOENT') {

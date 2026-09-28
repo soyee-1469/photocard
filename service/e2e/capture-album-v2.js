@@ -6,7 +6,7 @@ const BASE_URL = 'http://localhost:8081/';
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
-  
+
   console.log('1. 내 앨범 (보유 카드 있음)');
   const context1 = await browser.newContext({
     viewport: { width: 360, height: 740 },
@@ -15,7 +15,7 @@ const BASE_URL = 'http://localhost:8081/';
   const page1 = await context1.newPage();
   await page1.goto(BASE_URL);
   await page1.waitForTimeout(3000);
-  
+
   await page1.evaluate(() => {
     const links = Array.from(document.querySelectorAll('a, button, [role="button"]'));
     const albumLink = links.find(el => el.textContent?.includes('내 앨범') || el.textContent?.includes('앨범'));
@@ -34,13 +34,13 @@ const BASE_URL = 'http://localhost:8081/';
   const page2 = await context2.newPage();
   await page2.goto(BASE_URL);
   await page2.waitForTimeout(2000);
-  
+
   await page2.evaluate(() => {
     localStorage.clear();
   });
   await page2.reload();
   await page2.waitForTimeout(3000);
-  
+
   await page2.evaluate(() => {
     const links = Array.from(document.querySelectorAll('a, button, [role="button"]'));
     const albumLink = links.find(el => el.textContent?.includes('내 앨범') || el.textContent?.includes('앨범'));

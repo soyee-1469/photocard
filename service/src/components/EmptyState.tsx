@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
+    backgroundColor: colors.ink,
   },
   icon: {
     fontSize: 48,
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 15,
-    color: colors.mist,
+    color: colors.paper,
     textAlign: 'center',
     lineHeight: 22,
   },

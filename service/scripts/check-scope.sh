@@ -3,8 +3,16 @@ set -e
 
 echo "범위 검사: service/ 밖의 변경 사항 확인 중..."
 
-# 현재 브랜치와 main 브랜치 비교
-CHANGED_FILES=$(git diff --name-only origin/main...cursor/photocard-service-a-eaa7 2>/dev/null)
+# base 브랜치 결정: 인자가 있으면 사용, 없으면 origin/main과의 merge-base
+if [ -n "$1" ]; then
+  BASE="$1"
+else
+  # detached HEAD에서도 동작하도록 merge-base 사용
+  BASE=$(git merge-base HEAD origin/main 2>/dev/null || echo "origin/main")
+fi
+
+# 현재 브랜치와 base 비교
+CHANGED_FILES=$(git diff --name-only "$BASE" HEAD 2>/dev/null || git diff --name-only origin/main HEAD)
 
 if [ -z "$CHANGED_FILES" ]; then
   echo "✅ 통과: 변경 사항이 없습니다."

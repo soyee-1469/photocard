@@ -1,15 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const BASE_PATH = '/photocard/service/pr-7';
+const IS_CI = !!process.env.CI;
+const BASE_URL = process.env.BASE_URL || `http://localhost:8765${BASE_PATH}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
-  forbidOnly: !!process.env.CI,
+  forbidOnly: IS_CI,
   retries: 0,
   workers: 1,
   reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
-  
+
   use: {
-    baseURL: 'http://localhost:8765/photocard/service',
+    baseURL: BASE_URL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -28,10 +32,10 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
+  webServer: IS_CI ? undefined : {
     command: 'node scripts/test-server.js',
-    url: 'http://localhost:8765/photocard/service',
-    reuseExistingServer: !process.env.CI,
+    url: BASE_URL,
+    reuseExistingServer: true,
     timeout: 30000,
   },
 });

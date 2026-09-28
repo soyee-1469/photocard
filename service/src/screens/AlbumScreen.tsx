@@ -34,18 +34,28 @@ export function AlbumScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.gold} />
+      <View style={styles.container}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.gold} />
+        </View>
       </View>
     );
   }
 
   if (error) {
-    return <ErrorState message={error} onRetry={loadOwnedCards} />;
+    return (
+      <View style={styles.container}>
+        <ErrorState message={error} onRetry={loadOwnedCards} />
+      </View>
+    );
   }
 
   if (ownedCards.length === 0) {
-    return <EmptyState message="아직 보유한 카드가 없습니다." />;
+    return (
+      <View style={styles.container}>
+        <EmptyState message="아직 보유한 카드가 없습니다." />
+      </View>
+    );
   }
 
   const filteredArtists = selectedArtist

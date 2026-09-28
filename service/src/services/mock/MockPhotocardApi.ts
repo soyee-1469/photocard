@@ -38,7 +38,7 @@ const getInitialOwnedCards = (): OwnedCard[] => {
       return [];
     }
   }
-  
+
   return [
     {
       instanceId: 'owned-001',

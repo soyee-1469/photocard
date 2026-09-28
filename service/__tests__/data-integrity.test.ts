@@ -27,7 +27,7 @@ describe('데이터 무결성 테스트', () => {
     // rarityRates와 실제 카드 등급이 불일치할 수 있습니다.
     // 이 테스트는 주요 상품만 검증합니다.
     const mainProducts = products.filter((p) => p.cardsPerPack >= 1 && p.cardDefIds.length >= 8);
-    
+
     mainProducts.forEach((product) => {
       const productCards = cards.filter((c) => c.productId === product.id);
       const raritiesWithRate = Object.entries(product.rarityRates)

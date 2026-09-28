@@ -28,6 +28,11 @@ fs.writeFileSync('app.json', JSON.stringify(config, null, 2));
 echo "웹 빌드 실행 중..."
 npm run export
 
+# 커밋 SHA를 version.json에 저장
+COMMIT_SHA=$(git rev-parse HEAD)
+echo "{\"commit\":\"$COMMIT_SHA\",\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > dist/version.json
+echo "버전 정보 저장: $COMMIT_SHA"
+
 # app.json 복원
 mv app.json.backup app.json
 

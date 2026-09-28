@@ -25,18 +25,18 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await page.locator('text=상품').last().click();
     await page.waitForTimeout(2000);
-    
+
     await takeScreenshot(page, 'issue8-product-list-default');
-    
+
     const brokenImages = await page.evaluate(() => {
       const images = Array.from(document.querySelectorAll('img'));
       return images.filter((img) => img.complete && img.naturalWidth === 0).length;
     });
     expect(brokenImages).toBe(0);
-    
+
     const questionMarks = await page.locator('text=?').count();
     expect(questionMarks).toBe(0);
   });
@@ -45,10 +45,10 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await page.locator('text=상품').last().click();
     await page.waitForTimeout(2000);
-    
+
     const artistChip = page.locator('text=ARTIST A').first();
     if (await artistChip.isVisible({ timeout: 1000 })) {
       await artistChip.click();
@@ -61,17 +61,17 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await page.locator('text=상품').last().click();
     await page.waitForTimeout(2000);
-    
+
     const productCards = await page.locator('[role="button"]').all();
     if (productCards.length > 0) {
       await productCards[0].click();
       await page.waitForTimeout(1500);
-      
+
       await takeScreenshot(page, 'issue8-product-detail-lineup');
-      
+
       await expect(page.locator('text=구성 카드')).toBeVisible();
       await expect(page.locator('text=등급별 획득 확률')).toBeVisible();
     }
@@ -81,15 +81,15 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
-    
+
     await page.locator('text=내 앨범').last().click();
     await page.waitForTimeout(2000);
-    
+
     await takeScreenshot(page, 'issue8-my-album-mixed');
-    
+
     const lockIcons = await page.locator('text=🔒').count();
     console.log(`Lock icons found: ${lockIcons}`);
-    
+
     const questionMarks = await page.locator('text=?').count();
     expect(questionMarks).toBe(0);
   });
