@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 
+import 'screens/artist_product_list_screen.dart';
 import 'screens/photocard_album_screen.dart';
 import 'screens/photocard_detail_screen.dart';
 import 'screens/photocard_history_screen.dart';
 import 'screens/photocard_open_screen.dart';
 import 'screens/photocard_result_screen.dart';
+import 'screens/product_detail_screen.dart';
 
 class PhotocardNav {
+  static Future<void> toArtist(BuildContext context, String artistId) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ArtistProductListScreen(artistId: artistId)),
+    );
+  }
+
+  static Future<void> toProduct(BuildContext context, String productId) {
+    return Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProductDetailScreen(productId: productId)),
+    );
+  }
+
   static Future<void> toOpen(BuildContext context) {
     return Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const PhotocardOpenScreen()),

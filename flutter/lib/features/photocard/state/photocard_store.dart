@@ -65,6 +65,11 @@ class PhotocardStore extends ChangeNotifier {
 
   PhotoCard cardById(String id) => cards.firstWhere((c) => c.id == id);
 
+  void spend(int amount) {
+    tott -= amount;
+    notifyListeners();
+  }
+
   Future<bool> purchasePack() async {
     purchaseError = null;
     isPurchasing = true;

@@ -1,158 +1,180 @@
 import 'package:flutter/material.dart';
 
+import '../data/photocard_catalog.dart';
+import '../models/photo_card_product.dart';
 import '../photocard_routes.dart';
 import '../photocard_scope.dart';
 import '../photocard_theme.dart';
-import '../widgets/collection_progress.dart';
-import '../widgets/cta_buttons.dart';
-import '../widgets/photocard_pack_card.dart';
-import '../widgets/placeholder_card_art.dart';
-import '../widgets/purchase_sheet.dart';
+import '../widgets/product_card.dart';
 
-class PhotocardHomeScreen extends StatefulWidget {
+class PhotocardHomeScreen extends StatelessWidget {
   const PhotocardHomeScreen({super.key});
 
   @override
-  State<PhotocardHomeScreen> createState() => _PhotocardHomeScreenState();
-}
-
-class _PhotocardHomeScreenState extends State<PhotocardHomeScreen> {
-  @override
   Widget build(BuildContext context) {
     final store = PhotocardScope.of(context);
-    return ListenableBuilder(
-      listenable: store,
-      builder: (context, _) {
-        if (store.openPurchaseSheet) {
-          store.consumePurchaseSheet();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              showPurchaseSheet(context);
-            }
-          });
-        }
-        final recent = store.recentOwned;
-        return Scaffold(
-          backgroundColor: PhotocardTheme.bg,
-          appBar: AppBar(
-            title: const Text('PHOTO CARD'),
-            actions: [
-              IconButton(
-                onPressed: () => PhotocardNav.toAlbum(context),
-                icon: const Icon(Icons.grid_view_rounded, color: PhotocardTheme.text),
-                tooltip: 'MY PHOTO ALBUM',
-              ),
-            ],
+    final fresh = products.where((product) => product.isNew).toList();
+    final popular = products.where((product) => product.isPopular).toList();
+
+    return Scaffold(
+      backgroundColor: PhotocardTheme.bg,
+      appBar: AppBar(
+        title: const Text('포토카드'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('검색은 다음 단계에서 연결됩니다')),
+              );
+            },
+            icon: const Icon(Icons.search, color: PhotocardTheme.text),
           ),
-          body: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            children: [
-              const Center(child: SizedBox(width: 220, child: PhotocardPackCard())),
-              const SizedBox(height: 20),
-              const Center(
-                child: Text(
-                  '1 RANDOM PHOTOCARD',
-                  style: TextStyle(
-                    color: PhotocardTheme.muted,
-                    fontSize: 12,
-                    letterSpacing: 1.6,
+          IconButton(
+            onPressed: () => PhotocardNav.toAlbum(context),
+            icon: const Icon(Icons.grid_view_rounded, color: PhotocardTheme.text),
+            tooltip: '마이 앨범',
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              alignment: Alignment.bottomLeft,
+              children: [
+                Image.asset('assets/catalog/pack.png', height: 220, width: double.infinity, fit: BoxFit.cover),
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('NEW COLLECTION', style: TextStyle(color: PhotocardTheme.gold, fontSize: 11, letterSpacing: 1.4)),
+                      SizedBox(height: 4),
+                      Text('2026 SPECIAL PHOTO CARD', style: TextStyle(color: PhotocardTheme.text, fontSize: 18, fontWeight: FontWeight.w700)),
+                      SizedBox(height: 2),
+                      Text('기간 한정 컬렉션', style: TextStyle(color: PhotocardTheme.text, fontSize: 13)),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: Text(
-                  '${_money(store.pack.price)} TOTT',
-                  style: const TextStyle(
-                    color: PhotocardTheme.text,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              PrimaryCta(
-                label: '카드팩 구매하기',
-                onTap: () => showPurchaseSheet(context),
-              ),
-              const SizedBox(height: 28),
-              CollectionProgress(owned: store.collectedCount, total: store.totalCount),
-              const SizedBox(height: 28),
-              const Text(
-                'RECENT',
-                style: TextStyle(
-                  color: PhotocardTheme.muted,
-                  fontSize: 11,
-                  letterSpacing: 1.8,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 148,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 4,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (context, i) {
-                    if (i >= recent.length) {
-                      return SizedBox(
-                        width: 96,
-                        child: PlaceholderCardArt(
-                          card: store.cards.first,
-                          locked: true,
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          const _SectionTitle('아티스트'),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 108,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: artists.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final artist = artists[index];
+                return Material(
+                  color: Color(artist.themeColor),
+                  borderRadius: BorderRadius.circular(16),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () => PhotocardNav.toArtist(context, artist.id),
+                    child: SizedBox(
+                      width: 140,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(artist.name, style: const TextStyle(color: PhotocardTheme.text, fontSize: 16, fontWeight: FontWeight.w700)),
+                            const SizedBox(height: 4),
+                            Text('${artist.collectionCount} Collections', style: const TextStyle(color: PhotocardTheme.muted, fontSize: 12)),
+                          ],
                         ),
-                      );
-                    }
-                    final card = recent[i];
-                    return SizedBox(
-                      width: 96,
-                      child: PlaceholderCardArt(card: card),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  const Text(
-                    'MY PHOTO ALBUM',
-                    style: TextStyle(
-                      color: PhotocardTheme.text,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
+                      ),
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    '보유 ${store.collectedCount}장',
-                    style: const TextStyle(color: PhotocardTheme.muted, fontSize: 12),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              GhostCta(
-                label: '내 포토앨범 보기',
-                onTap: () => PhotocardNav.toAlbum(context),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        );
-      },
+          const SizedBox(height: 28),
+          const _SectionTitle('신규 포토카드'),
+          const SizedBox(height: 12),
+          _ProductGrid(items: fresh),
+          const SizedBox(height: 28),
+          const _SectionTitle('인기 컬렉션'),
+          const SizedBox(height: 12),
+          _ProductGrid(items: popular),
+          const SizedBox(height: 28),
+          ListenableBuilder(
+            listenable: store,
+            builder: (context, _) => Material(
+              color: PhotocardTheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => PhotocardNav.toAlbum(context),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('마이 앨범', style: TextStyle(color: PhotocardTheme.text, fontSize: 16, fontWeight: FontWeight.w700)),
+                            SizedBox(height: 4),
+                            Text('보유한 포토카드', style: TextStyle(color: PhotocardTheme.muted, fontSize: 12)),
+                          ],
+                        ),
+                      ),
+                      Text('보유 ${store.collectedCount}장', style: const TextStyle(color: PhotocardTheme.gold)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-String _money(int value) {
-  final s = value.toString();
-  final buf = StringBuffer();
-  for (var i = 0; i < s.length; i++) {
-    final remaining = s.length - i - 1;
-    buf.write(s[i]);
-    if (remaining > 0 && remaining % 3 == 0) {
-      buf.write(',');
-    }
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle(this.label);
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(label, style: const TextStyle(color: PhotocardTheme.text, fontSize: 16, fontWeight: FontWeight.w700));
   }
-  return buf.toString();
+}
+
+class _ProductGrid extends StatelessWidget {
+  const _ProductGrid({required this.items});
+  final List<PhotoCardProduct> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.62,
+      ),
+      itemBuilder: (context, index) {
+        final product = items[index];
+        return ProductCard(
+          product: product,
+          onTap: () => PhotocardNav.toProduct(context, product.id),
+        );
+      },
+    );
+  }
 }
