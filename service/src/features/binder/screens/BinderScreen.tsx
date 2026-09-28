@@ -11,6 +11,7 @@ import { Pocket } from '../components/Pocket';
 import { BinderFilterBar } from '../components/BinderFilterBar';
 import { PageIndicator } from '../components/PageIndicator';
 import { PagerArrows } from '../components/PagerArrows';
+import { CardDetailOverlay } from '../detail/CardDetailOverlay';
 import { type BinderPage, type BinderPocket } from '../model/types';
 import { paginate } from '../model/paginate';
 import { applyFilter, getAvailableArtists, getAvailableRarities } from '../model/filters';
@@ -65,6 +66,16 @@ export function BinderScreen() {
   const handlePocketPress = (pocket: BinderPocket) => {
     router.setParams({ card: pocket.cardDefId });
   };
+
+  const handleCloseDetail = () => {
+    const params = { ...searchParams };
+    delete params.card;
+    router.setParams(params);
+  };
+
+  const selectedPocket = parsedParams.cardDefId
+    ? filteredPockets.find((p) => p.cardDefId === parsedParams.cardDefId) || null
+    : null;
 
   if (loading) {
     return (
@@ -146,6 +157,8 @@ export function BinderScreen() {
         totalPages={pages.length}
         onPageChange={handlePageChange}
       />
+
+      <CardDetailOverlay pocket={selectedPocket} onClose={handleCloseDetail} />
     </View>
   );
 }
