@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import { colors } from '../../src/theme/tokens';
 import { HeaderMenu } from '../../src/components/HeaderMenu';
 
@@ -25,10 +25,10 @@ export default function TabsLayout() {
         options={{
           title: '홈',
           tabBarLabel: '홈',
+          tabBarButton: (props) => <TouchableOpacity {...props} testID="tab-home" />,
           tabBarIcon: ({ color, focused }) => (
             <Text style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
           ),
-          tabBarAccessibilityLabel: '홈 탭',
         }}
       />
       <Tabs.Screen
@@ -36,11 +36,10 @@ export default function TabsLayout() {
         options={{
           title: '상품',
           tabBarLabel: '상품',
+          tabBarButton: (props) => <TouchableOpacity {...props} testID="tab-products" />,
           tabBarIcon: ({ color, focused }) => (
             <Text style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
           ),
-          tabBarTestID: 'tab-products',
-          tabBarAccessibilityLabel: '상품 탭',
         }}
       />
       <Tabs.Screen
@@ -48,11 +47,10 @@ export default function TabsLayout() {
         options={{
           title: '내 앨범',
           tabBarLabel: '내 앨범',
+          tabBarButton: (props) => <TouchableOpacity {...props} testID="tab-album" />,
           tabBarIcon: ({ color, focused }) => (
             <Text style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
           ),
-          tabBarTestID: 'tab-album',
-          tabBarAccessibilityLabel: '내 앨범 탭',
         }}
       />
     </Tabs>

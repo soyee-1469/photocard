@@ -33,8 +33,8 @@ async function checkCommonAssertions(page: Page, testName: string) {
   return { scrollWidth };
 }
 
-async function clickTab(page: Page, name: string) {
-  await page.getByRole('tab', { name }).click({ timeout: 5000 });
+async function clickTab(page: Page, testID: string) {
+  await page.getByTestID(testID).click({ timeout: 5000 });
   await page.waitForTimeout(1000);
 }
 
@@ -74,15 +74,15 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('02. 하단 탭 네비게이션', async ({ page }) => {
-    await clickTab(page, /상품/);
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await checkCommonAssertions(page, '상품 탭');
 
-    await clickTab(page, /내 앨범/);
+    await clickTab(page, 'tab-album');
     await page.waitForTimeout(500);
     await checkCommonAssertions(page, '앨범 탭');
 
-    await clickTab(page, /홈/);
+    await clickTab(page, 'tab-home');
     await page.waitForSelector('text=추천 상품', { timeout: 5000 });
     await checkCommonAssertions(page, '홈 복귀');
   });
