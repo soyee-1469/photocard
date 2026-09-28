@@ -144,4 +144,3 @@ test.describe('Issue #8 검증', () => {
     expect(consoleErrors).toHaveLength(0);
   });
 });
-});
