@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, interpolate, random } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, interpolate, random, Img, staticFile } from 'remotion';
 import { legend } from '../theme';
 
 export const GoldFx: React.FC = () => {
@@ -69,8 +69,8 @@ export const GoldFx: React.FC = () => {
             opacity: leakOpacity,
           }}
         >
-          <img
-            src="/fx/inner_glow.png"
+          <Img
+            src={staticFile('fx/inner_glow.png')}
             style={{
               width: '100%',
               height: '100%',
@@ -94,7 +94,7 @@ export const GoldFx: React.FC = () => {
               opacity: sparkOpacity,
             }}
           >
-            <img src="/fx/sparkles.png" style={{ width: '100%', height: '100%' }} />
+            <Img src={staticFile('fx/sparkles.png')} style={{ width: '100%', height: '100%' }} />
           </div>
           <div
             style={{
@@ -106,7 +106,7 @@ export const GoldFx: React.FC = () => {
               opacity: sparkOpacity,
             }}
           >
-            <img src="/fx/sparkles.png" style={{ width: '100%', height: '100%' }} />
+            <Img src={staticFile('fx/sparkles.png')} style={{ width: '100%', height: '100%' }} />
           </div>
         </>
       )}
@@ -136,8 +136,8 @@ export const GoldFx: React.FC = () => {
             opacity: ringOpacity,
           }}
         >
-          <img
-            src="/fx/ring_effect.png"
+          <Img
+            src={staticFile('fx/ring_effect.png')}
             style={{
               width: '100%',
               height: '100%',
@@ -182,8 +182,8 @@ export const GoldFx: React.FC = () => {
               opacity: particleOpacity * burstOpacity,
             }}
           >
-            <img
-              src="/fx/particles.png"
+            <Img
+              src={staticFile('fx/particles.png')}
               style={{
                 width: '100%',
                 height: '100%',
@@ -207,8 +207,8 @@ export const GoldFx: React.FC = () => {
             opacity: burstOpacity,
           }}
         >
-          <img
-            src="/fx/ember_burst.png"
+          <Img
+            src={staticFile('fx/ember_burst.png')}
             style={{
               width: '100%',
               height: '100%',

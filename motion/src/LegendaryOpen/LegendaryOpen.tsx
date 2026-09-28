@@ -24,11 +24,11 @@ export const LegendaryOpen: React.FC<LegendaryOpenProps> = ({ cardSrc, title }) 
   // 138-150: Burst
   // 150-180: Hold with caption
 
-  // Background darkness fades in anticipation, then lights up
+  // Background darkness fades in anticipation, then lights up during burst, then back to dark
   const bgBrightness = interpolate(
     frame,
-    [0, 30, 54, 138, 150],
-    [0.05, 0.08, 0.15, 0.4, 0.35],
+    [0, 30, 54, 138, 145, 180],
+    [0.05, 0.08, 0.15, 0.4, 0.15, 0.10],
     { extrapolateRight: 'clamp' }
   );
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from 'remotion';
 
 export const Pack: React.FC = () => {
   const frame = useCurrentFrame();
@@ -30,15 +30,15 @@ export const Pack: React.FC = () => {
     extrapolateRight: 'clamp',
   });
 
-  let topImage = '/fx/pack_closed.png';
+  let topImage = 'fx/pack_closed.png';
   if (frame >= 54 && frame < 62) {
-    topImage = '/fx/pack_closed.png';
+    topImage = 'fx/pack_closed.png';
   } else if (frame >= 62 && frame < 70) {
-    topImage = '/fx/pack_top_2.png';
+    topImage = 'fx/pack_top_2.png';
   } else if (frame >= 70 && frame < 78) {
-    topImage = '/fx/pack_top_3.png';
+    topImage = 'fx/pack_top_3.png';
   } else if (frame >= 78) {
-    topImage = '/fx/pack_top_4.png';
+    topImage = 'fx/pack_top_4.png';
   }
 
   // Tear shake effect
@@ -65,8 +65,8 @@ export const Pack: React.FC = () => {
         }}
       >
         {/* Pack body */}
-        <img
-          src="/fx/pack_body_torn.png"
+        <Img
+          src={staticFile('fx/pack_body_torn.png')}
           style={{
             position: 'absolute',
             width: '100%',
@@ -76,8 +76,8 @@ export const Pack: React.FC = () => {
         />
 
         {/* Pack top (animated tear) */}
-        <img
-          src={topImage}
+        <Img
+          src={staticFile(topImage)}
           style={{
             position: 'absolute',
             width: '100%',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Composition } from 'remotion';
+import { Composition, staticFile } from 'remotion';
 import { LegendaryOpen } from './LegendaryOpen/LegendaryOpen';
 
 export interface LegendaryOpenProps {
@@ -18,7 +18,7 @@ export const RemotionRoot: React.FC = () => {
         width={1080}
         height={1920}
         defaultProps={{
-          cardSrc: '/cards/legend.jpg',
+          cardSrc: 'cards/legend.jpg',
           title: '레전드 포토카드',
         }}
       />

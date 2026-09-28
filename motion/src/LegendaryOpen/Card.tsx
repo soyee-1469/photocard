@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, interpolate, spring, useVideoConfig, Img, staticFile } from 'remotion';
 import { CARD_RATIO } from '../theme';
 
 interface CardProps {
@@ -103,8 +103,8 @@ export const Card: React.FC<CardProps> = ({ cardSrc }) => {
               overflow: 'hidden',
             }}
           >
-            <img
-              src="/fx/card_back.png"
+            <Img
+              src={staticFile('fx/card_back.png')}
               style={{
                 width: '100%',
                 height: '100%',
@@ -128,8 +128,8 @@ export const Card: React.FC<CardProps> = ({ cardSrc }) => {
               boxShadow: '0 20px 60px rgba(255, 217, 120, 0.5)',
             }}
           >
-            <img
-              src={cardSrc}
+            <Img
+              src={staticFile(cardSrc)}
               style={{
                 width: '100%',
                 height: '100%',
