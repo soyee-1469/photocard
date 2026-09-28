@@ -13,13 +13,7 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.imageContainer}>
-        {typeof product.image === 'object' && 'uri' in product.image ? (
-          <View style={styles.placeholder}>
-            <Text style={styles.placeholderText}>이미지</Text>
-          </View>
-        ) : (
-          <Image source={product.image} style={styles.image} resizeMode="contain" />
-        )}
+        <Image source={product.image} style={styles.image} resizeMode="contain" />
         <SaleBadge status={product.saleStatus} />
       </View>
       <Text style={styles.name} numberOfLines={2}>

@@ -51,15 +51,15 @@ export function ProductDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backIcon}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>상품 상세</Text>
+      </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.imageContainer}>
-          {typeof product.image === 'object' && 'uri' in product.image ? (
-            <View style={styles.placeholder}>
-              <Text style={styles.placeholderText}>상품 이미지</Text>
-            </View>
-          ) : (
-            <Image source={product.image} style={styles.image} resizeMode="contain" />
-          )}
+          <Image source={product.image} style={styles.image} resizeMode="contain" />
           <SaleBadge status={product.saleStatus} />
         </View>
 
@@ -133,6 +133,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0C0908',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingTop: 40,
+    backgroundColor: '#1C1410',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(246, 239, 230, 0.1)',
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  backIcon: {
+    fontSize: 24,
+    color: colors.paper,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.paper,
   },
   centered: {
     flex: 1,

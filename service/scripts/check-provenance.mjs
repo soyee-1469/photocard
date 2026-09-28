@@ -35,8 +35,8 @@ for (const file of files) {
 
 if (!driftDetected) {
   console.log('✅ 모든 복사본이 원본과 일치합니다.');
+  process.exit(0);
 } else {
   console.log('\n⚠️  일부 원본 파일이 변경되었습니다. PROVENANCE.md를 검토하세요.');
+  process.exit(1);
 }
-
-process.exit(0);

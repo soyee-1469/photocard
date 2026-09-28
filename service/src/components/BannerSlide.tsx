@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Image, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { type Banner } from '../services/api/types';
 
 interface BannerSlideProps {
@@ -28,11 +28,10 @@ export function BannerSlide({ banners, onPressBanner }: BannerSlideProps) {
 
   return (
     <TouchableOpacity style={styles.container} onPress={() => onPressBanner(current)}>
-      {typeof current.image === 'object' && 'uri' in current.image ? (
-        <View style={styles.placeholder} />
-      ) : (
-        <Image source={current.image} style={styles.image} resizeMode="cover" />
-      )}
+      <Image source={current.image} style={styles.image} resizeMode="cover" />
+      <View style={styles.overlay}>
+        <Text style={styles.title}>{current.title}</Text>
+      </View>
       {banners.length > 1 && (
         <View style={styles.indicators}>
           {banners.map((_, i) => (
@@ -49,13 +48,32 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180,
     position: 'relative',
-    marginHorizontal: 16,
     borderRadius: 12,
     overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFF',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   placeholder: {
     width: '100%',

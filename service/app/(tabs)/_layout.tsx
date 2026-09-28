@@ -1,4 +1,5 @@
 import { Tabs } from 'expo-router';
+import { Text } from 'react-native';
 import { colors } from '../../src/theme/tokens';
 
 export default function TabsLayout() {
@@ -22,6 +23,9 @@ export default function TabsLayout() {
         options={{
           title: '홈',
           tabBarLabel: '홈',
+          tabBarIcon: ({ color, focused }) => (
+            <Text style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
+          ),
         }}
       />
       <Tabs.Screen
@@ -29,6 +33,9 @@ export default function TabsLayout() {
         options={{
           title: '상품',
           tabBarLabel: '상품',
+          tabBarIcon: ({ color, focused }) => (
+            <Text style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
+          ),
         }}
       />
       <Tabs.Screen
@@ -36,6 +43,9 @@ export default function TabsLayout() {
         options={{
           title: '내 앨범',
           tabBarLabel: '내 앨범',
+          tabBarIcon: ({ color, focused }) => (
+            <Text style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
+          ),
         }}
       />
     </Tabs>
