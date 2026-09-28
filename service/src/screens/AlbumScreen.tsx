@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { useApi } from '../services/api/ApiProvider';
-import { type OwnedCardView, type CardDef } from '../services/api/types';
+import { type OwnedCardView } from '../services/api/types';
 import { colors, rarities } from '../theme/tokens';
 import { artists } from '../data/artists';
 import { albums } from '../data/albums';
-import { cards as allCards } from '../data/cards';
 import { ErrorState } from '../components/ErrorState';
+import { EmptyState } from '../components/EmptyState';
 
 export function AlbumScreen() {
   const api = useApi();
@@ -14,7 +14,6 @@ export function AlbumScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedArtist, setSelectedArtist] = useState<string | null>(null);
-  const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
 
   const loadOwnedCards = async () => {
     try {
@@ -45,6 +44,10 @@ export function AlbumScreen() {
     return <ErrorState message={error} onRetry={loadOwnedCards} />;
   }
 
+  if (ownedCards.length === 0) {
+    return <EmptyState message="아직 보유한 카드가 없습니다." />;
+  }
+
   const filteredArtists = selectedArtist
     ? artists.filter((a) => a.id === selectedArtist)
     : artists;
@@ -53,9 +56,15 @@ export function AlbumScreen() {
     ? albums.filter((a) => a.artistId === selectedArtist)
     : albums;
 
-  const getOwnedCount = (cardDefId: string): number => {
+  const getAlbumOwnedCards = (albumId: string) => {
+    return ownedCards.filter((c) => c.cardDef.albumId === albumId);
+  };
+
+  const getCardCount = (cardDefId: string): number => {
     return ownedCards.filter((c) => c.cardDef.id === cardDefId).length;
   };
+
+  const albumsWithCards = filteredAlbums.filter((album) => getAlbumOwnedCards(album.id).length > 0);
 
   return (
     <View style={styles.container}>
@@ -63,70 +72,57 @@ export function AlbumScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
           <TouchableOpacity
             style={[styles.filterChip, selectedArtist === null && styles.filterChipActive]}
-            onPress={() => {
-              setSelectedArtist(null);
-              setSelectedAlbum(null);
-            }}
+            onPress={() => setSelectedArtist(null)}
           >
             <Text style={[styles.filterChipText, selectedArtist === null && styles.filterChipTextActive]}>전체</Text>
           </TouchableOpacity>
-          {artists.map((artist) => (
-            <TouchableOpacity
-              key={artist.id}
-              style={[styles.filterChip, selectedArtist === artist.id && styles.filterChipActive]}
-              onPress={() => {
-                setSelectedArtist(artist.id);
-                setSelectedAlbum(null);
-              }}
-            >
-              <Text style={[styles.filterChipText, selectedArtist === artist.id && styles.filterChipTextActive]}>
-                {artist.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {artists.map((artist) => {
+            const artistAlbums = albums.filter((a) => a.artistId === artist.id);
+            const hasCards = artistAlbums.some((album) => getAlbumOwnedCards(album.id).length > 0);
+            if (!hasCards) return null;
+
+            return (
+              <TouchableOpacity
+                key={artist.id}
+                style={[styles.filterChip, selectedArtist === artist.id && styles.filterChipActive]}
+                onPress={() => setSelectedArtist(artist.id)}
+              >
+                <Text style={[styles.filterChipText, selectedArtist === artist.id && styles.filterChipTextActive]}>
+                  {artist.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
       <ScrollView style={styles.scroll}>
-        {filteredAlbums.map((album) => {
-          const albumCards = allCards.filter((c) => c.albumId === album.id);
-          if (albumCards.length === 0) return null;
-
-          const ownedCount = albumCards.filter((c) => getOwnedCount(c.id) > 0).length;
+        {albumsWithCards.map((album) => {
+          const albumCards = getAlbumOwnedCards(album.id);
+          const uniqueCards = Array.from(
+            new Map(albumCards.map((c) => [c.cardDef.id, c.cardDef])).values()
+          );
 
           return (
             <View key={album.id} style={styles.albumSection}>
               <View style={styles.albumHeader}>
                 <Text style={styles.albumTitle}>{album.title}</Text>
-                <Text style={styles.albumProgress}>
-                  {ownedCount} / {albumCards.length}
-                </Text>
+                <Text style={styles.albumCount}>{albumCards.length}장</Text>
               </View>
               <View style={styles.cardGrid}>
-                {albumCards.map((card) => {
-                  const owned = getOwnedCount(card.id);
+                {uniqueCards.map((card) => {
+                  const count = getCardCount(card.id);
                   return (
                     <View key={card.id} style={styles.cardItem}>
                       <View style={styles.cardImageContainer}>
-                        {owned > 0 ? (
-                          <>
-                            <Image source={card.front} style={styles.cardImage} resizeMode="cover" />
-                            <View style={styles.cardBadge}>
-                              <Text style={styles.cardBadgeText}>{rarities[card.rarity].badge}</Text>
-                            </View>
-                            {owned > 1 && (
-                              <View style={styles.cardCount}>
-                                <Text style={styles.cardCountText}>×{owned}</Text>
-                              </View>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <Image source={card.front} style={[styles.cardImage, styles.cardImageLocked]} resizeMode="cover" />
-                            <View style={styles.cardLockOverlay}>
-                              <Text style={styles.cardLockIcon}>🔒</Text>
-                            </View>
-                          </>
+                        <Image source={card.front} style={styles.cardImage} resizeMode="cover" />
+                        <View style={styles.cardBadge}>
+                          <Text style={styles.cardBadgeText}>{rarities[card.rarity].badge}</Text>
+                        </View>
+                        {count > 1 && (
+                          <View style={styles.cardCount}>
+                            <Text style={styles.cardCountText}>×{count}</Text>
+                          </View>
                         )}
                       </View>
                     </View>
@@ -201,7 +197,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.paper,
   },
-  albumProgress: {
+  albumCount: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.gold,
@@ -225,22 +221,6 @@ const styles = StyleSheet.create({
   cardImage: {
     width: '100%',
     height: '100%',
-  },
-  cardImageLocked: {
-    opacity: 0.3,
-  },
-  cardLockOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(12, 9, 8, 0.6)',
-  },
-  cardLockIcon: {
-    fontSize: 20,
   },
   cardBadge: {
     position: 'absolute',
