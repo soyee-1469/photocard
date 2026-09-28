@@ -30,7 +30,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     
-    await page.getByRole('tab', { name: /products/i }).or(page.getByTestId('tab-products')).click();
+    await page.getByTestId('tab-products').first().click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
     
@@ -57,7 +57,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     
-    await page.getByRole('tab', { name: /products/i }).or(page.getByTestId('tab-products')).click();
+    await page.getByTestId('tab-products').first().click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     const artistChip = page.locator('text=ARTIST A').first();
@@ -79,7 +79,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     
-    await page.getByRole('tab', { name: /products/i }).or(page.getByTestId('tab-products')).click();
+    await page.getByTestId('tab-products').first().click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
     
@@ -109,7 +109,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');
     
-    await page.getByRole('tab', { name: /album/i }).or(page.getByTestId('tab-album')).click();
+    await page.getByTestId('tab-album').first().click();
     await page.waitForTimeout(1500);
     
     await takeScreenshot(page, 'issue8-my-album-owned');
@@ -132,7 +132,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto(BASE_URL + '?seed=empty');
     await page.waitForLoadState('networkidle');
     
-    await page.getByRole('tab', { name: /album/i }).or(page.getByTestId('tab-album')).click();
+    await page.getByTestId('tab-album').first().click();
     await page.waitForTimeout(1500);
     
     await takeScreenshot(page, 'issue8-album-empty');
