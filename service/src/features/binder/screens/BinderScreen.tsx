@@ -48,14 +48,6 @@ export function BinderScreen() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPage, pages.length, router]);
 
-  const parsedParams = parseParams(
-    searchParams as Record<string, string | undefined>,
-    pages.length
-  );
-
-  const currentPage = parsedParams.page;
-  const currentFilter = parsedParams.filter;
-
   useEffect(() => {
     const filtered = applyFilter(pockets, currentFilter);
     setFilteredPockets(filtered);
