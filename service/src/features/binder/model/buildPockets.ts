@@ -27,7 +27,7 @@ export function buildPockets(ownedCards: OwnedCard[]): BinderPocket[] {
       continue;
     }
 
-    const sortedInstances = [...instances].sort((a, b) => 
+    const sortedInstances = [...instances].sort((a, b) =>
       a.acquiredAt.localeCompare(b.acquiredAt)
     );
 

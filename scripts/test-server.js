@@ -21,35 +21,35 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
   let url = req.url || '/';
-  
+
   if (url.startsWith(BASE_PATH)) {
     url = url.substring(BASE_PATH.length);
   }
-  
+
   if (url === '/' || url === '') {
     url = '/index.html';
   }
-  
+
   if (url.endsWith('/')) {
     url += 'index.html';
   }
-  
+
   let filePath = path.join(DIST_DIR, url);
-  
+
   if (!fs.existsSync(filePath)) {
     filePath = path.join(DIST_DIR, 'index.html');
   }
-  
+
   const ext = path.extname(filePath);
   const contentType = MIME_TYPES[ext] || 'text/plain';
-  
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.writeHead(404);
       res.end('Not found');
       return;
     }
-    
+
     res.writeHead(200, { 'Content-Type': contentType });
     res.end(data);
   });

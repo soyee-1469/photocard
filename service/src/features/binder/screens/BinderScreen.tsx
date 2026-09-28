@@ -21,15 +21,15 @@ export function BinderScreen() {
   const router = useRouter();
   const searchParams = useLocalSearchParams();
   const { pockets, loading, error, reload } = useOwnedPockets();
-  
+
   const [filteredPockets, setFilteredPockets] = useState<BinderPocket[]>([]);
   const [pages, setPages] = useState<BinderPage[]>([]);
-  
+
   const parsedParams = parseParams(
     searchParams as Record<string, string | undefined>,
     pages.length
   );
-  
+
   const currentPage = parsedParams.page;
   const currentFilter = parsedParams.filter;
 
@@ -38,7 +38,7 @@ export function BinderScreen() {
     setFilteredPockets(filtered);
     const newPages = paginate(filtered, 4);
     setPages(newPages);
-    
+
     if (newPages.length > 0 && currentPage > newPages.length) {
       router.setParams({ page: '1' });
     }
@@ -135,7 +135,7 @@ export function BinderScreen() {
 
       <View style={styles.binderContainer}>
         <BinderRings />
-        
+
         <View style={styles.paper}>
           <View style={styles.pageContainer}>
             <View style={styles.pocketsGrid}>

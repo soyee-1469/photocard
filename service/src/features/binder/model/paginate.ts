@@ -10,7 +10,7 @@ export function paginate(pockets: BinderPocket[], slotsPerPage: number): BinderP
 
   while (currentIndex < pockets.length) {
     const slots: (BinderPocket | null)[] = [];
-    
+
     for (let i = 0; i < slotsPerPage; i++) {
       if (currentIndex < pockets.length) {
         slots.push(pockets[currentIndex]);

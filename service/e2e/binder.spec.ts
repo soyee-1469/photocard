@@ -10,7 +10,7 @@ if (!fs.existsSync(ARTIFACTS_DIR)) {
 
 async function takeScreenshot(page: Page, name: string) {
   await page.waitForTimeout(1000);
-  
+
   await page.evaluate(() => {
     return new Promise<void>((resolve) => {
       const images = Array.from(document.querySelectorAll('img'));
@@ -37,7 +37,7 @@ async function takeScreenshot(page: Page, name: string) {
   });
 
   await page.waitForTimeout(500);
-  
+
   const filename = `${name}.png`;
   await page.screenshot({ path: path.join(ARTIFACTS_DIR, filename), fullPage: false });
   console.log(`📸 스크린샷 저장: ${filename}`);
@@ -112,7 +112,7 @@ test.describe('바인더 검증', () => {
     await takeScreenshot(page, 'B-page1');
 
     await expect(page.locator('text=1 / 3')).toBeVisible();
-    
+
     const emptyPockets = await page.locator('[data-testid="pocket-empty"]').count();
     expect(emptyPockets).toBe(0);
 
@@ -127,7 +127,7 @@ test.describe('바인더 검증', () => {
     await takeScreenshot(page, 'B-page3-empty-slots');
 
     await expect(page.locator('text=3 / 3')).toBeVisible();
-    
+
     const emptyPockets = await page.locator('[data-testid="pocket-empty"]').count();
     expect(emptyPockets).toBe(2);
   });

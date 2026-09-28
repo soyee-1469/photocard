@@ -29,7 +29,7 @@ export function CardDetailOverlay({ pocket, onClose }: CardDetailOverlayProps) {
           onPress={onClose}
           activeOpacity={1}
         />
-        
+
         <View style={styles.content}>
           <ScrollView
             contentContainerStyle={styles.scrollContent}
@@ -38,9 +38,9 @@ export function CardDetailOverlay({ pocket, onClose }: CardDetailOverlayProps) {
             <View style={styles.cardContainer}>
               <FlipCard pocket={pocket} width={260} />
             </View>
-            
+
             <CardMeta pocket={pocket} />
-            
+
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
               <Text style={styles.closeButtonText}>닫기</Text>
             </TouchableOpacity>

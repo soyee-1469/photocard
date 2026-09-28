@@ -75,7 +75,7 @@ describe('paginate', () => {
   });
 
   it('10장은 3페이지', () => {
-    const pockets = Array.from({ length: 10 }, (_, i) => 
+    const pockets = Array.from({ length: 10 }, (_, i) =>
       createMockPocket(`prod-01-card-${i + 1}`)
     );
     const result = paginate(pockets, 4);
@@ -99,21 +99,21 @@ describe('getPageCount', () => {
   });
 
   it('4장은 1페이지', () => {
-    const pockets = Array.from({ length: 4 }, (_, i) => 
+    const pockets = Array.from({ length: 4 }, (_, i) =>
       createMockPocket(`prod-01-card-${i + 1}`)
     );
     expect(getPageCount(pockets, 4)).toBe(1);
   });
 
   it('5장은 2페이지', () => {
-    const pockets = Array.from({ length: 5 }, (_, i) => 
+    const pockets = Array.from({ length: 5 }, (_, i) =>
       createMockPocket(`prod-01-card-${i + 1}`)
     );
     expect(getPageCount(pockets, 4)).toBe(2);
   });
 
   it('10장은 3페이지', () => {
-    const pockets = Array.from({ length: 10 }, (_, i) => 
+    const pockets = Array.from({ length: 10 }, (_, i) =>
       createMockPocket(`prod-01-card-${i + 1}`)
     );
     expect(getPageCount(pockets, 4)).toBe(3);
