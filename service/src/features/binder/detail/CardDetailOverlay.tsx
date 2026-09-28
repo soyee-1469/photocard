@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Modal, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
 import { type BinderPocket } from '../model/types';
 import { colors } from '../../../theme/tokens';
 import { FlipCard } from './FlipCard';
@@ -12,6 +11,19 @@ interface CardDetailOverlayProps {
 }
 
 export function CardDetailOverlay({ pocket, onClose }: CardDetailOverlayProps) {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   if (!pocket) {
     return null;
   }

@@ -34,6 +34,29 @@ export function BinderScreen() {
   const currentFilter = parsedParams.filter;
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' && currentPage > 1) {
+        router.setParams({ page: (currentPage - 1).toString() });
+      } else if (e.key === 'ArrowRight' && currentPage < pages.length) {
+        router.setParams({ page: (currentPage + 1).toString() });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentPage, pages.length, router]);
+
+  const parsedParams = parseParams(
+    searchParams as Record<string, string | undefined>,
+    pages.length
+  );
+
+  const currentPage = parsedParams.page;
+  const currentFilter = parsedParams.filter;
+
+  useEffect(() => {
     const filtered = applyFilter(pockets, currentFilter);
     setFilteredPockets(filtered);
     const newPages = paginate(filtered, 4);
