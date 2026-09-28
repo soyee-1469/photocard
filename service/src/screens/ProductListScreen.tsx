@@ -74,7 +74,7 @@ export function ProductListScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="product-list-screen">
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -104,6 +104,7 @@ export function ProductListScreen() {
           {artists.map((artist) => (
             <TouchableOpacity
               key={artist.id}
+              testID={`filter-artist-${artist.id}`}
               style={[styles.filterChip, selectedArtist === artist.id && styles.filterChipActive]}
               onPress={() => {
                 setSelectedArtist(artist.id);

@@ -11,7 +11,7 @@ test.describe('포토카드 서비스 PR-A', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.getByLabel('tab-products').click();
-    await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
+    await expect(page.getByTestId('product-list-screen')).toBeVisible();
   });
 
   test('03. 앨범 탭 네비게이션', async ({ page }) => {
@@ -22,9 +22,13 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('04. 상품 상세 이동', async ({ page }) => {
-    await page.goto('/products/prod-01');
+    await page.goto('/');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=등급별 획득 확률')).toBeVisible();
+    await page.getByLabel('tab-products').click();
+    const list = page.getByTestId('product-list-screen');
+    await expect(list).toBeVisible();
+    await list.getByTestId(/^product-card-/).first().click();
+    await expect(page.getByText('등급별 획득 확률')).toBeVisible();
   });
 
   test('05. 딥링크 새로고침', async ({ page }) => {

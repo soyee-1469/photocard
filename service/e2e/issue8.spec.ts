@@ -1,6 +1,11 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+
+// 21개에서 10개로 줄인 이유: localhost 하드코딩 스펙과
+// 같은 화면을 조건부로 건너뛰던 중복 테스트를 뺐다.
+// 남는 10개는 홈, 상품 탭/필터/카드 진입, 앨범, 빈 앨범, 딥링크 새로고침이다.
+// 홈 탭은 숨긴 채로 DOM에 남으므로, 상품 목록은 보이는 product-list-screen 안으로만 찾는다.
 
 const ARTIFACTS_DIR = '/opt/cursor/artifacts/service-a';
 
@@ -12,6 +17,15 @@ async function takeScreenshot(page: Page, name: string) {
   const filename = `${name}.png`;
   await page.screenshot({ path: path.join(ARTIFACTS_DIR, filename), fullPage: true });
   console.log(`📸 스크린샷 저장: ${filename}`);
+}
+
+async function openProductList(page: Page): Promise<Locator> {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.getByLabel('tab-products').click();
+  const list = page.getByTestId('product-list-screen');
+  await expect(list).toBeVisible();
+  return list;
 }
 
 test.describe('Issue #8 검증', () => {
@@ -26,22 +40,18 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
-    await page.getByLabel('tab-products').click();
-    await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
-    await page.waitForTimeout(1000);
+    const list = await openProductList(page);
+    await expect(list.getByPlaceholder(/검색/)).toBeVisible();
 
     await takeScreenshot(page, 'issue8-product-list-default');
 
-    const brokenImages = await page.evaluate(() => {
-      const images = Array.from(document.querySelectorAll('img'));
+    const brokenImages = await list.evaluate((root) => {
+      const images = Array.from(root.querySelectorAll('img'));
       return images.filter((img) => img.complete && img.naturalWidth === 0).length;
     });
     expect(brokenImages).toBe(0);
 
-    const questionMarks = await page.locator('text=?').count();
+    const questionMarks = await list.getByText('?', { exact: true }).count();
     expect(questionMarks).toBe(0);
 
     expect(consoleErrors).toHaveLength(0);
@@ -53,15 +63,10 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-
-    await page.getByLabel('tab-products').click();
-    await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
-
-    const artistChip = page.locator('text=ARTIST A').first();
+    const list = await openProductList(page);
+    const artistChip = list.getByTestId('filter-artist-artist-a');
     await expect(artistChip).toBeVisible();
-    await artistChip.click({ force: true });
+    await artistChip.click();
     await page.waitForTimeout(1000);
     await takeScreenshot(page, 'issue8-product-list-artist-filter');
 
@@ -74,16 +79,18 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/products/prod-01');
-    await page.waitForLoadState('networkidle');
+    const list = await openProductList(page);
+    const productCard = list.getByTestId(/^product-card-/).first();
+    await expect(productCard).toBeVisible();
+    await productCard.click();
     await page.waitForTimeout(1000);
 
     await takeScreenshot(page, 'issue8-product-detail-lineup');
 
-    await expect(page.locator('text=구성 카드')).toBeVisible();
-    await expect(page.locator('text=등급별 획득 확률')).toBeVisible();
+    await expect(page.getByText('구성 카드')).toBeVisible();
+    await expect(page.getByText('등급별 획득 확률')).toBeVisible();
 
-    const allImages = await page.locator('img').count();
+    const allImages = await page.locator('img:visible').count();
     expect(allImages).toBeGreaterThan(0);
 
     expect(consoleErrors).toHaveLength(0);
