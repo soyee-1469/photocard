@@ -66,9 +66,10 @@ export function CardDetailOverlay({ pocket, onClose }: CardDetailOverlayProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    backgroundColor: 'rgba(0, 0, 0, 0.92)',
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 9999,
   },
   content: {
     width: '90%',
@@ -77,6 +78,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1C1410',
     borderRadius: 12,
     overflow: 'hidden',
+    zIndex: 10000,
   },
   scrollContent: {
     paddingVertical: 24,
@@ -94,6 +96,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gold,
     alignItems: 'center',
+    zIndex: 10001,
   },
   closeButtonText: {
     fontSize: 15,

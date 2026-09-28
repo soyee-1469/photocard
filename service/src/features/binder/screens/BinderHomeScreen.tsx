@@ -135,10 +135,9 @@ const styles = StyleSheet.create({
     color: colors.gold,
   },
   footer: {
-    flex: 1,
-    justifyContent: 'flex-end',
     paddingHorizontal: 16,
     paddingBottom: 24,
+    marginTop: 24,
   },
   openButton: {
     backgroundColor: colors.gold,

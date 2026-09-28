@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   label: {
     fontSize: 14,
@@ -110,5 +111,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.paper,
+    flexShrink: 1,
   },
 });

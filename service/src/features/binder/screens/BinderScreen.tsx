@@ -192,23 +192,26 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     paddingVertical: 16,
+    overflow: 'hidden',
   },
   paper: {
     flex: 1,
     backgroundColor: binderTheme.paper.background,
     borderLeftWidth: 1,
     borderLeftColor: binderTheme.paper.edge,
+    overflow: 'hidden',
   },
   pageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 8,
   },
   pocketsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    maxWidth: 280,
+    width: 280,
     gap: 12,
   },
 });

@@ -56,7 +56,7 @@ test.describe('바인더 검증', () => {
     });
     page.on('pageerror', (err) => consoleErrors.push(err.message));
 
-    await page.goto('/');
+    await page.goto('');
     await page.waitForLoadState('networkidle');
 
     await page.getByTestId('tab-album').first().click();
@@ -82,7 +82,7 @@ test.describe('바인더 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/album?seed=empty');
+    await page.goto('album?seed=empty');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -100,7 +100,7 @@ test.describe('바인더 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/');
+    await page.goto('');
     await page.waitForLoadState('networkidle');
 
     await page.getByTestId('tab-album').first().click();
@@ -120,7 +120,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-4: 페이지 3 빈 칸 (B-page3-empty-slots)', async ({ page }) => {
-    await page.goto('/album/binder?page=3');
+    await page.goto('album/binder?page=3');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -133,7 +133,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-5: 아티스트 필터 (B-filter-artist)', async ({ page }) => {
-    await page.goto('/album/binder?page=1');
+    await page.goto('album/binder?page=1');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
@@ -146,7 +146,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-6: 필터 결과 없음 (B-filter-none)', async ({ page }) => {
-    await page.goto('/album/binder?artist=artist-b&rarity=legend');
+    await page.goto('album/binder?artist=artist-b&rarity=legend');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1000);
 
@@ -156,7 +156,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-7: 카드 상세 앞면 (C-front)', async ({ page }) => {
-    await page.goto('/album/binder?page=1&card=prod-01-card-1');
+    await page.goto('album/binder?page=1&card=prod-01-card-1');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -167,7 +167,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-8: 카드 플립 뒷면 (C-back)', async ({ page }) => {
-    await page.goto('/album/binder?page=1&card=prod-01-card-1');
+    await page.goto('album/binder?page=1&card=prod-01-card-1');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -180,7 +180,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-9: 중복 ×3 (C-dup-x3)', async ({ page }) => {
-    await page.goto('/album/binder?page=1&card=prod-01-card-1');
+    await page.goto('album/binder?page=1&card=prod-01-card-1');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -190,7 +190,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-10: 공급 종료 (C-discontinued)', async ({ page }) => {
-    await page.goto('/album/binder?page=2&card=prod-08-card-13');
+    await page.goto('album/binder?page=2&card=prod-08-card-13');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -200,7 +200,7 @@ test.describe('바인더 검증', () => {
   });
 
   test('바인더-11: 상세 닫기 후 페이지 2 (B-after-close-page2)', async ({ page }) => {
-    await page.goto('/album/binder?page=2&card=prod-03-card-7');
+    await page.goto('album/binder?page=2&card=prod-03-card-7');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
