@@ -74,15 +74,15 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('02. 하단 탭 네비게이션', async ({ page }) => {
-    await clickTab(page, '📦 📫 상품');
+    await clickTab(page, /상품/);
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await checkCommonAssertions(page, '상품 탭');
 
-    await clickTab(page, '🎴 🃏 내 앨범');
+    await clickTab(page, /내 앨범/);
     await page.waitForTimeout(500);
     await checkCommonAssertions(page, '앨범 탭');
 
-    await page.getByRole('tab', { name: /홈/ }).click();
+    await clickTab(page, /홈/);
     await page.waitForSelector('text=추천 상품', { timeout: 5000 });
     await checkCommonAssertions(page, '홈 복귀');
   });
@@ -90,7 +90,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   test('03. 홈 -> 상품 상세', async ({ page }) => {
     await page.waitForSelector('text=추천 상품', { timeout: 10000 });
 
-    const productCards = await page.locator('text=추천 상품').locator('..').locator('..').locator('button, [role="button"]').all();
+    const productCards = await page.locator('[data-testid^="product-card-"]').all();
     expect(productCards.length, '상품 카드가 표시됨').toBeGreaterThan(0);
 
     await productCards[0].click();
@@ -102,34 +102,36 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('04. 상품 목록 - 기본', async ({ page }) => {
-    await clickTab(page, 'tab-products');
+    await clickTab(page, /상품/);
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
-    await page.waitForTimeout(1000);
-
-    await takeScreenshot(page, '04-product-list-default');
-    await checkCommonAssertions(page, '상품 목록 기본');
+    await takeScreenshot(page, '04-products-list');
+    await checkCommonAssertions(page, '상품 목록');
   });
 
   test('05. 상품 목록 - 아티스트 필터', async ({ page }) => {
-    await clickTab(page, 'tab-products');
+    await clickTab(page, /상품/);
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
 
     const artistChip = page.locator('text=ARTIST A').first();
-    if (await artistChip.isVisible({ timeout: 1000 })) {
-      await artistChip.click();
-      await page.waitForTimeout(1000);
-      await takeScreenshot(page, '05-product-list-artist-filter');
-      await checkCommonAssertions(page, '아티스트 필터');
-    }
+    await expect(artistChip).toBeVisible();
+    await artistChip.click();
+    await page.waitForTimeout(1000);
+    await takeScreenshot(page, '05-products-artist-filter');
+
+    const visibleProducts = await page.locator('[data-testid^="product-card-"]').count();
+    expect(visibleProducts, 'ARTIST A 상품이 표시됨').toBeGreaterThan(0);
   });
 
   test('06. 상품 목록 - 앨범 필터', async ({ page }) => {
-    await clickTab(page, 'tab-products');
+    await clickTab(page, /상품/);
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
 
-    const artistChip = page.locator('text=ARTIST A').first();
-    if (await artistChip.isVisible({ timeout: 1000 })) {
-      await artistChip.click();
+    const albumChips = await page.locator('text=/Album/').all();
+    expect(albumChips.length, '앨범 칩이 표시됨').toBeGreaterThan(0);
+    await albumChips[0].click();
+    await page.waitForTimeout(1000);
+    await takeScreenshot(page, '06-products-album-filter');
+  });
       await page.waitForTimeout(1000);
 
       const albumChip = page.locator('text=ALBUM ONE').first();

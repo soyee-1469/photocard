@@ -34,8 +34,21 @@ const server = http.createServer((req, res) => {
 
   let filePath = path.join(DIST_DIR, urlPath);
 
-  // If file doesn't exist and it's not a file request, serve index.html (SPA)
-  if (!fs.existsSync(filePath) && !path.extname(filePath)) {
+  // 디렉터리 요청은 index.html로
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(filePath, 'index.html');
+  }
+
+  // 확장자 없는 경로는 .html 시도
+  if (!path.extname(filePath) && !fs.existsSync(filePath)) {
+    const htmlPath = filePath + '.html';
+    if (fs.existsSync(htmlPath)) {
+      filePath = htmlPath;
+    }
+  }
+
+  // 파일이 없으면 index.html (SPA fallback)
+  if (!fs.existsSync(filePath)) {
     filePath = path.join(DIST_DIR, 'index.html');
   }
 
@@ -44,21 +57,8 @@ const server = http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      if (err.code === 'ENOENT') {
-        // Serve index.html for 404
-        fs.readFile(path.join(DIST_DIR, 'index.html'), (err2, content2) => {
-          if (err2) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Not Found');
-          } else {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end(content2);
-          }
-        });
-      } else {
-        res.writeHead(500);
-        res.end('Server Error: ' + err.code);
-      }
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not Found');
     } else {
       res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);

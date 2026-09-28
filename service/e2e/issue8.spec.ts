@@ -29,7 +29,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.getByTestId('tab-products').click();
+    await page.getByRole('tab', { name: /상품/ }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
 
@@ -56,7 +56,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.getByTestId('tab-products').click();
+    await page.getByRole('tab', { name: /상품/ }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
 
     const artistChip = page.locator('text=ARTIST A').first();
@@ -77,7 +77,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.getByTestId('tab-products').click();
+    await page.getByRole('tab', { name: /상품/ }).click();
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
 
@@ -106,7 +106,7 @@ test.describe('Issue #8 검증', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    await page.getByTestId('tab-album').click();
+    await page.getByRole('tab', { name: /내 앨범/ }).click();
     await page.waitForTimeout(1500);
 
     await takeScreenshot(page, 'issue8-my-album-owned');
@@ -134,6 +134,9 @@ test.describe('Issue #8 검증', () => {
 
     const emptyMessage = page.locator('text=아직 보유한 카드가 없습니다.');
     await expect(emptyMessage).toBeVisible();
+
+    const shopButton = page.locator('text=상품 보러가기');
+    await expect(shopButton).toBeVisible();
 
     // 텍스트 대비 확인 (WCAG AA 4.5:1)
     const textColor = await emptyMessage.evaluate((el) => {

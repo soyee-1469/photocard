@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, ScrollView, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useApi } from '../services/api/ApiProvider';
 import { type OwnedCardView } from '../services/api/types';
 import { colors, rarities } from '../theme/tokens';
@@ -10,6 +11,7 @@ import { EmptyState } from '../components/EmptyState';
 
 export function AlbumScreen() {
   const api = useApi();
+  const router = useRouter();
   const [ownedCards, setOwnedCards] = useState<OwnedCardView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,11 @@ export function AlbumScreen() {
   if (ownedCards.length === 0) {
     return (
       <View style={styles.container}>
-        <EmptyState message="아직 보유한 카드가 없습니다." />
+        <EmptyState
+          message="아직 보유한 카드가 없습니다."
+          actionText="상품 보러가기"
+          onAction={() => router.push('/products')}
+        />
       </View>
     );
   }

@@ -26,8 +26,9 @@ export default function TabsLayout() {
           title: '홈',
           tabBarLabel: '홈',
           tabBarIcon: ({ color, focused }) => (
-            <Text testID="tab-home" style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
+            <Text style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
           ),
+          tabBarAccessibilityLabel: '홈 탭',
         }}
       />
       <Tabs.Screen
@@ -36,8 +37,10 @@ export default function TabsLayout() {
           title: '상품',
           tabBarLabel: '상품',
           tabBarIcon: ({ color, focused }) => (
-            <Text testID="tab-products" style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
+            <Text style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
           ),
+          tabBarTestID: 'tab-products',
+          tabBarAccessibilityLabel: '상품 탭',
         }}
       />
       <Tabs.Screen
@@ -46,8 +49,10 @@ export default function TabsLayout() {
           title: '내 앨범',
           tabBarLabel: '내 앨범',
           tabBarIcon: ({ color, focused }) => (
-            <Text testID="tab-album" style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
+            <Text style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
           ),
+          tabBarTestID: 'tab-album',
+          tabBarAccessibilityLabel: '내 앨범 탭',
         }}
       />
     </Tabs>
