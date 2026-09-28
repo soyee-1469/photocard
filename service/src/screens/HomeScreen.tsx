@@ -57,7 +57,8 @@ export function HomeScreen() {
           if (banner.action.type === 'product') {
             router.push(`/products/${banner.action.productId}` as any);
           } else if (banner.action.type === 'guide') {
-            router.push('/guide' as any);
+            // PR-C에서 구현 예정
+            alert('이용 안내는 준비 중입니다.');
           }
         }} />
       </View>

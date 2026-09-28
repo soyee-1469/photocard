@@ -1,73 +1,73 @@
 #!/bin/bash
 set -e
 
-PR_NUMBER=${1:-"latest"}
-BASE_URL="/photocard/service"
+if [ -z "$1" ]; then
+  echo "사용법: $0 <PR 번호>"
+  echo "예: $0 7"
+  exit 1
+fi
 
-echo "GitHub Pages 배포 준비..."
-echo "PR 번호: $PR_NUMBER"
+PR_NUM="$1"
+TARGET_DIR="service/pr-${PR_NUM}"
+BASE_URL="/photocard/service/pr-${PR_NUM}"
+
+echo "PR-${PR_NUM} 배포 준비 중..."
+echo "baseUrl: ${BASE_URL}"
+
+# app.json 백업 및 baseUrl 주입
+cp app.json app.json.backup
+node -e "
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+config.expo.experiments = config.expo.experiments || {};
+config.expo.experiments.baseUrl = '${BASE_URL}';
+fs.writeFileSync('app.json', JSON.stringify(config, null, 2));
+"
 
 # 웹 빌드
-echo "웹 export 실행 중..."
+echo "웹 빌드 실행 중..."
 npm run export
 
-# gh-pages 브랜치 확인 또는 생성
-if ! git show-ref --verify --quiet refs/heads/gh-pages; then
-  echo "gh-pages 브랜치 생성 중..."
-  git checkout --orphan gh-pages
-  git rm -rf .
-  echo "# GitHub Pages for photocard service" > README.md
-  git add README.md
-  git commit -m "Initial gh-pages branch"
-  git push origin gh-pages
-  git checkout cursor/photocard-service-a-eaa7
+# app.json 복원
+mv app.json.backup app.json
+
+# 404.html을 dist에 복사
+if [ -f "public/404.html" ]; then
+  # 404.html의 baseUrl도 치환
+  sed "s|const baseUrl = '/photocard/service';|const baseUrl = '${BASE_URL}';|" public/404.html > dist/404.html
+  echo "404.html 복사 완료 (baseUrl: ${BASE_URL})"
 fi
 
-# 임시 디렉토리 생성
+# .nojekyll 추가
+touch dist/.nojekyll
+
+# worktree로 gh-pages 브랜치 처리
 TEMP_DIR=$(mktemp -d)
-echo "임시 디렉토리: $TEMP_DIR"
+echo "임시 디렉토리: ${TEMP_DIR}"
 
-# gh-pages 브랜치 체크아웃
-git worktree add "$TEMP_DIR" gh-pages
+git worktree add "${TEMP_DIR}" gh-pages 2>/dev/null || git worktree add -B gh-pages "${TEMP_DIR}" origin/gh-pages
 
-# 배포 디렉토리 생성
-TARGET_DIR="$TEMP_DIR/service"
-if [ "$PR_NUMBER" != "latest" ]; then
-  TARGET_DIR="$TEMP_DIR/service/pr-$PR_NUMBER"
-fi
+# 기존 PR 디렉토리 제거 후 새로 복사
+rm -rf "${TEMP_DIR}/${TARGET_DIR}"
+mkdir -p "${TEMP_DIR}/${TARGET_DIR}"
+cp -r dist/* "${TEMP_DIR}/${TARGET_DIR}/"
 
-mkdir -p "$TARGET_DIR"
+cd "${TEMP_DIR}"
 
-# dist 내용 복사
-echo "빌드 결과 복사 중..."
-cp -r dist/* "$TARGET_DIR/"
-
-# 404.html 생성 (SPA 새로고침 대응)
-cp "$TARGET_DIR/index.html" "$TARGET_DIR/404.html"
-
-# .nojekyll 추가 (gh-pages 루트에)
-touch "$TEMP_DIR/.nojekyll"
-
-# 커밋 및 푸시
-cd "$TEMP_DIR"
-git add .
+git add -A
 if git diff --cached --quiet; then
   echo "변경 사항 없음"
 else
-  git commit -m "Deploy service PR-$PR_NUMBER"
+  git commit -m "Deploy service PR-${PR_NUM}"
   git push origin gh-pages
-  echo "✅ 배포 완료!"
-  if [ "$PR_NUMBER" != "latest" ]; then
-    echo "URL: https://soyee-1469.github.io/photocard/service/pr-$PR_NUMBER/"
-  else
-    echo "URL: https://soyee-1469.github.io/photocard/service/"
-  fi
+  echo "✅ GitHub Pages 배포 완료: ${TARGET_DIR}"
 fi
 
-# 정리
 cd -
-git worktree remove "$TEMP_DIR"
-rm -rf "$TEMP_DIR"
+git worktree remove "${TEMP_DIR}" --force 2>/dev/null || rm -rf "${TEMP_DIR}"
 
+echo ""
 echo "참고: GitHub Pages 소스를 'gh-pages' 브랜치로 설정해야 합니다."
 echo "저장소 Settings > Pages > Source > Branch: gh-pages"
+echo ""
+echo "배포 URL: https://soyee-1469.github.io${BASE_URL}/"

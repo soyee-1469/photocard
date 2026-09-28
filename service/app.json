@@ -15,7 +15,7 @@
       "backgroundColor": "#14100E"
     },
     "experiments": {
-      "baseUrl": "/photocard/service"
+      "baseUrl": "/photocard/service/pr-7"
     },
     "plugins": [
       "expo-router"

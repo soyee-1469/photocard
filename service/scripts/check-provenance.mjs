@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 const PROVENANCE_PATH = resolve(process.cwd(), 'PROVENANCE.md');
 const ROOT_PATH = resolve(process.cwd(), '..');
+const SERVICE_PATH = process.cwd();
 
 const files = [
   { service: 'src/theme/tokens.ts', root: 'theme.ts', hash: '6af9703d2150b06f8af918f6deda6a3c0eb5c80f75e4fa38c6f59424efec7715' },
@@ -15,28 +16,49 @@ const files = [
 
 let driftDetected = false;
 
+console.log('복사본 드리프트 검사 중...\n');
+
 for (const file of files) {
   const rootPath = resolve(ROOT_PATH, file.root);
+  const servicePath = resolve(SERVICE_PATH, file.service);
+  
+  // 원본 파일 체크
   try {
-    const content = readFileSync(rootPath);
-    const currentHash = createHash('sha256').update(content).digest('hex');
+    const rootContent = readFileSync(rootPath);
+    const rootHash = createHash('sha256').update(rootContent).digest('hex');
     
-    if (currentHash !== file.hash) {
-      console.warn(`⚠️  드리프트 감지: ${file.root}`);
-      console.warn(`   기록: ${file.hash.substring(0, 12)}...`);
-      console.warn(`   현재: ${currentHash.substring(0, 12)}...`);
+    if (rootHash !== file.hash) {
+      console.error(`❌ 원본 드리프트: ${file.root}`);
+      console.error(`   기록: ${file.hash.substring(0, 12)}...`);
+      console.error(`   현재: ${rootHash.substring(0, 12)}...`);
       driftDetected = true;
     }
   } catch (err) {
-    console.error(`❌ 오류: ${file.root} 파일을 읽을 수 없습니다.`);
+    console.error(`❌ 오류: ${file.root} 원본 파일을 읽을 수 없습니다.`);
+    driftDetected = true;
+  }
+  
+  // 복사본 파일 체크
+  try {
+    const serviceContent = readFileSync(servicePath);
+    const serviceHash = createHash('sha256').update(serviceContent).digest('hex');
+    
+    if (serviceHash !== file.hash) {
+      console.error(`❌ 복사본 드리프트: ${file.service}`);
+      console.error(`   기록: ${file.hash.substring(0, 12)}...`);
+      console.error(`   현재: ${serviceHash.substring(0, 12)}...`);
+      driftDetected = true;
+    }
+  } catch (err) {
+    console.error(`❌ 오류: ${file.service} 복사본 파일을 읽을 수 없습니다.`);
     driftDetected = true;
   }
 }
 
 if (!driftDetected) {
-  console.log('✅ 모든 복사본이 원본과 일치합니다.');
+  console.log('✅ 모든 원본과 복사본이 기록된 해시와 일치합니다.');
   process.exit(0);
 } else {
-  console.log('\n⚠️  일부 원본 파일이 변경되었습니다. PROVENANCE.md를 검토하세요.');
+  console.log('\n⚠️  드리프트가 감지되었습니다. PROVENANCE.md를 검토하세요.');
   process.exit(1);
 }

@@ -34,16 +34,9 @@ async function checkCommonAssertions(page: Page, testName: string) {
 }
 
 async function clickTab(page: Page, tabName: string) {
-  // 탭 바에서 특정 탭 텍스트를 가진 버튼 찾기
-  const tabs = await page.locator('[role="tablist"] button, [role="navigation"] button').all();
-  for (const tab of tabs) {
-    const text = await tab.textContent();
-    if (text && text.includes(tabName)) {
-      await tab.click();
-      return;
-    }
-  }
-  throw new Error(`탭 "${tabName}"을 찾을 수 없습니다`);
+  // React Native Web은 복잡한 DOM 구조를 생성하므로 텍스트만으로 찾기
+  await page.locator(`text="${tabName}"`).last().click({ timeout: 5000 });
+  await page.waitForTimeout(1000);
 }
 
 test.describe('포토카드 서비스 PR-A', () => {
