@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const ARTIFACTS_DIR = '/opt/cursor/artifacts/service-a';
+const consoleErrors: string[] = [];
 
 // 아티팩트 디렉토리 생성
 if (!fs.existsSync(ARTIFACTS_DIR)) {
@@ -16,7 +17,6 @@ async function takeScreenshot(page: Page, name: string) {
 }
 
 async function checkCommonAssertions(page: Page, testName: string) {
-  // 콘솔 에러 확인은 일단 스킵 (false positive 많음)
   await page.waitForTimeout(500);
 
   // 가로 넘침 확인
@@ -33,16 +33,32 @@ async function checkCommonAssertions(page: Page, testName: string) {
   return { scrollWidth };
 }
 
-async function clickTab(page: Page, tabName: string) {
-  // React Native Web은 복잡한 DOM 구조를 생성하므로 텍스트만으로 찾기
-  await page.locator(`text="${tabName}"`).last().click({ timeout: 5000 });
+async function clickTab(page: Page, testId: string) {
+  await page.getByTestId(testId).click({ timeout: 5000 });
   await page.waitForTimeout(1000);
 }
 
 test.describe('포토카드 서비스 PR-A', () => {
   test.beforeEach(async ({ page }) => {
+    // 콘솔 에러 수집
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+    
     await page.goto('/');
     await page.waitForLoadState('networkidle');
+  });
+
+  test.afterAll(async () => {
+    // 콘솔 에러 확인 (테스트 종료 후)
+    if (consoleErrors.length > 0) {
+      console.log(`⚠️ 콘솔 에러 ${consoleErrors.length}건 발견:`);
+      consoleErrors.forEach((err) => console.log(`  - ${err}`));
+    } else {
+      console.log('✅ 콘솔 에러 없음');
+    }
   });
 
   test('01. 홈 화면 로딩 및 렌더링', async ({ page }) => {
@@ -57,15 +73,15 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('02. 하단 탭 네비게이션', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await checkCommonAssertions(page, '상품 탭');
     
-    await clickTab(page, '내 앨범');
+    await clickTab(page, 'tab-album');
     await page.waitForTimeout(500);
     await checkCommonAssertions(page, '앨범 탭');
     
-    await clickTab(page, '홈');
+    await clickTab(page, 'tab-home');
     await page.waitForSelector('text=추천 상품', { timeout: 5000 });
     await checkCommonAssertions(page, '홈 복귀');
   });
@@ -74,18 +90,18 @@ test.describe('포토카드 서비스 PR-A', () => {
     await page.waitForSelector('text=추천 상품', { timeout: 10000 });
     
     const productCards = await page.locator('text=추천 상품').locator('..').locator('..').locator('button, [role="button"]').all();
-    if (productCards.length > 0) {
-      await productCards[0].click();
-      await page.waitForTimeout(1000);
-      await takeScreenshot(page, '03-product-detail-from-home');
-      await checkCommonAssertions(page, '상품 상세');
-    } else {
-      console.log('⚠️ 상품 카드를 찾을 수 없어 테스트 스킵');
-    }
+    expect(productCards.length, '상품 카드가 표시됨').toBeGreaterThan(0);
+    
+    await productCards[0].click();
+    await page.waitForTimeout(1000);
+    await takeScreenshot(page, '03-product-detail-from-home');
+    
+    await expect(page.locator('text=등급별 확률')).toBeVisible();
+    await checkCommonAssertions(page, '상품 상세');
   });
 
   test('04. 상품 목록 - 기본', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
     
@@ -94,7 +110,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('05. 상품 목록 - 아티스트 필터', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     const artistChip = page.locator('text=ARTIST A').first();
@@ -107,7 +123,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('06. 상품 목록 - 앨범 필터', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     const artistChip = page.locator('text=ARTIST A').first();
@@ -126,7 +142,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('07. 상품 목록 - 검색 (결과 있음)', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     await page.locator('input[placeholder*="검색"]').fill('ARTIST A');
@@ -138,7 +154,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('08. 상품 목록 - 검색 (결과 없음)', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     await page.locator('input[placeholder*="검색"]').fill('존재하지않는상품xyz');
@@ -151,7 +167,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('09. 상품 상세 - 확률표 합계 100%', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
     
@@ -173,7 +189,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('10. 상품 상세 - 구매 버튼', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     await page.waitForTimeout(1000);
     
@@ -199,7 +215,7 @@ test.describe('포토카드 서비스 PR-A', () => {
   });
 
   test('11. 딥링크 복원 (새로고침)', async ({ page }) => {
-    await clickTab(page, '상품');
+    await clickTab(page, 'tab-products');
     await page.waitForSelector('input[placeholder*="검색"]', { timeout: 5000 });
     
     const currentUrl = page.url();

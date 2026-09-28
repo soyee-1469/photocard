@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Text } from 'react-native';
 import { colors } from '../../src/theme/tokens';
+import { HeaderMenu } from '../../src/components/HeaderMenu';
 
 export default function TabsLayout() {
   return (
@@ -16,6 +17,7 @@ export default function TabsLayout() {
           backgroundColor: colors.ink,
         },
         headerTintColor: colors.paper,
+        headerRight: () => <HeaderMenu />,
       }}
     >
       <Tabs.Screen
@@ -24,7 +26,7 @@ export default function TabsLayout() {
           title: '홈',
           tabBarLabel: '홈',
           tabBarIcon: ({ color, focused }) => (
-            <Text style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
+            <Text testID="tab-home" style={{ fontSize: 20, color }}>{focused ? '🏠' : '🏘️'}</Text>
           ),
         }}
       />
@@ -34,7 +36,7 @@ export default function TabsLayout() {
           title: '상품',
           tabBarLabel: '상품',
           tabBarIcon: ({ color, focused }) => (
-            <Text style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
+            <Text testID="tab-products" style={{ fontSize: 20, color }}>{focused ? '📦' : '📫'}</Text>
           ),
         }}
       />
@@ -44,7 +46,7 @@ export default function TabsLayout() {
           title: '내 앨범',
           tabBarLabel: '내 앨범',
           tabBarIcon: ({ color, focused }) => (
-            <Text style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
+            <Text testID="tab-album" style={{ fontSize: 20, color }}>{focused ? '🎴' : '🃏'}</Text>
           ),
         }}
       />

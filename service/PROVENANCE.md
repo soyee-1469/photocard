@@ -11,12 +11,12 @@
 
 ### 테마 토큰 및 컴포넌트 (main 브랜치에서)
 
-| 대상 경로 | 원본 경로 | 커밋 SHA | 파일 해시 (SHA-256) |
-|---|---|---|---|
-| `service/src/theme/tokens.ts` | `theme.ts` | `7ff7a66` | `6af9703d2150b06f8af918f6deda6a3c0eb5c80f75e4fa38c6f59424efec7715` |
-| `service/src/vendor/PhotoCard.tsx` | `components/PhotoCard.tsx` | `7ff7a66` | `b848d74df7d84532d2f99e39ea0910a2802716e9e841f455c11e2f9cacbd34c4` |
-| `service/src/vendor/EmberGlow.tsx` | `components/EmberGlow.tsx` | `7ff7a66` | `8b6bb5c5c9d31c88e1fab6c4f339fc032e2c16fab9af07e7effb317bb08ac0ee` |
-| `service/src/vendor/SparkField.tsx` | `components/SparkField.tsx` | `7ff7a66` | `4bcc1559e337e3b68d508e58801b080c1659d667a7122cad9557211bbf875085` |
+| 대상 경로 | 원본 경로 | 커밋 SHA | 파일 해시 (SHA-256) | 비고 |
+|---|---|---|---|---|
+| `service/src/theme/tokens.ts` | `theme.ts` | `7ff7a66` | `6af9703d2150b06f8af918f6deda6a3c0eb5c80f75e4fa38c6f59424efec7715` | 원본과 동일 |
+| `service/src/vendor/PhotoCard.tsx` | `components/PhotoCard.tsx` | `7ff7a66` | `b848d74df7d84532d2f99e39ea0910a2802716e9e841f455c11e2f9cacbd34c4` | 원본과 동일 |
+| `service/src/vendor/EmberGlow.tsx` | `components/EmberGlow.tsx` | `7ff7a66` | `8b6bb5c5c9d31c88e1fab6c4f339fc032e2c16fab9af07e7effb317bb08ac0ee` | 원본과 동일 |
+| `service/src/vendor/SparkField.tsx` | `components/SparkField.tsx` | `7ff7a66` | `4bcc1559e337e3b68d508e58801b080c1659d667a7122cad9557211bbf875085` | 원본과 동일 |
 
 ### 팩 및 이펙트 이미지 (PR #1 브랜치 `cursor/photocard-pack-animation-ab1a`에서)
 

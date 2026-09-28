@@ -61,7 +61,7 @@ export const products: Product[] = [
     saleStatus: 'onSale',
     saleStartAt: '2026-07-20T00:00:00Z',
     cardDefIds: ['prod-04-card-1', 'prod-04-card-2', 'prod-04-card-3', 'prod-04-card-4', 'prod-04-card-5', 'prod-04-card-6', 'prod-04-card-7', 'prod-04-card-8'],
-    rarityRates: { common: 0.6, rare: 0.3, epic: 0.1, legend: 0.0 },
+    rarityRates: { common: 0.625, rare: 0.375, epic: 0.0, legend: 0.0 },
     tags: ['popular'],
     popularity: 88,
   },

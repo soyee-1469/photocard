@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     paddingHorizontal: 16,
+    paddingRight: 24,
     gap: 8,
     paddingVertical: 4,
   },

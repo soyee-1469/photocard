@@ -63,12 +63,25 @@ const INITIAL_OWNED_CARDS: OwnedCard[] = [
 
 export class MockPhotocardApi implements PhotocardApi {
   private storage: StorageAdapter;
+  private failureInjection: boolean = false;
 
   constructor(storage: StorageAdapter) {
     this.storage = storage;
+    // URL 쿼리 파라미터로 실패 주입 활성화 (?fail=1)
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      this.failureInjection = params.get('fail') === '1';
+    }
+  }
+
+  setFailureInjection(enabled: boolean) {
+    this.failureInjection = enabled;
   }
 
   private async loadDb(): Promise<MockDb> {
+    if (this.failureInjection) {
+      throw new ApiError('SERVER', '의도적인 오류 (테스트 모드)', false);
+    }
     return await loadJson<MockDb>(this.storage, DB_KEY, {
       wallet: { balanceTott: INITIAL_BALANCE, currency: 'TOTT', isTest: true },
       purchases: [],
