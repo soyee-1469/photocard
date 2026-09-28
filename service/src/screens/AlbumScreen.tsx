@@ -97,38 +97,50 @@ export function AlbumScreen() {
       </View>
 
       <ScrollView style={styles.scroll}>
-        {albumsWithCards.map((album) => {
-          const albumCards = getAlbumOwnedCards(album.id);
-          const uniqueCards = Array.from(
-            new Map(albumCards.map((c) => [c.cardDef.id, c.cardDef])).values()
+        {filteredArtists.map((artist) => {
+          const artistAlbumsWithCards = filteredAlbums.filter(
+            (album) => album.artistId === artist.id && getAlbumOwnedCards(album.id).length > 0
           );
+          if (artistAlbumsWithCards.length === 0) return null;
 
           return (
-            <View key={album.id} style={styles.albumSection}>
-              <View style={styles.albumHeader}>
-                <Text style={styles.albumTitle}>{album.title}</Text>
-                <Text style={styles.albumCount}>{albumCards.length}장</Text>
+            <View key={artist.id}>
+              <View style={styles.artistHeader}>
+                <Text style={styles.artistName}>{artist.name}</Text>
               </View>
-              <View style={styles.cardGrid}>
-                {uniqueCards.map((card) => {
-                  const count = getCardCount(card.id);
-                  return (
-                    <View key={card.id} style={styles.cardItem}>
-                      <View style={styles.cardImageContainer}>
-                        <Image source={card.front} style={styles.cardImage} resizeMode="cover" />
-                        <View style={styles.cardBadge}>
-                          <Text style={styles.cardBadgeText}>{rarities[card.rarity].badge}</Text>
-                        </View>
-                        {count > 1 && (
-                          <View style={styles.cardCount}>
-                            <Text style={styles.cardCountText}>×{count}</Text>
-                          </View>
-                        )}
-                      </View>
+              {artistAlbumsWithCards.map((album) => {
+                const albumCards = getAlbumOwnedCards(album.id);
+                const uniqueCards = Array.from(
+                  new Map(albumCards.map((c) => [c.cardDef.id, c.cardDef])).values()
+                );
+
+                return (
+                  <View key={album.id} style={styles.albumSection}>
+                    <View style={styles.albumHeader}>
+                      <Text style={styles.albumTitle}>{album.title}</Text>
+                      <Text style={styles.albumCount}>{albumCards.length}장</Text>
                     </View>
-                  );
-                })}
-              </View>
+                    <View style={styles.cardGrid}>
+                      {uniqueCards.map((card) => {
+                        const count = getCardCount(card.id);
+                        return (
+                          <View key={card.id} style={styles.cardItem}>
+                            <View style={styles.cardImageContainer}>
+                              <Image source={card.front} style={styles.cardImage} resizeMode="cover" />
+                              <View style={styles.cardBadge}>
+                                <Text style={styles.cardBadgeText}>{rarities[card.rarity].badge}</Text>
+                              </View>
+                              <View style={styles.cardCount}>
+                                <Text style={styles.cardCountText}>×{count}</Text>
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           );
         })}
@@ -180,6 +192,18 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+  },
+  artistHeader: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: 'rgba(201, 160, 106, 0.1)',
+  },
+  artistName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.gold,
+    letterSpacing: 0.5,
   },
   albumSection: {
     padding: 16,

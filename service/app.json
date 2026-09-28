@@ -12,6 +12,7 @@
     },
     "web": {
       "bundler": "metro",
+      "output": "static",
       "backgroundColor": "#14100E"
     },
     "experiments": {

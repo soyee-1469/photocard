@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useApi } from '../services/api/ApiProvider';
 import { type HomeFeed } from '../services/api/types';
@@ -130,9 +130,9 @@ export function HomeScreen() {
           <Text style={styles.sectionTitle}>내 카드 미리보기</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
             {feed.myRecentCards.map((card) => (
-              <TouchableOpacity key={card.instanceId} style={styles.cardPreview}>
-                <Text style={styles.cardPreviewText}>{card.cardDef.title}</Text>
-              </TouchableOpacity>
+              <View key={card.instanceId} style={styles.cardPreview}>
+                <Image source={card.cardDef.front} style={styles.cardPreviewImage} resizeMode="cover" />
+              </View>
             ))}
           </ScrollView>
         </View>
@@ -199,13 +199,11 @@ const styles = StyleSheet.create({
   cardPreview: {
     width: 100,
     height: 140,
-    backgroundColor: 'rgba(246, 239, 230, 0.1)',
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
-  cardPreviewText: {
-    fontSize: 12,
-    color: colors.mist,
+  cardPreviewImage: {
+    width: '100%',
+    height: '100%',
   },
 });
