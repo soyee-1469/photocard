@@ -30,33 +30,34 @@ const DB_KEY = 'tomatok.photocard.mockdb.v1';
 const INITIAL_BALANCE = 52000;
 
 // 테스트용 초기 보유 카드 (A6 "내 카드 미리보기" 확인용)
+// Issue #8: 보유 카드 있는 경우를 기본으로 시드
 const INITIAL_OWNED_CARDS: OwnedCard[] = [
   {
     instanceId: 'owned-001',
     cardDefId: 'prod-01-card-1',
     purchaseId: 'test-purchase-001',
-    acquiredAt: new Date(Date.now() - 86400000 * 3).toISOString(), // 3일 전
+    acquiredAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     revealedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
   },
   {
     instanceId: 'owned-002',
     cardDefId: 'prod-01-card-5',
     purchaseId: 'test-purchase-001',
-    acquiredAt: new Date(Date.now() - 86400000 * 2).toISOString(), // 2일 전
+    acquiredAt: new Date(Date.now() - 86400000 * 2).toISOString(),
     revealedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
   },
   {
     instanceId: 'owned-003',
     cardDefId: 'prod-02-card-3',
     purchaseId: 'test-purchase-002',
-    acquiredAt: new Date(Date.now() - 86400000).toISOString(), // 1일 전
+    acquiredAt: new Date(Date.now() - 86400000).toISOString(),
     revealedAt: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     instanceId: 'owned-004',
     cardDefId: 'prod-03-card-7',
     purchaseId: 'test-purchase-003',
-    acquiredAt: new Date().toISOString(), // 오늘
+    acquiredAt: new Date().toISOString(),
     revealedAt: new Date().toISOString(),
   },
 ];
