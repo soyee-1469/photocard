@@ -73,12 +73,14 @@ export function ProductDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>구성 카드 ({product.cards.length}종)</Text>
           <View style={styles.cardGrid}>
-            {product.cards.map((card, index) => (
+            {product.cards.map((card) => (
               <View key={card.id} style={styles.cardTile}>
-                <View style={styles.cardTileImage}>
-                  <Text style={styles.cardTileNumber}>{card.number}</Text>
+                <View style={styles.cardTileImageContainer}>
+                  <Image source={card.front} style={styles.cardTileImage} resizeMode="cover" />
+                  <View style={styles.cardTileBadge}>
+                    <Text style={styles.cardTileBadgeText}>{rarities[card.rarity].badge}</Text>
+                  </View>
                 </View>
-                <Text style={styles.cardTileRarity}>{rarities[card.rarity].badge}</Text>
               </View>
             ))}
           </View>
@@ -234,23 +236,30 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cardTile: {
-    width: 60,
-    alignItems: 'center',
+    width: 70,
+    marginBottom: 8,
+  },
+  cardTileImageContainer: {
+    width: 70,
+    height: 95,
+    borderRadius: 6,
+    overflow: 'hidden',
+    position: 'relative',
   },
   cardTileImage: {
-    width: 60,
-    height: 80,
-    backgroundColor: 'rgba(246, 239, 230, 0.1)',
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
+    width: '100%',
+    height: '100%',
   },
-  cardTileNumber: {
-    fontSize: 12,
-    color: colors.mist,
+  cardTileBadge: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    backgroundColor: 'rgba(12, 9, 8, 0.8)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
-  cardTileRarity: {
+  cardTileBadgeText: {
     fontSize: 10,
     fontWeight: '700',
     color: colors.gold,
