@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Image, PanResponder, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { Animated, Easing, Image, PanResponder, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { CARD_RATIO, frames, rarities, type FrameId, type RarityId } from '../theme';
@@ -32,6 +32,7 @@ export function PhotoCard({
   const tiltX = useRef(new Animated.Value(0)).current;
   const tiltY = useRef(new Animated.Value(0)).current;
   const photoScale = useRef(new Animated.Value(1)).current;
+  const holoSweep = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     photoScale.setValue(0.92);
@@ -42,6 +43,20 @@ export function PhotoCard({
       useNativeDriver: true,
     }).start();
   }, [imageSource, imageUri, photoScale]);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(holoSweep, {
+        toValue: 1,
+        duration: 2600,
+        easing: Easing.inOut(Easing.quad),
+        useNativeDriver: false,
+      }),
+    );
+    holoSweep.setValue(0);
+    loop.start();
+    return () => loop.stop();
+  }, [holoSweep, rarity]);
 
   const interactiveRef = useRef(interactive);
   interactiveRef.current = interactive;
@@ -59,6 +74,15 @@ export function PhotoCard({
       },
     }),
   ).current;
+
+  const holoX = holoSweep.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-width * 0.85, width * 0.95],
+  });
+  const holoOp = tiltY.interpolate({
+    inputRange: [-12, 0, 12],
+    outputRange: [0.42, 0.28, 0.5],
+  });
 
   return (
     <Animated.View
@@ -102,6 +126,32 @@ export function PhotoCard({
             ) : (
               <Image source={source} style={styles.photo} resizeMode="cover" />
             )}
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.holoLayer, { opacity: holoOp }]}
+            >
+              <LinearGradient
+                colors={[...rarityTone.holo]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.fill}
+              />
+              <Animated.View
+                style={[
+                  styles.holoBand,
+                  {
+                    transform: [{ translateX: holoX }, { rotate: '22deg' }],
+                  },
+                ]}
+              >
+                <LinearGradient
+                  colors={['transparent', 'rgba(255,255,255,0.55)', 'transparent']}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={styles.fill}
+                />
+              </Animated.View>
+            </Animated.View>
           </Animated.View>
         ) : (
           <View style={styles.placeholder}>
@@ -155,6 +205,19 @@ const styles = StyleSheet.create({
   photo: {
     width: '100%',
     height: '100%',
+  },
+  holoLayer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+  },
+  holoBand: {
+    position: 'absolute',
+    top: -48,
+    bottom: -48,
+    width: 72,
   },
   placeholder: {
     flex: 1,

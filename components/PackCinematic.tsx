@@ -6,32 +6,65 @@ import { fx } from '../assets/packFx';
 import { CARD_RATIO, type RarityId } from '../theme';
 
 const PACK_W = 248;
-const CLOSED_H = Math.round((PACK_W * 525) / 340);
-const BODY_H = Math.round((PACK_W * 390) / 340);
-const TOP_H = Math.round((PACK_W * 140) / 340);
-const CLOSED_BOTTOM_PAD = Math.round((CLOSED_H * 17) / 525);
-const BODY_BOTTOM_PAD = Math.round((BODY_H * 9) / 390);
-const BODY_TOP_PAD = Math.round((BODY_H * 11) / 390);
-const TOP_BOTTOM_PAD = Math.round((TOP_H * 12) / 140);
+const CLOSED_SRC_W = 501;
+const CLOSED_SRC_H = 1013;
+const BODY_SRC_W = 546;
+const BODY_SRC_H = 1013;
+const TOP_SRC_W = 698;
+const TOP_SRC_H = 116;
+const CLOSED_H = Math.round((PACK_W * CLOSED_SRC_H) / CLOSED_SRC_W);
+const BODY_H = Math.round((PACK_W * BODY_SRC_H) / BODY_SRC_W);
+const TOP_H = Math.round((PACK_W * TOP_SRC_H) / TOP_SRC_W);
+const CLOSED_BOTTOM_PAD = Math.round((CLOSED_H * 2) / CLOSED_SRC_H);
+const BODY_BOTTOM_PAD = Math.round((BODY_H * 2) / BODY_SRC_H);
+const BODY_TOP_PAD = Math.round((BODY_H * 2) / BODY_SRC_H);
+const TOP_BOTTOM_PAD = Math.round((TOP_H * 2) / TOP_SRC_H);
 const STAGE_W = 340;
 const STAGE_H = CLOSED_H + 48;
 const PACK_LEFT = (STAGE_W - PACK_W) / 2;
 const PACK_TOP = Math.round((STAGE_H - CLOSED_H) / 2);
 const BODY_TOP = PACK_TOP + CLOSED_H - CLOSED_BOTTOM_PAD - BODY_H + BODY_BOTTOM_PAD;
-const TOP_TOP = BODY_TOP + BODY_TOP_PAD - TOP_H + TOP_BOTTOM_PAD;
+const TOP_OVERLAP = Math.round(TOP_H * 0.5);
+const TOP_TOP = BODY_TOP + TOP_OVERLAP - TOP_H + TOP_BOTTOM_PAD;
 const CARD_W = 240;
 const CARD_H = CARD_W / CARD_RATIO;
 const SLEEVE_W = 188;
 const SLEEVE_H = SLEEVE_W / CARD_RATIO;
+const PACK_SIDE_INSET = Math.round((PACK_W * 22) / BODY_SRC_W);
+const MOUTH_TOP = BODY_TOP + BODY_TOP_PAD;
+const MOUTH_H = Math.round((BODY_H * 90) / BODY_SRC_H);
+const PEEL_SRC_W = 708;
+const PEEL_SRC_H = 385;
+const PEEL_W = Math.round((PEEL_SRC_W * PACK_W) / TOP_SRC_W);
+const PEEL_H = Math.round((PEEL_SRC_H * PACK_W) / TOP_SRC_W);
+const PEEL_LEFT = PACK_LEFT + PACK_W - PEEL_W;
+const PEEL_PAD_TOP = Math.round((PEEL_H * 19) / PEEL_SRC_H);
+const PEEL_TOP = TOP_TOP - PEEL_PAD_TOP - 10;
 
-const TEAR = 450;
-const LAUNCH = 1750;
-const PEAK = 2120;
-const RISE = 2220;
-const LAND = 2720;
-const FLIP = 3080;
-export const CINEMATIC_MS = 4200;
+const TEAR = 640;
+const T2 = TEAR;
+const T3 = T2 + 2000;
+const T4 = T3 + 110;
+const DROP = T4 + 80;
+const LAUNCH = DROP + 40;
+const PEAK = LAUNCH + 370;
+const RISE = LAUNCH + 470;
+const LAND = LAUNCH + 970;
+const FLIP = LAUNCH + 1330;
+const POP = FLIP + 930;
+export const CINEMATIC_MS = LAUNCH + 3100;
 const END = CINEMATIC_MS;
+
+const SPARKS = Array.from({ length: 11 }, (_, i) => {
+  const ang = (Math.PI * 2 * i) / 11 + 0.28;
+  const dist = 88 + (i % 4) * 20;
+  return {
+    x: Math.cos(ang) * dist,
+    y: Math.sin(ang) * dist,
+    size: 28 + (i % 3) * 8,
+    delay: i * 22,
+  };
+});
 
 type PackCinematicProps = {
   clock: Animated.Value;
@@ -43,8 +76,12 @@ type PackCinematicProps = {
 export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCinematicProps) {
 
   const shake = clock.interpolate({
-    inputRange: [0, 90, 200, 320, 430, END],
-    outputRange: ['0deg', '0.7deg', '-0.6deg', '0.35deg', '0deg', '0deg'],
+    inputRange: [0, 140, 250, 360, 470, 560, TEAR, END],
+    outputRange: ['0deg', '0deg', '6.5deg', '-6deg', '3.4deg', '-1.2deg', '0deg', '0deg'],
+  });
+  const shakeX = clock.interpolate({
+    inputRange: [0, 140, 250, 360, 470, 560, TEAR, END],
+    outputRange: [0, 0, 8, -8, 4, -1.5, 0, 0],
   });
 
   const closedOpacity = clock.interpolate({
@@ -56,13 +93,29 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
     outputRange: [0, 0, 1, 1],
   });
 
-  const topOpacity = clock.interpolate({
-    inputRange: [0, TEAR - 1, TEAR, LAUNCH, PEAK, END],
+  const top2Op = clock.interpolate({
+    inputRange: [0, TEAR - 1, TEAR, T3, T3 + 70, END],
     outputRange: [0, 0, 1, 1, 0, 0],
   });
-  const topOpen = clock.interpolate({
-    inputRange: [0, TEAR, TEAR + 520, END],
-    outputRange: ['0deg', '0deg', '180deg', '180deg'],
+  const top3Op = clock.interpolate({
+    inputRange: [0, T3 - 60, T3, T4, T4 + 60, END],
+    outputRange: [0, 0, 1, 1, 0, 0],
+  });
+  const top4Op = clock.interpolate({
+    inputRange: [0, T4 - 60, T4, DROP + 420, DROP + 720, END],
+    outputRange: [0, 0, 1, 1, 0, 0],
+  });
+  const top4Y = clock.interpolate({
+    inputRange: [0, DROP, DROP + 90, DROP + 240, DROP + 430, DROP + 660, END],
+    outputRange: [0, 0, 14, 72, 200, 370, 430],
+  });
+  const top4X = clock.interpolate({
+    inputRange: [0, DROP, DROP + 300, DROP + 660, END],
+    outputRange: [0, 0, 12, 30, 38],
+  });
+  const top4Rot = clock.interpolate({
+    inputRange: [0, DROP, DROP + 180, DROP + 560, END],
+    outputRange: ['-2deg', '-2deg', '12deg', '28deg', '34deg'],
   });
 
   const emberOp = clock.interpolate({
@@ -93,20 +146,74 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
   });
 
   const flipScaleX = clock.interpolate({
-    inputRange: [0, FLIP, FLIP + 170, FLIP + 200, FLIP + 430, END],
-    outputRange: [1, 1, 0.08, 0.08, 1, 1],
+    inputRange: [
+      0,
+      FLIP,
+      FLIP + 100,
+      FLIP + 200,
+      FLIP + 300,
+      FLIP + 400,
+      FLIP + 500,
+      FLIP + 600,
+      FLIP + 700,
+      FLIP + 800,
+      FLIP + 900,
+      FLIP + 930,
+      FLIP + 1100,
+      END,
+    ],
+    outputRange: [1, 1, 0.08, 1, 0.08, 1, 0.08, 1, 0.08, 1, 0.08, 0.08, 1, 1],
   });
   const backOp = clock.interpolate({
-    inputRange: [0, FLIP + 180, FLIP + 200, END],
+    inputRange: [0, FLIP + 910, FLIP + 930, END],
     outputRange: [1, 1, 0, 0],
   });
   const frontOp = clock.interpolate({
-    inputRange: [0, FLIP + 180, FLIP + 200, END],
+    inputRange: [0, FLIP + 910, FLIP + 930, END],
     outputRange: [0, 0, 1, 1],
   });
 
+  const burstOp = clock.interpolate({
+    inputRange: [0, POP - 1, POP, POP + 90, POP + 380, POP + 640, END],
+    outputRange: [0, 0, 0.95, 1, 0.4, 0, 0],
+  });
+  const burstScale = clock.interpolate({
+    inputRange: [0, POP, POP + 160, POP + 520, END],
+    outputRange: [0.55, 0.55, 1.08, 1.22, 1.24],
+  });
+  const ringOp = clock.interpolate({
+    inputRange: [0, POP, POP + 70, POP + 360, POP + 680, END],
+    outputRange: [0, 0, 1, 0.55, 0, 0],
+  });
+  const ringScale = clock.interpolate({
+    inputRange: [0, POP, POP + 120, POP + 520, END],
+    outputRange: [0.62, 0.62, 1.05, 1.32, 1.36],
+  });
+  const sparks = SPARKS.map((spark) => {
+    const start = POP + spark.delay;
+    return {
+      ...spark,
+      op: clock.interpolate({
+        inputRange: [0, start, start + 80, start + 420, END],
+        outputRange: [0, 0, 1, 0, 0],
+      }),
+      x: clock.interpolate({
+        inputRange: [0, start, start + 420, END],
+        outputRange: [0, 0, spark.x, spark.x],
+      }),
+      y: clock.interpolate({
+        inputRange: [0, start, start + 420, END],
+        outputRange: [0, 0, spark.y, spark.y],
+      }),
+      sc: clock.interpolate({
+        inputRange: [0, start, start + 140, start + 420, END],
+        outputRange: [0.4, 0.4, 1, 0.7, 0.7],
+      }),
+    };
+  });
+
   return (
-    <Animated.View style={[styles.stage, { transform: [{ rotate: shake }] }]}>
+    <Animated.View style={[styles.stage, { transform: [{ translateX: shakeX }, { rotate: shake }] }]}>
       <Animated.View style={styles.emberSlot}>
         <EmberGlow strength={emberOp} />
       </Animated.View>
@@ -125,17 +232,27 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
         <Image source={fx.packBodyTorn} style={styles.packFill} resizeMode="contain" />
       </Animated.View>
 
-      <Animated.View
+      <Animated.Image
+        source={fx.packTop2}
+        resizeMode="contain"
+        style={[styles.peel, { opacity: top2Op }]}
+      />
+      <Animated.Image
+        source={fx.packTop3}
+        resizeMode="contain"
+        style={[styles.peel, { opacity: top3Op }]}
+      />
+      <Animated.Image
+        source={fx.packTop4}
+        resizeMode="contain"
         style={[
-          styles.top,
+          styles.peel,
           {
-            opacity: topOpacity,
-            transform: [{ perspective: 900 }, { rotateY: topOpen }],
+            opacity: top4Op,
+            transform: [{ translateX: top4X }, { translateY: top4Y }, { rotate: top4Rot }],
           },
         ]}
-      >
-        <Image source={fx.packTopTorn} style={styles.topImg} resizeMode="contain" />
-      </Animated.View>
+      />
 
       <Animated.View
         style={[
@@ -166,6 +283,47 @@ export function PackCinematic({ clock, imageSource, rarity, revealed }: PackCine
           </Animated.View>
         </Animated.View>
       </Animated.View>
+
+      <View pointerEvents="none" style={styles.popBack}>
+        <Animated.Image
+          source={fx.popBurst}
+          resizeMode="contain"
+          style={[
+            styles.popBurst,
+            { opacity: burstOp, transform: [{ scale: burstScale }] },
+          ]}
+        />
+      </View>
+      <View pointerEvents="none" style={styles.popFront}>
+        <Animated.Image
+          source={fx.popRing}
+          resizeMode="contain"
+          style={[
+            styles.popRing,
+            { opacity: ringOp, transform: [{ scale: ringScale }] },
+          ]}
+        />
+        {sparks.map((spark, i) => (
+          <Animated.Image
+            key={i}
+            source={fx.popSpark}
+            resizeMode="contain"
+            style={[
+              styles.popSpark,
+              {
+                width: spark.size,
+                height: spark.size,
+                opacity: spark.op,
+                transform: [
+                  { translateX: spark.x },
+                  { translateY: spark.y },
+                  { scale: spark.sc },
+                ],
+              },
+            ]}
+          />
+        ))}
+      </View>
     </Animated.View>
   );
 }
@@ -204,7 +362,7 @@ const styles = StyleSheet.create({
   sleeve: {
     position: 'absolute',
     left: PACK_LEFT + (PACK_W - SLEEVE_W) / 2,
-    top: BODY_TOP + 28 - Math.round(BODY_H * 0.2),
+    top: BODY_TOP + 28,
     width: SLEEVE_W,
     height: SLEEVE_H,
     zIndex: 1,
@@ -215,28 +373,21 @@ const styles = StyleSheet.create({
   },
   emberSlot: {
     position: 'absolute',
-    left: PACK_LEFT,
-    top: BODY_TOP,
-    width: PACK_W,
-    height: BODY_H,
-    zIndex: 0,
+    left: PACK_LEFT + PACK_SIDE_INSET,
+    top: MOUTH_TOP,
+    width: PACK_W - PACK_SIDE_INSET * 2,
+    height: MOUTH_H,
+    zIndex: 2,
     overflow: 'hidden',
     pointerEvents: 'none',
   },
-  top: {
+  peel: {
     position: 'absolute',
-    left: PACK_LEFT,
-    top: TOP_TOP,
-    width: PACK_W,
-    height: TOP_H,
-    alignItems: 'center',
-    justifyContent: 'center',
+    left: PEEL_LEFT,
+    top: PEEL_TOP,
+    width: PEEL_W,
+    height: PEEL_H,
     zIndex: 8,
-    transformOrigin: 'right center',
-  },
-  topImg: {
-    width: '100%',
-    height: '100%',
   },
   cardSlot: {
     position: 'absolute',
@@ -261,5 +412,36 @@ const styles = StyleSheet.create({
   faceImg: {
     width: CARD_W,
     height: CARD_H,
+  },
+  popBack: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 18,
+  },
+  popFront: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 22,
+  },
+  popBurst: {
+    width: 420,
+    height: 420,
+  },
+  popRing: {
+    width: 300,
+    height: 300,
+  },
+  popSpark: {
+    position: 'absolute',
   },
 });

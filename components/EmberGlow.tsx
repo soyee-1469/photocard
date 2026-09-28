@@ -55,22 +55,20 @@ export function EmberGlow({ strength }: EmberGlowProps) {
 
   const opA = Animated.multiply(
     strength,
-    pulseA.interpolate({ inputRange: [0, 1], outputRange: [0.62, 1] }),
+    pulseA.interpolate({ inputRange: [0, 1], outputRange: [0.55, 1] }),
   );
   const opB = Animated.multiply(
     strength,
-    pulseB.interpolate({ inputRange: [0, 1], outputRange: [0.28, 0.75] }),
+    pulseB.interpolate({ inputRange: [0, 1], outputRange: [0.22, 0.7] }),
   );
-  const scaleA = pulseA.interpolate({ inputRange: [0, 1], outputRange: [1, 1.06] });
-  const scaleB = pulseB.interpolate({ inputRange: [0, 1], outputRange: [1.02, 1.12] });
 
   return (
     <View pointerEvents="none" style={styles.fill}>
-      <Animated.View style={[styles.layer, { opacity: opB, transform: [{ scale: scaleB }] }]}>
-        <Image source={fx.emberBurst} style={styles.img} resizeMode="contain" />
+      <Animated.View style={[styles.layer, { opacity: opB }]}>
+        <Image source={fx.emberBurst} style={styles.img} resizeMode="cover" />
       </Animated.View>
-      <Animated.View style={[styles.layer, { opacity: opA, transform: [{ scale: scaleA }] }]}>
-        <Image source={fx.emberBurst} style={styles.img} resizeMode="contain" />
+      <Animated.View style={[styles.layer, { opacity: opA }]}>
+        <Image source={fx.emberBurst} style={styles.img} resizeMode="cover" />
       </Animated.View>
     </View>
   );
@@ -79,6 +77,7 @@ export function EmberGlow({ strength }: EmberGlowProps) {
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
+    overflow: 'hidden',
   },
   layer: {
     position: 'absolute',
@@ -86,11 +85,14 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    overflow: 'hidden',
   },
   img: {
-    width: '135%',
-    height: '90%',
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '180%',
   },
 });

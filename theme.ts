@@ -25,6 +25,7 @@ export const rarities = {
     line: '일상 속 한 장',
     glow: '#F3F6FB',
     foil: ['#F4F1EA', '#C9C2B3'] as const,
+    holo: ['transparent', 'rgba(255,255,255,0.22)', 'rgba(210,230,255,0.18)', 'transparent'] as const,
     sparks: 8,
   },
   rare: {
@@ -34,6 +35,7 @@ export const rarities = {
     line: '눈이 머무는 순간',
     glow: '#6EC4FF',
     foil: ['#9ED8FF', '#2F6DFF'] as const,
+    holo: ['transparent', 'rgba(120,220,255,0.34)', 'rgba(255,255,255,0.28)', 'rgba(80,140,255,0.22)', 'transparent'] as const,
     sparks: 14,
   },
   epic: {
@@ -43,6 +45,7 @@ export const rarities = {
     line: '쉽게 손에 넣지 못할 장',
     glow: '#E2A8FF',
     foil: ['#F0C6FF', '#7A2BFF'] as const,
+    holo: ['transparent', 'rgba(255,160,255,0.34)', 'rgba(255,255,255,0.28)', 'rgba(150,90,255,0.24)', 'transparent'] as const,
     sparks: 20,
   },
   legend: {
@@ -52,6 +55,7 @@ export const rarities = {
     line: '소장하고 싶은 한 장',
     glow: '#FFD978',
     foil: ['#FFE7A3', '#C4841A'] as const,
+    holo: ['transparent', 'rgba(255,220,90,0.38)', 'rgba(255,255,255,0.32)', 'rgba(255,80,180,0.18)', 'rgba(80,220,255,0.2)', 'transparent'] as const,
     sparks: 28,
   },
 } as const;
