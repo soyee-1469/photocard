@@ -49,20 +49,22 @@ export function BinderHomeScreen() {
   if (pockets.length === 0) {
     return (
       <View style={styles.container}>
-        <View style={styles.content}>
+        <View style={styles.emptyCoverSection}>
           <AlbumCover />
           <View style={styles.stats}>
             <Text style={styles.statsText}>보유 카드 0장</Text>
           </View>
+        </View>
+        <View style={styles.emptyStateContainer}>
           <EmptyState message="아직 보유한 카드가 없습니다." />
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.goToProductsButton}
-              onPress={() => router.push('/(tabs)/products')}
-            >
-              <Text style={styles.goToProductsText}>상품 보러가기</Text>
-            </TouchableOpacity>
-          </View>
+        </View>
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.goToProductsButton}
+            onPress={() => router.push('/(tabs)/products')}
+          >
+            <Text style={styles.goToProductsText}>상품 보러가기</Text>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -113,6 +115,15 @@ const styles = StyleSheet.create({
   coverSection: {
     alignItems: 'center',
     marginBottom: 16,
+  },
+  emptyCoverSection: {
+    alignItems: 'center',
+    paddingTop: 24,
+    marginBottom: 16,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    marginTop: -100,
   },
   stats: {
     alignItems: 'center',
