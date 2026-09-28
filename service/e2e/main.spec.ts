@@ -132,17 +132,6 @@ test.describe('포토카드 서비스 PR-A', () => {
     await page.waitForTimeout(1000);
     await takeScreenshot(page, '06-products-album-filter');
   });
-      await page.waitForTimeout(1000);
-
-      const albumChip = page.locator('text=ALBUM ONE').first();
-      if (await albumChip.isVisible({ timeout: 1000 })) {
-        await albumChip.click();
-        await page.waitForTimeout(1000);
-        await takeScreenshot(page, '06-product-list-album-filter');
-        await checkCommonAssertions(page, '앨범 필터');
-      }
-    }
-  });
 
   test('07. 상품 목록 - 검색 (결과 있음)', async ({ page }) => {
     await clickTab(page, 'tab-products');
