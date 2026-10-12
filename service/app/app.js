@@ -562,6 +562,8 @@ function packToProduct(pack) {
     album: pack.album || "",
     eventType: pack.eventType || "",
     eventName: pack.eventName || "",
+    eventNameKo: pack.eventNameKo || "",
+    eventNameEn: pack.eventNameEn || "",
     cover: pack.cover || "",
     price: Number(pack.price) || 0,
     home: Boolean(pack.home),
@@ -601,6 +603,8 @@ function applyPack(item) {
     artist: shownArtist(pack, item.artist),
     album: pack.album != null ? pack.album : item.album,
     eventName: pack.eventName != null ? pack.eventName : item.eventName,
+    eventNameKo: pack.eventNameKo != null ? pack.eventNameKo : (item.eventNameKo || ""),
+    eventNameEn: pack.eventNameEn != null ? pack.eventNameEn : (item.eventNameEn || ""),
     eventType: pack.eventType || item.eventType,
     cover: pack.cover || item.cover,
     price: pack.price != null ? Number(pack.price) : item.price,
@@ -633,7 +637,8 @@ function product(id) {
 
 function productName(item) {
   if (item?.displayName) return item.displayName;
-  const which = item.eventName ? `${item.album} ${item.eventName}` : item.album;
+  const eventName = eventTitle(item);
+  const which = eventName ? `${albumTitle(item)} ${eventName}` : albumTitle(item);
   return `${which} Photocard`;
 }
 
@@ -647,7 +652,8 @@ function tott(amount) {
 
 function setTitle(item) {
   if (item?.displayName) return item.displayName;
-  const which = item.eventName ? `${item.album} ${item.eventName}` : item.album;
+  const eventName = eventTitle(item);
+  const which = eventName ? `${albumTitle(item)} ${eventName}` : albumTitle(item);
   return `${which} Random Photocard`;
 }
 
@@ -792,10 +798,22 @@ function productHaystack(item) {
   const meta = ARTIST_META[item.artistId] || {};
   const members = item.cards.map((card) => card.member).filter(Boolean);
   const memberAliases = members.flatMap((member) => MEMBER_ALIASES[member] || []);
+  const names = artistNames(item.artistId);
+  const albums = categoryOf(item.artistId)?.albums || [];
+  const album = albums.find((entry) => entry && entry.name === item.album);
   return [
     item.artist,
+    names.ko,
+    names.en,
+    ...aliasTokens(names.aliases),
     item.album,
+    album?.nameKo,
+    album?.nameEn,
     item.eventName,
+    item.eventNameKo,
+    item.eventNameEn,
+    eventTitle(item),
+    albumTitle(item),
     productName(item),
     meta.group,
     ...(meta.aliases || []),
@@ -863,7 +881,51 @@ function profileImage(artistId) {
   return pack?.cover || "";
 }
 
+const ARTIST_I18N = {
+  blackpink: { ko: "블랙핑크", en: "BLACKPINK", aliases: "블랙핑크" },
+  lesserafim: { ko: "르세라핌", en: "LE SSERAFIM", aliases: "르세라핌" },
+  ive: { ko: "아이브", en: "IVE", aliases: "아이브" },
+  rose: { ko: "로제", en: "ROSÉ", aliases: "로제, rose, rosé, blackpink rose, 로지" },
+  bts: { ko: "방탄소년단", en: "BTS", aliases: "방탄, BTS" },
+  jungkook: { ko: "전정국", en: "Jung Kook", aliases: "정국" },
+};
+
+function localizedName(ko, en, fallback) {
+  const korean = (document.documentElement.lang || "ko").toLowerCase().startsWith("ko");
+  const first = korean ? ko : en;
+  const second = korean ? en : ko;
+  return String(first || second || fallback || "").trim();
+}
+
+function aliasTokens(value) {
+  return String(value || "").split(/[,，]/).map((item) => item.trim()).filter(Boolean);
+}
+
+function artistNames(artistId) {
+  const category = categoryOf(artistId);
+  const seed = ARTIST_I18N[artistId] || {};
+  return {
+    ko: category && "nameKo" in category ? category.nameKo : (seed.ko || ""),
+    en: category && "nameEn" in category ? category.nameEn : (seed.en || ""),
+    aliases: category && "aliases" in category ? category.aliases : (seed.aliases || ""),
+  };
+}
+
+function albumTitle(item) {
+  const albums = categoryOf(item?.artistId)?.albums || [];
+  const album = albums.find((entry) => entry && (entry.name === item.album || entry.nameEn === item.album || entry.nameKo === item.album));
+  if (!album || typeof album !== "object") return item?.album || "";
+  return localizedName(album.nameKo, album.nameEn, item.album);
+}
+
+function eventTitle(item) {
+  return localizedName(item?.eventNameKo, item?.eventNameEn, item?.eventName);
+}
+
 function shownArtist(pack, fallback) {
+  const names = artistNames(pack?.artistId);
+  const named = localizedName(names.ko, names.en, "");
+  if (named) return named;
   const category = categoryOf(pack?.artistId);
   return String(category?.profileName || category?.name || pack?.artistName || fallback || "").trim() || fallback || "미분류";
 }
@@ -1106,9 +1168,44 @@ function cardShot(card) {
   return `<img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />`;
 }
 
+function sameText(left, right) {
+  return String(left || "").trim().toLowerCase() === String(right || "").trim().toLowerCase();
+}
+
+function artistIdForName(name) {
+  const target = String(name || "").trim().toLowerCase();
+  if (!target) return "";
+  const ids = new Set([
+    ...Object.keys(ARTIST_I18N),
+    ...Object.keys(ARTIST_NAMES),
+    ...catalog().map((item) => item.artistId).filter(Boolean),
+  ]);
+  for (const id of ids) {
+    const names = artistNames(id);
+    const aliases = [names.ko, names.en, ...aliasTokens(names.aliases), ARTIST_NAMES[id], id];
+    if (aliases.some((item) => sameText(item, target))) return id;
+  }
+  return "";
+}
+
+function productForCard(card) {
+  const list = catalog();
+  const named = list.find((product) => sameText(product.artist, card.artist) && sameText(product.album, card.album))
+    || list.find((product) => sameText(product.artist, card.artist));
+  if (named) return named;
+  const artistId = artistIdForName(card.artist);
+  if (!artistId) return null;
+  const mine = list.filter((product) => product.artistId === artistId);
+  const albumHit = mine.find((product) => sameText(product.album, card.album))
+    || mine.find((product) => {
+      const albums = categoryOf(artistId)?.albums || [];
+      return albums.some((entry) => [entry?.name, entry?.nameKo, entry?.nameEn].some((label) => sameText(label, card.album)));
+    });
+  return albumHit || mine[0] || { artist: card.artist, artistId };
+}
+
 function cardMark(card) {
-  const item = catalog().find((product) => product.artist === card.artist && product.album === card.album)
-    || catalog().find((product) => product.artist === card.artist);
+  const item = productForCard(card);
   if (!item) return `<span class="artist-mark"><span>${esc(card.artist)}</span></span>`;
   return artistMark(item);
 }
@@ -1165,18 +1262,20 @@ function pickFigure(card) {
 }
 
 function album() {
-  const statusId = state.focusStatus === "stored" || state.focusStatus === "shipped" ? state.focusStatus : "all";
+  const statusOptions = [
+    ["all", "전체"],
+    ["stored", "보관중"],
+    ["shipped", "배송중"],
+    ["delivered", "수령완료"],
+  ];
+  const statusId = statusOptions.some(([id]) => id === state.focusStatus) ? state.focusStatus : "all";
   const pool = state.owned.filter((card) => card.status !== "shipping_cart");
   const source = statusId === "all" ? pool : pool.filter((card) => card.status === statusId);
   const artists = [...new Set(source.map((card) => card.artist))];
   const selected = artists.includes(state.albumArtist) ? state.albumArtist : "all";
   const shown = selected === "all" ? source : source.filter((card) => card.artist === selected);
   const cards = state.pickMode ? shown : groupCards(shown);
-  const statusOptions = [
-    ["all", "전체"],
-    ["stored", "보관중"],
-    ["shipped", "배송중"],
-  ].map(([id, label]) => `<option value="${id}"${id === statusId ? " selected" : ""}>${label}</option>`).join("");
+  const statusMarkup = statusOptions.map(([id, label]) => `<option value="${id}"${id === statusId ? " selected" : ""}>${label}</option>`).join("");
   const chips = ["all", ...artists]
     .map((artist) => {
       const label = artist === "all" ? "전체" : artist;
@@ -1206,7 +1305,7 @@ function album() {
     </header>
     <div class="album-filters">
       <div class="artist-tabs">${chips}</div>
-      <select class="status-drop" data-album-status aria-label="상태">${statusOptions}</select>
+      <select class="status-drop" data-album-status aria-label="상태">${statusMarkup}</select>
     </div>
     <div class="scroll">${body}</div>
     ${pickBar}
@@ -1986,45 +2085,29 @@ const OPEN_CUT = {
   rise: [600, 1100],
 };
 
+const OPEN_BASE = "tears/base.jpg?v=2";
+const OPEN_OVERS = [1, 2, 3, 4].map((index) => `tears/over-${index}.png?v=2`);
+
+function showOpenFrame(stage, index) {
+  const overs = [...stage.querySelectorAll(".open-over")];
+  const next = Math.max(0, Math.min(overs.length, index));
+  overs.forEach((img, item) => img.classList.toggle("is-on", item + 1 === next));
+  return next;
+}
+
+function dragFrame(stage, dx) {
+  const stack = stage.querySelector(".open-stack");
+  const width = stack?.getBoundingClientRect().width || 1;
+  const progress = Math.max(0, Math.min(1, Math.abs(dx) / width));
+  const count = stage.querySelectorAll(".open-over").length;
+  if (progress <= 0 || !count) return 0;
+  return Math.min(count, Math.ceil(progress * count));
+}
+
 function revealBackSrc(card) {
   const item = product(state.productId);
   const found = item?.cards.find((entry) => entry.no === card.no && entry.back);
   return found ? photo(found.back) : "";
-}
-
-function cutPoint(t) {
-  const u = 1 - t;
-  return [
-    3 * u * u * t * 32 + 3 * u * t * t * 70 + t * t * t * 100,
-    u * u * u * 30 + 3 * u * u * t * 24 + 3 * u * t * t * 34 + t * t * t * 28,
-  ];
-}
-
-function cutAt(progress) {
-  const target = progress * 100;
-  let lo = 0;
-  let hi = 1;
-  for (let step = 0; step < 14; step += 1) {
-    const mid = (lo + hi) / 2;
-    if (cutPoint(mid)[0] < target) lo = mid;
-    else hi = mid;
-  }
-  return cutPoint((lo + hi) / 2);
-}
-
-function cutSamples(until) {
-  const points = [];
-  for (let index = 0; index <= 16; index += 1) {
-    const point = cutPoint(index / 16);
-    if (point[0] <= until + 0.4) points.push(point);
-  }
-  const end = cutAt(until / 100);
-  if (!points.length || points[points.length - 1][0] < end[0] - 0.2) points.push(end);
-  return points;
-}
-
-function clipPoints(points) {
-  return `polygon(${points.map(([x, y]) => `${x.toFixed(2)}% ${y.toFixed(2)}%`).join(",")})`;
 }
 
 function openEase(elapsed, start, end) {
@@ -2046,24 +2129,29 @@ function sealedPack() {
   const cardLayer = back
     ? `<img class="open-card" src="${back}" alt="" draggable="false" />`
     : `<div class="open-card open-card-blank"></div>`;
-  const particles = Array.from({ length: OPEN_CUT.particles }, (_, index) => {
-    const spot = (index + 1) / (OPEN_CUT.particles + 1);
-    return `<i style="--p:${spot}"></i>`;
-  }).join("");
+  const overs = OPEN_OVERS.map((src) => `<img class="open-over" src="${src}" alt="" draggable="false" />`).join("");
+  const frontFace = card?.front
+    ? `<img class="fly-face front guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />`
+    : `<span class="fly-face front fly-blank"></span>`;
+  const backFace = back
+    ? `<img class="fly-face back" src="${back}" alt="" draggable="false" />`
+    : `<span class="fly-face back fly-blank"></span>`;
   return `
     <header class="bar open-bar"><h1>포장</h1>${count > 1 ? `<span class="result-progress">${state.revealIndex + 1} / ${count}</span>` : ""}</header>
     <div class="open-stage" data-open-stage>
       <div class="open-stack">
         <div class="env-back"></div>
         ${cardLayer}
-        <img class="env-front" src="pack_closed.png" alt="" draggable="false" />
-        <img class="cut-flap" src="pack_closed.png" alt="" draggable="false" />
-        <svg class="cut-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-          <path pathLength="1" d="M0,30 C32,24 70,34 100,28"></path>
-        </svg>
-        <div class="open-particles" aria-hidden="true">${particles}</div>
+        <div class="open-frames">
+          <img class="open-base" src="${OPEN_BASE}" alt="" draggable="false" />
+          ${overs}
+        </div>
       </div>
-      <p class="open-guide"><span class="open-finger" aria-hidden="true"></span>손가락으로 밀어 열어보세요</p>
+      <div class="fly-card">
+        <div class="fly-spin">${frontFace}${backFace}</div>
+      </div>
+      <video class="open-burst" data-open-burst src="fx/splash.mp4?v=1" muted playsinline preload="auto"></video>
+      <p class="open-guide"><span class="open-finger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"></path><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"></path></svg></span>손가락으로 밀어 열어보세요</p>
     </div>
   `;
 }
@@ -2096,7 +2184,7 @@ function result() {
     : `<button class="ghost" type="button" data-result-box>배송박스에 담기</button>`;
   const status = boxed
     ? `<p class="result-status">배송박스</p>`
-    : `<p class="result-status">보관 중</p><p class="result-note">배송박스에 담을 수 있어요</p>`;
+    : `<p class="result-status">마이앨범에서 확인 가능해요</p>`;
   const next = last
     ? `
       <div class="result-actions">
@@ -2109,7 +2197,7 @@ function result() {
       </div>`
     : `<div class="result-actions"><button class="primary" data-next>다음 카드 ${index + 1}/${count}</button></div>`;
   return `
-    <header class="bar result-bar"><h1>${boxed ? "배송박스" : "보관 중"}</h1>${progress}</header>
+    <header class="bar result-bar"><h1>${boxed ? "배송박스" : ""}</h1>${progress}</header>
     <div class="scroll">
       <div class="result">
         <div class="reveal-flip">
@@ -2494,7 +2582,7 @@ function openAdmin(menu = "dash") {
     frame.contentWindow?.postMessage({ source: "photocard-preview", screen: menu }, "*");
   };
   frame.onload = tell;
-  if (!frame.getAttribute("src")) frame.src = `../register/index.html?v=52&menu=${encodeURIComponent(menu)}`;
+  if (!frame.getAttribute("src")) frame.src = `../register/index.html?v=63&menu=${encodeURIComponent(menu)}`;
   else tell();
 }
 
@@ -2596,58 +2684,97 @@ function mountPostcode() {
   });
 }
 
-function runOpenCut(stage) {
-  const front = stage.querySelector(".env-front");
-  const flap = stage.querySelector(".cut-flap");
-  const line = stage.querySelector(".cut-line path");
-  const card = stage.querySelector(".open-card");
-  const bits = [...stage.querySelectorAll(".open-particles i")];
+function finishOpen() {
+  state.openCut = "completed";
+  state.openPhase = "card";
+  state.screen = "result";
+  render();
+}
+
+function playBurst(stage, done) {
+  const video = stage.querySelector("[data-open-burst]");
+  let settled = false;
+  const finish = () => {
+    if (settled) return;
+    settled = true;
+    video?.pause();
+    done();
+  };
+  if (!video || !stage.isConnected) {
+    window.setTimeout(finish, 1000);
+    return;
+  }
+  video.playbackRate = 2;
+  video.classList.add("is-on");
+  const trimEnd = () => {
+    if (settled || !stage.isConnected) return;
+    if (video.currentTime >= 3) {
+      finish();
+      return;
+    }
+    requestAnimationFrame(trimEnd);
+  };
+  video.addEventListener("ended", finish, { once: true });
+  video.addEventListener("error", () => window.setTimeout(finish, 1000), { once: true });
+  window.setTimeout(finish, 5000);
+  const started = video.play();
+  const arm = () => {
+    video.playbackRate = 2;
+    requestAnimationFrame(trimEnd);
+  };
+  if (started && typeof started.then === "function") started.then(arm).catch(() => window.setTimeout(finish, 1000));
+  else arm();
+}
+
+function launchCard(stage) {
+  showOpenFrame(stage, stage.querySelectorAll(".open-over").length);
+  const fly = stage.querySelector(".fly-card");
+  const spin = fly?.querySelector(".fly-spin");
+  let left = false;
+  const revealFront = () => {
+    if (left) return;
+    left = true;
+    playBurst(stage, () => {
+      if (!stage.isConnected) return;
+      finishOpen();
+    });
+  };
+  window.setTimeout(() => {
+    if (!left && stage.isConnected) revealFront();
+  }, 2600);
+  if (!fly || !spin || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    fly?.classList.add("is-go");
+    left = true;
+    window.setTimeout(() => {
+      if (!stage.isConnected) return;
+      finishOpen();
+    }, 1000);
+    return;
+  }
+  fly.classList.add("is-go");
+  spin.addEventListener("animationend", (event) => {
+    if (event.animationName !== "card-whirl") return;
+    revealFront();
+  });
+}
+
+function runOpenCut(stage, startFrame) {
+  const last = stage.querySelectorAll(".open-over").length;
+  const from = Math.max(0, Math.min(last, startFrame));
+  if (from >= last) {
+    launchCard(stage);
+    return;
+  }
   const started = performance.now();
-  let cutHaptic = false;
   const frame = (now) => {
     if (!stage.isConnected) return;
-    const elapsed = now - started;
-    const trail = openEase(elapsed, OPEN_CUT.trail[0], OPEN_CUT.trail[1]);
-    const cut = openEase(elapsed, OPEN_CUT.cut[0], OPEN_CUT.cut[1]);
-    const flapP = openEase(elapsed, OPEN_CUT.flap[0], OPEN_CUT.flap[1]);
-    const rise = openEase(elapsed, OPEN_CUT.rise[0], OPEN_CUT.rise[1]);
-    if (elapsed < OPEN_CUT.cut[0]) state.openCut = "cutting";
-    else if (elapsed < OPEN_CUT.flap[1]) state.openCut = "flapOpening";
-    else if (elapsed < OPEN_CUT.rise[1]) state.openCut = "cardRising";
-    else state.openCut = "reveal";
-    if (cut > 0) {
-      const knife = cutAt(cut);
-      const opened = cutSamples(knife[0]);
-      const rest = [];
-      for (let index = 0; index <= 16; index += 1) {
-        const point = cutPoint(index / 16);
-        if (point[0] >= knife[0] - 0.3) rest.push(point);
-      }
-      front.style.clipPath = clipPoints([knife, ...rest, [100, 100], [0, 100], [0, opened[0][1]], ...opened]);
-      flap.style.opacity = "1";
-      flap.style.clipPath = clipPoints([[0, 0], [knife[0], 0], knife, ...[...opened].reverse()]);
-    }
-    flap.style.transform = `translate(${flapP * 16}px, ${flapP * 72}px) rotate(${flapP * -5}deg)`;
-    line.style.strokeDashoffset = String(1 - trail);
-    line.style.opacity = trail <= 0 ? "0" : String(Math.max(0, 1 - flapP));
-    bits.forEach((bit) => {
-      const spot = Number(bit.style.getPropertyValue("--p"));
-      const seen = trail >= spot ? Math.max(0, 1 - (trail - spot) * 3.2) : 0;
-      bit.style.opacity = String(seen * (1 - flapP));
-    });
-    card.style.transform = `translateY(${26 - rise * 50}%)`;
-    if (!cutHaptic && cut >= 1) {
-      cutHaptic = true;
-      openHaptic("medium");
-    }
-    if (elapsed < OPEN_CUT.duration) {
+    const cut = openEase(now - started, OPEN_CUT.cut[0], OPEN_CUT.cut[1]);
+    showOpenFrame(stage, from + Math.round((last - from) * cut));
+    if (cut < 1) {
       requestAnimationFrame(frame);
       return;
     }
-    state.openCut = "completed";
-    state.openPhase = "card";
-    state.screen = "result";
-    render();
+    launchCard(stage);
   };
   requestAnimationFrame(frame);
 }
@@ -2667,21 +2794,30 @@ function armOpenCut() {
     stage.classList.add("is-touching");
     try { stage.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
   });
+  stage.addEventListener("pointermove", (event) => {
+    if (!tracking || state.openCut !== "idle") return;
+    showOpenFrame(stage, dragFrame(stage, event.clientX - startX));
+  });
   stage.addEventListener("pointerup", (event) => {
     if (!tracking || state.openCut !== "idle") return;
     tracking = false;
     stage.classList.remove("is-touching");
     const dx = event.clientX - startX;
     const dy = event.clientY - startY;
-    if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < OPEN_CUT.minDistance) return;
+    if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < OPEN_CUT.minDistance) {
+      showOpenFrame(stage, 0);
+      return;
+    }
+    const shown = dragFrame(stage, dx);
     state.openCut = "cutting";
     stage.classList.add("is-opening");
     openHaptic("light");
-    runOpenCut(stage);
+    runOpenCut(stage, shown);
   });
   stage.addEventListener("pointercancel", () => {
     tracking = false;
     stage.classList.remove("is-touching");
+    if (state.openCut === "idle") showOpenFrame(stage, 0);
   });
 }
 

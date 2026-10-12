@@ -21,9 +21,18 @@ const ALIASES = {
   lesserafim: ["르세라핌"],
   ive: ["아이브"],
   blackpink: ["블랙핑크"],
-  bts: ["방탄"],
-  rose: ["로지"],
+  bts: ["방탄", "BTS"],
+  rose: ["로제", "로지", "rose", "rosé", "blackpink rose"],
   jungkook: ["정국"],
+};
+
+const ARTIST_I18N = {
+  blackpink: { ko: "블랙핑크", en: "BLACKPINK", aliases: "블랙핑크" },
+  lesserafim: { ko: "르세라핌", en: "LE SSERAFIM", aliases: "르세라핌" },
+  ive: { ko: "아이브", en: "IVE", aliases: "아이브" },
+  rose: { ko: "로제", en: "ROSÉ", aliases: "로제, rose, rosé, blackpink rose, 로지" },
+  bts: { ko: "방탄소년단", en: "BTS", aliases: "방탄, BTS" },
+  jungkook: { ko: "전정국", en: "Jung Kook", aliases: "정국" },
 };
 
 const EVENT_TYPES = [
