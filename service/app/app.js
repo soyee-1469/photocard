@@ -93,11 +93,14 @@ const BADGE = {
   delivered: "수령완료",
 };
 
-const STATUS_ICON = {
-  stored: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4-9-4z"></path><path d="M3 8v8l9 4 9-4V8"></path><path d="M12 12v8"></path></svg>`,
-  shipped: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 7h11v8H3z"></path><path d="M14 10h4l3 3v2h-7z"></path><circle cx="7.5" cy="17.5" r="1.5"></circle><circle cx="17.5" cy="17.5" r="1.5"></circle></svg>`,
-  delivered: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M8.5 12.5l2.5 2.5 4.5-5"></path></svg>`,
-};
+function statusGlyph(status) {
+  if (status === "stored") return icon("track");
+  if (status === "shipped") return icon("ship");
+  if (status === "delivered") {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M8.5 12.5l2.5 2.5 4.5-5"></path></svg>`;
+  }
+  return "";
+}
 
 const PRODUCTS = [
   {
@@ -512,7 +515,7 @@ const GUIDES = {
 };
 
 const SHEET_NOTES = [
-  "뽑은 카드는 내 앨범에 보관돼요.",
+  "뽑은 카드는 마이앨범에 보관돼요.",
   "배송은 별도로 신청해요.",
   "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요.",
 ];
@@ -871,12 +874,13 @@ const PROFILE_PHOTOS = {
   lesserafim: "/assets/profiles/lesserafim.png",
 };
 
-function profileImage(artistId) {
+function profileImage(artistId, options = {}) {
   const category = categoryOf(artistId);
   if (category?.profileImage) return category.profileImage;
   const emblem = artistEmblems()[artistId];
   if (emblem) return emblem;
   if (PROFILE_PHOTOS[artistId]) return PROFILE_PHOTOS[artistId];
+  if (options.cover === false) return "";
   const pack = catalog().find((item) => item.artistId === artistId && item.cover);
   return pack?.cover || "";
 }
@@ -992,24 +996,23 @@ function productTile(item) {
 }
 
 function artistsPage() {
-  const query = state.catalogQuery.trim().toLowerCase();
-  const items = catalog().filter((item) => listed(item))
-    .filter((item) => state.catalogKind === "all" || artistKindOf(item) === state.catalogKind)
-    .filter((item) => !query || productHaystack(item).includes(query));
+  const rows = artistProfiles().map((profile) => {
+    const src = profileImage(profile.id, { cover: false });
+    const face = src ? `<img src="${src}" alt="" />` : `<i class="artist-fallback" aria-hidden="true"></i>`;
+    return `
+      <button type="button" class="artist-row" data-profile="${esc(profile.id)}">
+        ${face}
+        <span>${esc(profile.name)}</span>
+      </button>`;
+  }).join("");
   return `
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
-      <h1>전체 포토카드</h1>
+      <h1>전체 아티스트</h1>
       <span class="icon-btn" aria-hidden="true"></span>
     </header>
     <div class="scroll">
-      <label class="catalog-search">
-        <input data-field="catalogQuery" value="${esc(state.catalogQuery)}" placeholder="가수, 앨범 검색" />
-        ${searchIcon()}
-      </label>
-      ${catalogChips(state.catalogKind, [["all", "전체"], ["group", "그룹"], ["solo", "솔로"]])}
-      <p class="catalog-count">전체 상품 ${items.length}</p>
-      ${catalogGrid(items)}
+      <div class="artist-list">${rows || `<p class="empty">등록된 아티스트가 없어요.</p>`}</div>
     </div>
   `;
 }
@@ -1213,7 +1216,7 @@ function cardMark(card) {
 function statusBadge(status) {
   if (status === "shipping_cart") return "";
   const label = status === "stored" ? "배송바구니에 담을 수 있어요" : (BADGE[status] || STATUS[status] || "");
-  const glyph = STATUS_ICON[status];
+  const glyph = statusGlyph(status);
   if (!glyph) return `<span class="status-badge ${esc(status)}">${esc(label)}</span>`;
   return `<span class="status-badge icon ${esc(status)}" role="img" aria-label="${esc(label)}">${glyph}</span>`;
 }
@@ -1233,11 +1236,13 @@ function cardSourceLine(card) {
 }
 
 function cardFigure(card) {
+  const qty = Number(card.count) > 0 ? `<span class="qty-badge">${card.count}장</span>` : "";
   return `
     <figure data-card="${esc(card.id)}">
       <div class="shot">
         ${cardShot(card)}
         ${statusBadge(card.status)}
+        ${qty}
       </div>
       ${cardMark(card)}
       ${cardSourceLine(card)}
@@ -1299,13 +1304,16 @@ function album() {
     <header class="bar">
       <h1>마이 앨범</h1>
       <span class="bar-tools">
-        <button class="cart-link" data-menu="ship" aria-label="배송바구니 ${inCart}장"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4-9-4z"></path><path d="M3 8v8l9 4 9-4V8"></path><path d="M12 12v8"></path></svg><span>${inCart}장</span></button>
+        <button class="cart-link" data-menu="ship" aria-label="배송바구니 ${inCart}장">${icon("track")}<span>${inCart}장</span></button>
         ${menuButton()}
       </span>
     </header>
     <div class="album-filters">
       <div class="artist-tabs">${chips}</div>
-      <select class="status-drop" data-album-status aria-label="상태">${statusMarkup}</select>
+      <label class="status-drop">
+        <select data-album-status aria-label="상태">${statusMarkup}</select>
+        ${icon("caret")}
+      </label>
     </div>
     <div class="scroll">${body}</div>
     ${pickBar}
@@ -1755,16 +1763,16 @@ function abroadForm(cart) {
         <input data-field="addressDetail" value="${esc(state.addressDetail)}" placeholder="아파트, 동호. 없으면 비워요" autocomplete="address-line2" />
       </label>
       <div class="addr-split">
-        <label>도시
-          <input data-field="city" value="${esc(state.city)}" placeholder="도시" autocomplete="address-level2" />
+        <label>City
+          <input data-field="city" value="${esc(state.city)}" placeholder="City" autocomplete="address-level2" />
         </label>
-        <label>주, 지역
-          <input data-field="province" value="${esc(state.province)}" placeholder="없으면 비워요" autocomplete="address-level1" />
+        <label>State
+          <input data-field="province" value="${esc(state.province)}" placeholder="Optional" autocomplete="address-level1" />
         </label>
       </div>
       <div class="addr-split">
-        <label>우편번호
-          <input data-field="postcode" value="${esc(state.postcode)}" placeholder="우편번호" autocomplete="postal-code" />
+        <label>Postal code
+          <input data-field="postcode" value="${esc(state.postcode)}" placeholder="Postal code" autocomplete="postal-code" />
         </label>
         <label>국가
           <select data-country autocomplete="country-name">
@@ -1809,7 +1817,7 @@ function shipBasket() {
       <div class="ship-picker">
         ${stored.length
           ? `<div class="owned picker">${stored.map(pickFigure).join("")}</div>
-             <button type="button" class="ship-confirm" data-ship-add-confirm ${state.picked.length ? "" : "disabled"}><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l9-4 9 4-9 4-9-4z"></path><path d="M3 8v8l9 4 9-4V8"></path><path d="M12 12v8"></path></svg><span>${state.picked.length ? `${state.picked.length}장 담기` : "담을 카드 선택"}</span></button>`
+             <button type="button" class="ship-confirm" data-ship-add-confirm ${state.picked.length ? "" : "disabled"}>${icon("track")}<span>${state.picked.length ? `${state.picked.length}장 담기` : "담을 카드 선택"}</span></button>`
           : `<p class="empty">담을 수 있는 카드가 없어요.</p>`}
       </div>`
     : "";
@@ -1832,7 +1840,7 @@ function ship() {
       <div class="scroll">
         ${count}
         ${cards}
-        ${cart.length ? `
+        ${cart.length && !state.shipPick ? `
           <div class="region-pick">
             <p class="lead">어디로 받을까요?</p>
             <button class="primary" data-region="domestic">국내</button>
@@ -1865,6 +1873,9 @@ const ICON_PATH = {
   heartFill: "M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40Z",
   track: "M222.72,67.91l-88-48.18a13.9,13.9,0,0,0-13.44,0l-88,48.18A14,14,0,0,0,26,80.18v95.64a14,14,0,0,0,7.28,12.27l88,48.18a13.92,13.92,0,0,0,13.44,0l88-48.18A14,14,0,0,0,230,175.82V80.18A14,14,0,0,0,222.72,67.91ZM127,30.25a2,2,0,0,1,1.92,0L212.51,76,178.57,94.57,94.05,48.31ZM122,223,39,177.57a2,2,0,0,1-1-1.75V86.66l84,46ZM43.49,76,81.56,55.15l84.51,46.26L128,122.24ZM218,175.82a2,2,0,0,1-1,1.75h0L134,223V132.64l36-19.71V152a6,6,0,0,0,12,0V106.37l36-19.71Z",
   share: "M176,162a37.91,37.91,0,0,0-28.3,12.67L98.8,143.24a37.89,37.89,0,0,0,0-30.48l48.9-31.43a38,38,0,1,0-6.5-10.09L92.3,102.67a38,38,0,1,0,0,50.66l48.9,31.43A38,38,0,1,0,176,162Zm0-132a26,26,0,1,1-26,26A26,26,0,0,1,176,30ZM64,154a26,26,0,1,1,26-26A26,26,0,0,1,64,154Zm112,72a26,26,0,1,1,26-26A26,26,0,0,1,176,226Z",
+  plus: "M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z",
+  minus: "M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z",
+  caret: "M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,48,88H208a8,8,0,0,1,5.66,13.66Z",
 };
 
 function icon(name) {
@@ -1890,7 +1901,7 @@ function drawer() {
   if (!state.menuOpen) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
   const mine = [
-    item("album", "내 앨범"),
+    item("album", "마이앨범"),
     item("wished", "찜"),
     item("ship", "배송바구니"),
     item("track", "배송내역"),
@@ -1904,7 +1915,10 @@ function drawer() {
         </div>
         ${item("home", "홈")}
         ${menuGroup("mypage", "MY", mine)}
-        ${menuGroup("artist", "아티스트", item("artists", "전체 아티스트"))}
+        ${menuGroup("artist", "아티스트", [
+          item("artists", "전체 아티스트"),
+          ...artistProfiles().map((profile) => `<button type="button" class="nav-item nav-artist" data-nav-artist="${esc(profile.id)}">${esc(profile.name)}</button>`),
+        ].join(""))}
         ${item("notice", "공지사항")}
       </aside>
       <button type="button" class="nav-dim" data-drawer-close aria-label="메뉴 닫기"></button>
@@ -1957,8 +1971,8 @@ function mypage() {
     <div class="scroll">
       <div class="stat-row">
         <button data-menu="wished">${icon("heart")}<strong>${state.wished.length}</strong><span>찜</span></button>
-        <button data-menu="ship">${icon("ship")}<strong>${cart}</strong><span>배송바구니</span></button>
-        <button data-menu="track">${icon("track")}<strong>${state.shipments.length}</strong><span>배송내역</span></button>
+        <button data-menu="ship">${icon("track")}<strong>${cart}</strong><span>배송바구니</span></button>
+        <button data-menu="track">${icon("ship")}<strong>${state.shipments.length}</strong><span>배송내역</span></button>
       </div>
     </div>
   `;
@@ -2042,8 +2056,8 @@ function detail(item) {
         </div>
         <div class="perks">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"></rect></svg>${esc(perkLabels(item)[0])}</span>
-          <span>${icon("heart")}${esc(perkLabels(item)[1])}</span>
-          <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12l18-7-7 18-2.2-6.8L3 12z"></path></svg>${esc(perkLabels(item)[2])}</span>
+          <span>${icon("track")}${esc(perkLabels(item)[1])}</span>
+          <span>${icon("ship")}${esc(perkLabels(item)[2])}</span>
         </div>
         <section class="section">
           <h3>포토카드 구성 ${item.cards.length}종</h3>
@@ -2085,8 +2099,12 @@ const OPEN_CUT = {
   rise: [600, 1100],
 };
 
-const OPEN_BASE = "tears/base.jpg?v=2";
-const OPEN_OVERS = [1, 2, 3, 4].map((index) => `tears/over-${index}.png?v=2`);
+// 1은 통이미지로 포장 위쪽을 찢고, 2는 자른 찢어짐을 손가락 높이에 붙인다.
+const TEAR_METHOD = 2;
+const OPEN_BASE = "tears/base.jpg?v=4";
+const OPEN_OVERS = [1, 2, 3, 4].map((index) => (
+  TEAR_METHOD === 1 ? `tears/method-1/over-${index}.png?v=1` : `tears/over-${index}.png?v=5`
+));
 
 function showOpenFrame(stage, index) {
   const overs = [...stage.querySelectorAll(".open-over")];
@@ -2095,13 +2113,137 @@ function showOpenFrame(stage, index) {
   return next;
 }
 
-function dragFrame(stage, dx) {
+function dragSpan(dx, dy) {
+  return Math.hypot(dx, dy);
+}
+
+function dragFrame(stage, distance) {
   const stack = stage.querySelector(".open-stack");
   const width = stack?.getBoundingClientRect().width || 1;
-  const progress = Math.max(0, Math.min(1, Math.abs(dx) / width));
+  const progress = Math.max(0, Math.min(1, Math.abs(distance) / width));
   const count = stage.querySelectorAll(".open-over").length;
   if (progress <= 0 || !count) return 0;
   return Math.min(count, Math.ceil(progress * count));
+}
+
+const TEAR_INK = [
+  { x0: 0.044, y0: 0.1, x1: 0.463, y1: 0.703 },
+  { x0: 0.077, y0: 0.062, x1: 0.682, y1: 0.591 },
+  { x0: 0.037, y0: 0, x1: 0.727, y1: 0.668 },
+  { x0: 0.02, y0: 0.015, x1: 0.978, y1: 1 },
+];
+
+function tearInk(stage, frame) {
+  if (TEAR_METHOD !== 2) return { x0: 0, x1: 1, y0: 0, y1: 1 };
+  const stack = stage.querySelector(".open-stack");
+  if (!stack) return null;
+  const box = stack.getBoundingClientRect();
+  if (!box.width || !box.height) return null;
+  const ink = TEAR_INK[Math.max(0, Math.min(TEAR_INK.length, frame) - 1)];
+  if (stage.classList.contains("is-vert")) {
+    const thick = (parseFloat(stack.style.getPropertyValue("--tear-thick")) || 0) / box.width;
+    const left = (parseFloat(stack.style.getPropertyValue("--tear-left")) || 0) / box.width;
+    const anchor = 85 / 259;
+    const up = stage.classList.contains("is-up");
+    const across = (iy) => left + (up ? 1 : -1) * (iy - anchor) * thick;
+    return {
+      x0: Math.min(across(ink.y0), across(ink.y1)),
+      x1: Math.max(across(ink.y0), across(ink.y1)),
+      y0: up ? 1 - ink.x1 : ink.x0,
+      y1: up ? 1 - ink.x0 : ink.x1,
+    };
+  }
+  const top = (parseFloat(stack.style.getPropertyValue("--tear-top")) || 0) / box.height;
+  const height = (box.width * (259 / 985)) / box.height;
+  const fromRight = stage.classList.contains("is-rtl");
+  return {
+    x0: fromRight ? 1 - ink.x1 : ink.x0,
+    x1: fromRight ? 1 - ink.x0 : ink.x1,
+    y0: top + ink.y0 * height,
+    y1: top + ink.y1 * height,
+  };
+}
+
+function fingerOnTear(stage, frame) {
+  const ink = tearInk(stage, frame);
+  const x = Number(stage.dataset.fingerX);
+  const y = Number(stage.dataset.fingerY);
+  if (!ink || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+  if (x < ink.x0 || x > ink.x1 || y < ink.y0 || y > ink.y1) return null;
+  return { x, y, ink };
+}
+
+function tearSparks(stage, frame, hit) {
+  if (!frame || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const stack = stage.querySelector(".open-stack");
+  const ink = hit?.ink || tearInk(stage, frame);
+  if (!stack || !ink || stack.querySelectorAll(".tear-spark").length > 120) return;
+  const fromRight = stage.classList.contains("is-rtl");
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const addSpark = (x, top, hot, reach) => {
+    const spark = document.createElement("i");
+    const tooth = Math.random() < 0.5 ? -1 : 1;
+    let angle = hot ? tooth * (18 + Math.random() * 120) : tooth * (42 + Math.random() * 58);
+    spark.className = hot ? "tear-spark is-hot" : "tear-spark";
+    spark.style.left = `${clamp(x, ink.x0, ink.x1) * 100}%`;
+    spark.style.top = `${clamp(top, ink.y0, ink.y1) * 100}%`;
+    if (stage.classList.contains("is-vert")) angle += stage.classList.contains("is-up") ? -90 : 90;
+    else if (fromRight) angle = 180 - angle;
+    spark.style.setProperty("--rot", `${angle}deg`);
+    spark.style.setProperty("--dist", reach);
+    spark.style.setProperty("--len", `${8 + Math.random() * 14}px`);
+    spark.style.animationDuration = `${0.14 + Math.random() * 0.15}s`;
+    spark.addEventListener("animationend", () => spark.remove(), { once: true });
+    stack.appendChild(spark);
+  };
+  for (let index = 0; index < 8; index += 1) {
+    addSpark(
+      ink.x0 + Math.random() * (ink.x1 - ink.x0),
+      ink.y0 + Math.random() * (ink.y1 - ink.y0),
+      false,
+      `${46 + Math.random() * 94}px`
+    );
+  }
+  for (let index = 0; index < 8; index += 1) {
+    addSpark(
+      ink.x0 + Math.random() * (ink.x1 - ink.x0),
+      ink.y0 + Math.random() * (ink.y1 - ink.y0),
+      true,
+      `${18 + Math.random() * 40}px`
+    );
+  }
+  if (!hit) return;
+  for (let index = 0; index < 10; index += 1) {
+    addSpark(
+      hit.x + (Math.random() - 0.5) * 0.04,
+      hit.y + (Math.random() - 0.5) * 0.02,
+      true,
+      `${14 + Math.random() * 48}px`
+    );
+  }
+}
+
+function visibleTear(stage) {
+  const overs = [...stage.querySelectorAll(".open-over")];
+  const index = overs.findIndex((img) => img.classList.contains("is-on"));
+  return index < 0 ? 0 : index + 1;
+}
+
+function keepTearSparks(stage) {
+  if (stage.dataset.sparking) return;
+  stage.dataset.sparking = "1";
+  const tick = () => {
+    if (!stage.isConnected || stage.dataset.sparkStop) return;
+    const frame = visibleTear(stage);
+    if (!frame) {
+      window.setTimeout(tick, 69);
+      return;
+    }
+    const hit = stage.classList.contains("is-touching") ? fingerOnTear(stage, frame) : null;
+    tearSparks(stage, frame, hit);
+    window.setTimeout(tick, 69);
+  };
+  tick();
 }
 
 function revealBackSrc(card) {
@@ -2137,28 +2279,37 @@ function sealedPack() {
     ? `<img class="fly-face back" src="${back}" alt="" draggable="false" />`
     : `<span class="fly-face back fly-blank"></span>`;
   return `
-    <header class="bar open-bar"><h1>포장</h1>${count > 1 ? `<span class="result-progress">${state.revealIndex + 1} / ${count}</span>` : ""}</header>
-    <div class="open-stage" data-open-stage>
+    <header class="bar open-bar"><h1>Photocard Open</h1>${count > 1 ? `<span class="result-progress">${state.revealIndex + 1} / ${count}</span>` : ""}</header>
+    <div class="open-stage tear-${TEAR_METHOD}" data-open-stage>
+      <video class="open-fire-src" data-fireworks src="fx/fireworks.mp4?v=2" muted loop playsinline preload="auto"></video>
       <div class="open-stack">
         <div class="env-back"></div>
         ${cardLayer}
         <div class="open-frames">
           <img class="open-base" src="${OPEN_BASE}" alt="" draggable="false" />
           ${overs}
+          <img class="open-shell" src="tears/over-5.png?v=3" alt="" draggable="false" />
         </div>
+        <img class="pack-piece p-top" src="tears/pieces/top.png?v=1" alt="" draggable="false" />
+        <img class="pack-piece p-ul" src="tears/pieces/ul.png?v=1" alt="" draggable="false" />
+        <img class="pack-piece p-ur" src="tears/pieces/ur.png?v=1" alt="" draggable="false" />
+        <img class="pack-piece p-ll" src="tears/pieces/ll.png?v=1" alt="" draggable="false" />
+        <img class="pack-piece p-lr" src="tears/pieces/lr.png?v=1" alt="" draggable="false" />
       </div>
       <div class="fly-card">
-        <div class="fly-spin">${frontFace}${backFace}</div>
+        <div class="fly-spin">${frontFace}<span class="prism" aria-hidden="true"></span>${backFace}</div>
       </div>
       <video class="open-burst" data-open-burst src="fx/splash.mp4?v=1" muted playsinline preload="auto"></video>
-      <p class="open-guide"><span class="open-finger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"></path><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"></path><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"></path><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"></path></svg></span>손가락으로 밀어 열어보세요</p>
+      <p class="open-guide"><span class="open-finger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8h8.5a1.5 1.5 0 0 1 0 3h-7.5"></path><path d="M13.5 11h2a1.5 1.5 0 0 1 0 3h-2.5"></path><path d="M14.5 14a1.5 1.5 0 0 1 0 3h-1.5"></path><path d="M13.5 17a1.5 1.5 0 1 1 0 3h-4.5a6 6 0 0 1 -6 -6v-2v.208a6 6 0 0 1 2.7 -5.012l.3 -.196q .718 -.468 5.728 -3.286a1.5 1.5 0 0 1 2.022 .536c.44 .734 .325 1.674 -.28 2.28l-1.47 1.47"></path></svg></span>손가락으로 밀어 열어보세요</p>
+      <p class="open-turn"><span class="open-turn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="12" rx="1.4"></rect><path d="M4 19h16"></path><path d="M7 16.5 4 19l3 2.5"></path><path d="M17 16.5 20 19l-3 2.5"></path></svg></span>드래그해서 앞뒤를 돌려보세요</p>
+      <button class="primary open-ok" type="button" data-open-ok>OK</button>
     </div>
   `;
 }
 
 function openMotion() {
   return `
-    <div class="motion" aria-label="포장 오픈">
+    <div class="motion" aria-label="Photocard Open">
       <span class="motion-ring"></span>
       <span class="motion-flash"></span>
       <img class="motion-pack" src="pack_closed.png" alt="" />
@@ -2193,6 +2344,7 @@ function result() {
           ${boxButton}
           <button class="ghost" data-tab="home">다른 팩 보기</button>
         </div>
+        <button class="ghost" data-nav="album">마이앨범</button>
         <button class="result-more" data-again="5">이 팩 5번 연속 뽑기</button>
       </div>`
     : `<div class="result-actions"><button class="primary" data-next>다음 카드 ${index + 1}/${count}</button></div>`;
@@ -2376,12 +2528,30 @@ function draw(item, count) {
   state.balance -= item.price * count;
   state.reveal = picked;
   state.revealIndex = 0;
-  state.sheet = null;
-  state.openPhase = "pack";
-  state.openCut = "idle";
-  state.motionArmed = false;
-  state.screen = "open";
-  state.tab = "home";
+  showPack();
+}
+
+function showPack() {
+  const go = () => {
+    state.sheet = null;
+    state.openPhase = "pack";
+    state.openCut = "idle";
+    state.motionArmed = false;
+    state.screen = "open";
+    state.tab = "home";
+    render();
+  };
+  const pack = new Image();
+  pack.src = new URL(OPEN_BASE, document.baseURI).href;
+  if (pack.complete && pack.naturalWidth) {
+    go();
+    return;
+  }
+  const ready = typeof pack.decode === "function" ? pack.decode() : new Promise((resolve, reject) => {
+    pack.onload = resolve;
+    pack.onerror = reject;
+  });
+  ready.then(go, go);
 }
 
 function blurFronts() {
@@ -2684,6 +2854,18 @@ function mountPostcode() {
   });
 }
 
+function playFireworks(stage) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const video = stage.querySelector("[data-fireworks]");
+  if (!video || stage.dataset.fire) return;
+  stage.dataset.fire = "1";
+  stage.classList.add("is-fire");
+  video.loop = true;
+  video.muted = true;
+  const started = video.play();
+  if (started && typeof started.catch === "function") started.catch(() => {});
+}
+
 function finishOpen() {
   state.openCut = "completed";
   state.openPhase = "card";
@@ -2708,7 +2890,7 @@ function playBurst(stage, done) {
   video.classList.add("is-on");
   const trimEnd = () => {
     if (settled || !stage.isConnected) return;
-    if (video.currentTime >= 3) {
+    if (video.currentTime >= 4) {
       finish();
       return;
     }
@@ -2726,50 +2908,175 @@ function playBurst(stage, done) {
   else arm();
 }
 
+function crackSparks(stage, burst) {
+  const stack = stage.querySelector(".open-stack");
+  if (!stack) return;
+  const seams = [
+    (t) => [0.514, 0.24 + t * 0.66],
+    (t) => [0.16 + t * 0.7, 0.24],
+    (t) => [0.1 + t * 0.82, 0.62],
+  ];
+  const count = burst ? 28 : 14;
+  for (let index = 0; index < count; index += 1) {
+    const [x, y] = seams[index % seams.length](Math.random());
+    const spark = document.createElement("i");
+    const angle = burst ? Math.random() * 360 : (Math.random() < 0.5 ? -1 : 1) * (68 + Math.random() * 36);
+    spark.className = "tear-spark is-hot";
+    spark.style.left = `${x * 100}%`;
+    spark.style.top = `${y * 100}%`;
+    spark.style.setProperty("--rot", `${angle}deg`);
+    spark.style.setProperty("--dist", burst ? `${48 + Math.random() * 120}px` : `${5 + Math.random() * 14}px`);
+    spark.style.setProperty("--len", `${8 + Math.random() * 14}px`);
+    spark.style.animationDuration = burst ? `${0.16 + Math.random() * 0.18}s` : `${0.07 + Math.random() * 0.08}s`;
+    spark.addEventListener("animationend", () => spark.remove(), { once: true });
+    stack.appendChild(spark);
+  }
+}
+
+function rumblePieces(stage) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  let ticks = 0;
+  const timer = window.setInterval(() => {
+    if (!stage.isConnected) {
+      window.clearInterval(timer);
+      return;
+    }
+    crackSparks(stage, false);
+    ticks += 1;
+    if (ticks < 11) return;
+    window.clearInterval(timer);
+    crackSparks(stage, true);
+    window.setTimeout(() => {
+      if (stage.isConnected) crackSparks(stage, true);
+    }, 80);
+  }, 50);
+}
+
+function armFloatCard(fly) {
+  if (!fly || fly.dataset.float) return;
+  fly.dataset.float = "1";
+  let originX = 0;
+  let originYaw = 22;
+  let span = 196;
+  let lastShine = 22;
+  const shine = () => {
+    const prism = fly.querySelector(".prism");
+    if (!prism) return;
+    prism.classList.remove("is-shine");
+    void prism.offsetWidth;
+    prism.classList.add("is-shine");
+  };
+  const turn = (clientX) => {
+    const yaw = originYaw + ((clientX - originX) / span) * 360;
+    fly.style.setProperty("--spin-y", `${yaw}deg`);
+    if (Math.abs(yaw - lastShine) > 40) {
+      shine();
+      lastShine = yaw;
+    }
+  };
+  fly.addEventListener("pointerdown", (event) => {
+    if (!fly.classList.contains("is-front")) return;
+    try { fly.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
+    const current = parseFloat(fly.style.getPropertyValue("--spin-y"));
+    originYaw = Number.isFinite(current) ? current : 22;
+    originX = event.clientX;
+    span = fly.getBoundingClientRect().width || fly.offsetWidth || 196;
+    fly.classList.add("is-float", "is-nudge", "is-spun");
+    lastShine = originYaw;
+    shine();
+  });
+  fly.addEventListener("pointermove", (event) => {
+    if (!fly.classList.contains("is-nudge")) return;
+    turn(event.clientX);
+  });
+  const release = () => fly.classList.remove("is-nudge");
+  fly.addEventListener("pointerup", release);
+  fly.addEventListener("pointercancel", release);
+}
+
 function launchCard(stage) {
-  showOpenFrame(stage, stage.querySelectorAll(".open-over").length);
+  const stack = stage.querySelector(".open-stack");
   const fly = stage.querySelector(".fly-card");
-  const spin = fly?.querySelector(".fly-spin");
-  let left = false;
-  const revealFront = () => {
-    if (left) return;
-    left = true;
+  stack?.classList.add(TEAR_METHOD === 1 ? "is-shell" : "is-scatter");
+  if (TEAR_METHOD !== 1) {
+    stage.dataset.sparkStop = "1";
+    stage.querySelectorAll(".tear-spark").forEach((spark) => spark.remove());
+    rumblePieces(stage);
+  }
+  const scatter = Boolean(stack?.classList.contains("is-scatter"));
+  let started = false;
+  const beginVideo = () => {
+    if (started) return;
+    started = true;
     playBurst(stage, () => {
       if (!stage.isConnected) return;
       finishOpen();
     });
   };
-  window.setTimeout(() => {
-    if (!left && stage.isConnected) revealFront();
-  }, 2600);
-  if (!fly || !spin || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    fly?.classList.add("is-go");
-    left = true;
+  if (scatter) playFireworks(stage);
+  else {
     window.setTimeout(() => {
-      if (!stage.isConnected) return;
-      finishOpen();
-    }, 1000);
+      if (!started && stage.isConnected) beginVideo();
+    }, 4200);
+  }
+  if (!fly || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    fly?.classList.add("is-front");
+    if (scatter) {
+      stage.classList.add("is-ready");
+      if (fly) armFloatCard(fly);
+    } else {
+      window.setTimeout(() => {
+        if (!stage.isConnected) return;
+        finishOpen();
+      }, 1000);
+    }
     return;
   }
-  fly.classList.add("is-go");
-  spin.addEventListener("animationend", (event) => {
-    if (event.animationName !== "card-whirl") return;
-    revealFront();
+  fly.addEventListener("animationend", (event) => {
+    if (event.animationName === "card-hang") fly.classList.add("is-float");
+    if (event.animationName !== "card-rise" && event.animationName !== "card-from-pack") return;
+    fly.classList.remove("is-rise");
+    fly.classList.add("is-front");
+    if (scatter) {
+      armFloatCard(fly);
+      stage.classList.add("is-ready");
+    }
+    else {
+      window.setTimeout(() => {
+        if (stage.isConnected) beginVideo();
+      }, 1000);
+    }
   });
+  if (stack?.classList.contains("is-scatter")) {
+    const stageBox = stage.getBoundingClientRect();
+    const stackBox = stack.getBoundingClientRect();
+    const cardH = fly.offsetHeight;
+    const top = stackBox.top - stageBox.top + stackBox.height / 2 - cardH / 2;
+    fly.style.setProperty("--back-top", `${top}px`);
+  }
+  fly.classList.add("is-rise");
 }
 
 function runOpenCut(stage, startFrame) {
   const last = stage.querySelectorAll(".open-over").length;
   const from = Math.max(0, Math.min(last, startFrame));
   if (from >= last) {
+    keepTearSparks(stage);
     launchCard(stage);
     return;
   }
   const started = performance.now();
+  let shown = from;
+  keepTearSparks(stage);
   const frame = (now) => {
     if (!stage.isConnected) return;
     const cut = openEase(now - started, OPEN_CUT.cut[0], OPEN_CUT.cut[1]);
-    showOpenFrame(stage, from + Math.round((last - from) * cut));
+    const next = from + Math.round((last - from) * cut);
+    showOpenFrame(stage, next);
+    if (next > shown) {
+      tearSparks(stage, next);
+      shown = next;
+    }
     if (cut < 1) {
       requestAnimationFrame(frame);
       return;
@@ -2779,45 +3086,172 @@ function runOpenCut(stage, startFrame) {
   requestAnimationFrame(frame);
 }
 
+const PACK_FACE = { left: 77 / 659, top: 63 / 1024, right: 579 / 659, bottom: 992 / 1024 };
+const PACK_REACH = 0.5;
+const TEAR_EDGE = 0.05;
+
+function packBox(stage) {
+  const stack = stage.querySelector(".open-stack");
+  if (!stack) return null;
+  const box = stack.getBoundingClientRect();
+  if (!box.width || !box.height) return null;
+  return box;
+}
+
+function inPack(box, clientX, clientY, reach) {
+  const x = (clientX - box.left) / box.width;
+  const y = (clientY - box.top) / box.height;
+  const padX = (PACK_FACE.right - PACK_FACE.left) * reach;
+  const padY = (PACK_FACE.bottom - PACK_FACE.top) * reach;
+  return x >= PACK_FACE.left - padX && x <= PACK_FACE.right + padX
+    && y >= PACK_FACE.top - padY && y <= PACK_FACE.bottom + padY;
+}
+
+function tearBand() {
+  const span = PACK_FACE.bottom - PACK_FACE.top;
+  return {
+    top: PACK_FACE.top + span * TEAR_EDGE,
+    bottom: PACK_FACE.bottom - span * TEAR_EDGE,
+  };
+}
+
+function inTearBand(box, clientY) {
+  const y = (clientY - box.top) / box.height;
+  const band = tearBand();
+  return y >= band.top && y <= band.bottom;
+}
+
+function placeTear(stage, clientX, clientY) {
+  const stack = stage.querySelector(".open-stack");
+  if (!stack) return;
+  const box = stack.getBoundingClientRect();
+  const anchor = 85 / 259;
+  if (stage.classList.contains("is-vert")) {
+    const span = PACK_FACE.right - PACK_FACE.left;
+    const minX = box.width * (PACK_FACE.left + span * TEAR_EDGE);
+    const maxX = box.width * (PACK_FACE.right - span * TEAR_EDGE);
+    const x = Math.max(minX, Math.min(maxX, clientX - box.left));
+    const long = box.height;
+    const thick = long * (259 / 985);
+    const top = stage.classList.contains("is-up") ? box.height - anchor * thick : -anchor * thick;
+    stack.style.setProperty("--tear-left", `${x}px`);
+    stack.style.setProperty("--tear-top", `${top}px`);
+    stack.style.setProperty("--tear-long", `${long}px`);
+    stack.style.setProperty("--tear-thick", `${thick}px`);
+    stage.dataset.tearY = String((clientY - box.top) / box.height);
+    return;
+  }
+  const stripH = box.width * (259 / 985);
+  const band = tearBand();
+  const minY = box.height * band.top;
+  const maxY = box.height * band.bottom;
+  const local = Math.max(minY, Math.min(maxY, clientY - box.top));
+  const top = local - stripH * anchor;
+  stack.style.setProperty("--tear-top", `${top}px`);
+  stage.dataset.tearY = String(local / box.height);
+}
+
+let openCutListen = null;
+
 function armOpenCut() {
   const stage = document.querySelector("[data-open-stage]");
   if (!stage || stage.dataset.bound) return;
   stage.dataset.bound = "1";
+  openCutListen?.abort();
+  openCutListen = new AbortController();
+  const signal = openCutListen.signal;
   let startX = 0;
   let startY = 0;
   let tracking = false;
-  stage.addEventListener("pointerdown", (event) => {
-    if (state.openCut !== "idle") return;
+  let pending = false;
+  const beginTear = (event, box) => {
+    pending = false;
     tracking = true;
     startX = event.clientX;
     startY = event.clientY;
+    stage.classList.toggle("is-rtl", event.clientX >= box.left + box.width / 2);
+    if (TEAR_METHOD === 2) placeTear(stage, event.clientX, event.clientY);
+    else delete stage.dataset.tearY;
+    const origin = packBox(stage);
+    if (origin) {
+      stage.dataset.fingerX = String((event.clientX - origin.left) / origin.width);
+      stage.dataset.fingerY = String((event.clientY - origin.top) / origin.height);
+    }
     stage.classList.add("is-touching");
+    keepTearSparks(stage);
+  };
+  const listen = (type, handler) => document.addEventListener(type, handler, { signal });
+  listen("pointerdown", (event) => {
+    if (!stage.isConnected || state.openCut !== "idle") return;
+    const box = packBox(stage);
+    if (!box) return;
+    if (TEAR_METHOD === 1) {
+      if (!stage.contains(event.target)) return;
+      beginTear(event, box);
+      return;
+    }
     try { stage.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
+    if (inPack(box, event.clientX, event.clientY, PACK_REACH) && inTearBand(box, event.clientY)) {
+      beginTear(event, box);
+      return;
+    }
+    pending = true;
   });
-  stage.addEventListener("pointermove", (event) => {
+  listen("pointermove", (event) => {
+    if (pending && !tracking && state.openCut === "idle") {
+      const box = packBox(stage);
+      if (box && inPack(box, event.clientX, event.clientY, 0) && inTearBand(box, event.clientY)) beginTear(event, box);
+    }
     if (!tracking || state.openCut !== "idle") return;
-    showOpenFrame(stage, dragFrame(stage, event.clientX - startX));
+    const box = packBox(stage);
+    if (box) {
+      stage.dataset.fingerX = String((event.clientX - box.left) / box.width);
+      stage.dataset.fingerY = String((event.clientY - box.top) / box.height);
+    }
+    if (TEAR_METHOD === 2) {
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (!stage.dataset.tearAxis && dragSpan(dx, dy) >= 10) {
+        const vertical = Math.abs(dy) > Math.abs(dx);
+        stage.dataset.tearAxis = vertical ? "v" : "h";
+        stage.classList.toggle("is-vert", vertical);
+        stage.classList.toggle("is-up", vertical && dy < 0);
+        if (vertical) placeTear(stage, startX, startY);
+      }
+    }
+    const frame = dragFrame(stage, dragSpan(event.clientX - startX, event.clientY - startY));
+    showOpenFrame(stage, frame);
   });
-  stage.addEventListener("pointerup", (event) => {
+  listen("pointerup", (event) => {
+    if (pending && !tracking) pending = false;
     if (!tracking || state.openCut !== "idle") return;
     tracking = false;
     stage.classList.remove("is-touching");
     const dx = event.clientX - startX;
     const dy = event.clientY - startY;
-    if (Math.abs(dy) > Math.abs(dx) || Math.abs(dx) < OPEN_CUT.minDistance) {
+    const span = dragSpan(dx, dy);
+    if (span < OPEN_CUT.minDistance) {
       showOpenFrame(stage, 0);
+      stage.classList.remove("is-rtl", "is-vert", "is-up");
+      delete stage.dataset.tearAxis;
+      stage.querySelectorAll(".tear-spark").forEach((spark) => spark.remove());
       return;
     }
-    const shown = dragFrame(stage, dx);
+    const shown = dragFrame(stage, span);
     state.openCut = "cutting";
     stage.classList.add("is-opening");
     openHaptic("light");
     runOpenCut(stage, shown);
   });
-  stage.addEventListener("pointercancel", () => {
+  listen("pointercancel", () => {
+    pending = false;
     tracking = false;
     stage.classList.remove("is-touching");
-    if (state.openCut === "idle") showOpenFrame(stage, 0);
+    if (state.openCut === "idle") {
+      showOpenFrame(stage, 0);
+      stage.classList.remove("is-rtl", "is-vert", "is-up");
+      delete stage.dataset.tearAxis;
+    }
   });
 }
 
@@ -2841,7 +3275,7 @@ function guideSection(title, item, key) {
   const lines = linesOf(item.guides?.[key], GUIDES[key]);
   return `
         <details class="guide">
-          <summary>${title}</summary>
+          <summary>${title}<span class="guide-icon" aria-hidden="true"><span class="plus">${icon("plus")}</span><span class="minus">${icon("minus")}</span></span></summary>
           <ul>${lines.map((line) => `<li>${esc(line)}</li>`).join("")}</ul>
         </details>`;
 }
@@ -2858,7 +3292,7 @@ function midBanners() {
     {
       nav: "album",
       image: "album-banner.png",
-      alt: "뽑은 포토카드는 내 앨범에 보관돼요",
+      alt: "뽑은 포토카드는 마이앨범에 보관돼요",
     },
   ];
 }
@@ -3149,6 +3583,7 @@ app.addEventListener("click", (event) => {
   const unseal = event.target.closest("[data-unseal]");
   const next = event.target.closest("[data-next]");
   const again = event.target.closest("[data-again]");
+  const openOk = event.target.closest("[data-open-ok]");
   const resultBoxAdd = event.target.closest("[data-result-box]");
   const resultBoxGo = event.target.closest("[data-result-box-go]");
   const resultBoxStay = event.target.closest("[data-result-box-stay]");
@@ -3190,7 +3625,9 @@ app.addEventListener("click", (event) => {
   const shipmentHit = event.target.closest("[data-shipment]");
   const trackCopy = event.target.closest("[data-track-copy]");
   const trackStatus = event.target.closest("[data-track-status]");
-  if (drawerOpen) {
+  if (openOk) {
+    finishOpen();
+  } else if (drawerOpen) {
     state.menuOpen = true;
   } else if (drawerClose) {
     state.menuOpen = false;
@@ -3226,6 +3663,7 @@ app.addEventListener("click", (event) => {
     } else if (name === "album") {
       state.tab = "album";
       state.screen = "album";
+      state.focusStatus = null;
     } else if (name === "mypage") {
       state.tab = "mypage";
       state.screen = "mypage";
@@ -3329,10 +3767,7 @@ app.addEventListener("click", (event) => {
     state.screen = "open";
   } else if (next) {
     state.revealIndex += 1;
-    state.openPhase = "pack";
-    state.openCut = "idle";
-    state.motionArmed = false;
-    state.screen = "open";
+    showPack();
   } else if (again) {
     state.resultBox = false;
     state.sheet = Number(again.dataset.again);
@@ -3643,11 +4078,11 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("contextmenu", (event) => {
-  if (event.target.closest(".guard")) event.preventDefault();
+  if (event.target.closest("#app") && !event.target.closest("input, textarea")) event.preventDefault();
 });
 
 document.addEventListener("dragstart", (event) => {
-  if (event.target.closest(".guard")) event.preventDefault();
+  if (event.target.closest("#app img, #app video, #app .fly-card")) event.preventDefault();
 });
 
 document.addEventListener("visibilitychange", () => {

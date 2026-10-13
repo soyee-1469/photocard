@@ -746,7 +746,7 @@ function renderPackCopy(item) {
     ${guide("condition", "상품 상태 안내", ["제작·포장 과정에서 미세한 차이가 있을 수 있어요."])}
     ${guide("refund", "교환·환불 안내", ["랜덤 상품은 단순 변심 변경이 어려울 수 있어요."])}
     <div class="grid cols-3">
-      ${["뽑은 카드는 내 앨범에 보관돼요.", "배송은 별도로 신청해요.", "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요."].map((placeholder, index) => `
+      ${["뽑은 카드는 마이앨범에 보관돼요.", "배송은 별도로 신청해요.", "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요."].map((placeholder, index) => `
         <label>결제 안내 ${index + 1}
           <input data-sheet-note="${index}" value="${escapeAttr(item.sheetNotes[index] || "")}" placeholder="${escapeAttr(placeholder)}" />
         </label>`).join("")}
@@ -972,7 +972,7 @@ function bannerCard(banner) {
       </label>
       <label>링크
         <select data-banner-link="${banner.id}">
-          ${[["product", "상품 상세"], ["artist", "가수 페이지"], ["all", "전체 상품"], ["album", "내 앨범"], ["notice", "공지사항"], ["url", "외부 링크"], ["none", "없음"]].map(([id, label]) => `<option value="${id}" ${(banner.link || "product") === id ? "selected" : ""}>${label}</option>`).join("")}
+          ${[["product", "상품 상세"], ["artist", "가수 페이지"], ["all", "전체 상품"], ["album", "마이앨범"], ["notice", "공지사항"], ["url", "외부 링크"], ["none", "없음"]].map(([id, label]) => `<option value="${id}" ${(banner.link || "product") === id ? "selected" : ""}>${label}</option>`).join("")}
         </select>
       </label>
       <label>노출 시작<input data-banner-start="${banner.id}" type="date" value="${escapeAttr(banner.start || "")}" /></label>
@@ -2211,6 +2211,13 @@ document.body.addEventListener("input", (event) => {
     query = event.target.value;
     paintPackRows();
   }
+});
+
+document.addEventListener("contextmenu", (event) => {
+  if (!event.target.closest("input, textarea")) event.preventDefault();
+});
+document.addEventListener("dragstart", (event) => {
+  if (event.target.closest("img, video")) event.preventDefault();
 });
 
 document.body.addEventListener("click", (event) => {

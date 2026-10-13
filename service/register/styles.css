@@ -26,7 +26,14 @@ html, body {
   font: 14px/1.45 "Pretendard", "Apple SD Gothic Neo", sans-serif;
 }
 
-body { display: flex; flex-direction: column; }
+body { display: flex; flex-direction: column; -webkit-touch-callout: none; }
+body img,
+body video {
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
 
 button, input, select, textarea { font: inherit; }
 input, select, textarea { color: #fff; }
