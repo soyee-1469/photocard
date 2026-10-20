@@ -975,8 +975,10 @@ function bannerCard(banner) {
           ${[["product", "상품 상세"], ["artist", "가수 페이지"], ["all", "전체 상품"], ["album", "마이앨범"], ["notice", "공지사항"], ["url", "외부 링크"], ["none", "없음"]].map(([id, label]) => `<option value="${id}" ${(banner.link || "product") === id ? "selected" : ""}>${label}</option>`).join("")}
         </select>
       </label>
-      <label>노출 시작<input data-banner-start="${banner.id}" type="date" value="${escapeAttr(banner.start || "")}" /></label>
-      <label>노출 종료<input data-banner-end="${banner.id}" type="date" value="${escapeAttr(banner.end || "")}" /></label>
+      <div class="date-row">
+        <label>노출 시작<input data-banner-start="${banner.id}" type="date" value="${escapeAttr(banner.start || "")}" /></label>
+        <label>노출 종료<input data-banner-end="${banner.id}" type="date" value="${escapeAttr(banner.end || "")}" /></label>
+      </div>
       <div class="actions">
         <button class="text-btn" data-banner-move="${banner.id}" data-dir="-1" type="button">위로</button>
         <button class="text-btn" data-banner-move="${banner.id}" data-dir="1" type="button">아래로</button>
@@ -2134,8 +2136,10 @@ function renderNotice() {
           ${packs.map((pack) => `<option value="${pack.id}" ${pack.id === item.packId ? "selected" : ""}>${escapeAttr(pack.album)} ${escapeAttr(pack.eventName || "")}</option>`).join("")}
         </select>
       </label>
-      <label>노출 시작<input data-notice-field="start" type="date" value="${escapeAttr(item.start || "")}" /></label>
-      <label>노출 종료<input data-notice-field="end" type="date" value="${escapeAttr(item.end || "")}" /></label>
+      <div class="date-row">
+        <label>노출 시작<input data-notice-field="start" type="date" value="${escapeAttr(item.start || "")}" /></label>
+        <label>노출 종료<input data-notice-field="end" type="date" value="${escapeAttr(item.end || "")}" /></label>
+      </div>
     </div>
     <label>내용<textarea data-notice-field="body">${escapeAttr(item.body || "")}</textarea></label>
     <label>영어<textarea data-notice-field="en">${escapeAttr(item.en || "")}</textarea></label>
