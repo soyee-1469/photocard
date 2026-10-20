@@ -763,6 +763,15 @@ function packStock(item) {
   return cards.reduce((sum, card) => sum + cardStock(card), 0);
 }
 
+// 재고를 하나도 정하지 않은 상품은 재고 제한 없이 연속 뽑기가 가능하다.
+function canDrawFive(item) {
+  if (!item) return false;
+  const pack = registerPack(item.id);
+  const cards = pack?.cards?.length ? pack.cards : item.cards;
+  const tracked = cards.some((card) => card.stock !== "" && card.stock != null);
+  return !tracked || packStock(item) >= 5;
+}
+
 function saleWord(item) {
   const sale = saleOf(item);
   if (sale === "out") return "품절";
@@ -2042,7 +2051,7 @@ function detail(item) {
     })
     .join("");
   const canOne = state.balance >= item.price;
-  const stockForFive = packStock(item) >= 5;
+  const stockForFive = canDrawFive(item);
   const canFive = stockForFive && state.balance >= item.price * 5;
   const word = saleWord(item);
   const fiveNote = !word && !stockForFive ? `<p class="five-note">현재 연속 뽑기 불가</p>` : "";
@@ -4035,12 +4044,12 @@ app.addEventListener("click", (event) => {
     const buying = product(state.productId);
     const count = Number(buy.dataset.buy);
     if (saleWord(buying)) return;
-    if (count === 5 && packStock(buying) < 5) return;
+    if (count === 5 && !canDrawFive(buying)) return;
     state.sheet = count;
   } else if (pay) {
     const buying = product(state.productId);
     if (saleWord(buying)) return;
-    if (Number(pay.dataset.pay) === 5 && packStock(buying) < 5) return;
+    if (Number(pay.dataset.pay) === 5 && !canDrawFive(buying)) return;
     if (!state.walletConnected) return;
     draw(product(state.productId), Number(pay.dataset.pay));
   } else if (unseal) {

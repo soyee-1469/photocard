@@ -723,6 +723,14 @@ td input:not([type="checkbox"]), td select, .zone-table input { height: var(--co
   min-width: 0;
 }
 .stack .check, .stack .actions { grid-column: 1 / -1; }
+.date-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px var(--gap);
+  min-width: 0;
+}
+.date-row label { min-width: 0; }
 .stack .upload { justify-self: start; }
 
 .check {
