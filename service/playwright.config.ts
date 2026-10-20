@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 const BASE_PATH = '/photocard/service/pr-7';
 const IS_CI = !!process.env.CI;
-const BASE_URL = process.env.BASE_URL || `http://localhost:8765${BASE_PATH}`;
+// trailing slash 필수: goto('/...')는 host root로 가서 base path가 빠짐
+const RAW_BASE = process.env.BASE_URL || `http://localhost:8765${BASE_PATH}`;
+const BASE_URL = RAW_BASE.endsWith('/') ? RAW_BASE : `${RAW_BASE}/`;
 
 export default defineConfig({
   testDir: './e2e',

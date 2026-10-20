@@ -2,10 +2,8 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// 21개에서 10개로 줄인 이유: localhost 하드코딩 스펙과
-// 같은 화면을 조건부로 건너뛰던 중복 테스트를 뺐다.
-// 남는 10개는 홈, 상품 탭/필터/카드 진입, 앨범, 빈 앨범, 딥링크 새로고침이다.
 // 홈 탭은 숨긴 채로 DOM에 남으므로, 상품 목록은 보이는 product-list-screen 안으로만 찾는다.
+// goto는 './' 상대경로 사용 (baseURL path 유지).
 
 const ARTIFACTS_DIR = '/opt/cursor/artifacts/service-a';
 
@@ -20,7 +18,7 @@ async function takeScreenshot(page: Page, name: string) {
 }
 
 async function openProductList(page: Page): Promise<Locator> {
-  await page.goto('/');
+  await page.goto('./');
   await page.waitForLoadState('networkidle');
   await page.getByLabel('tab-products').click();
   const list = page.getByTestId('product-list-screen');
@@ -102,7 +100,7 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/');
+    await page.goto('./');
     await page.waitForLoadState('networkidle');
 
     await page.getByLabel('tab-album').click();
@@ -125,7 +123,7 @@ test.describe('Issue #8 검증', () => {
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
 
-    await page.goto('/album?seed=empty');
+    await page.goto('./album?seed=empty');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
 
@@ -134,15 +132,34 @@ test.describe('Issue #8 검증', () => {
     const emptyMessage = page.locator('text=아직 보유한 카드가 없습니다.');
     await expect(emptyMessage).toBeVisible();
 
-    const shopButton = page.locator('text=상품 보러가기');
+    const shopButton = page.getByText('상품 보러가기');
     await expect(shopButton).toBeVisible();
 
-    // 텍스트 대비 확인 (WCAG AA 4.5:1)
     const textColor = await emptyMessage.evaluate((el) => {
       return window.getComputedStyle(el).color;
     });
     console.log(`Empty state text color: ${textColor}`);
 
+    await shopButton.click();
+    await expect(page.getByTestId('product-list-screen')).toBeVisible();
+
     expect(consoleErrors).toHaveLength(0);
+  });
+
+  test('Issue8-6: prod-07/prod-08 카드 등급·확률 표시', async ({ page }) => {
+    await page.goto('./products/prod-07');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('등급별 획득 확률')).toBeVisible();
+    await expect(page.getByText('레어')).toBeVisible();
+    await expect(page.getByText('60.0%')).toBeVisible();
+    await expect(page.getByText('에픽')).toBeVisible();
+    await expect(page.getByText('40.0%')).toBeVisible();
+
+    await page.goto('./products/prod-08');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('등급별 획득 확률')).toBeVisible();
+    await expect(page.getByText('레어')).toBeVisible();
+    await expect(page.getByText('에픽')).toBeVisible();
+    await expect(page.getByText('50.0%').first()).toBeVisible();
   });
 });
