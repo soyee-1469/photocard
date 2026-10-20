@@ -1,6 +1,6 @@
 import React from 'react';
-import { AlbumScreen } from '../../../src/screens/AlbumScreen';
+import { BinderHomeScreen } from '../../../src/features/binder/screens/BinderHomeScreen';
 
 export default function AlbumPage() {
-  return <AlbumScreen />;
+  return <BinderHomeScreen />;
 }
