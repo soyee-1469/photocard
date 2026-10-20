@@ -1250,15 +1250,32 @@ function cardFigure(card) {
   `;
 }
 
-function pickFigure(card) {
+function pickFigure(card, forShip = false) {
   const selectable = card.status === "stored";
   const on = selectable && state.picked.includes(card.id);
   const mark = selectable ? `<span class="pick-mark">${on ? "✓" : ""}</span>` : statusBadge(card.status);
+  const shipBadge = forShip && selectable ? `<span class="box-badge add">${on ? "선택됨" : "담을 수 있음"}</span>` : "";
   return `
-    <figure class="pick-card${on ? " on" : ""}${selectable ? "" : " locked"}" ${selectable ? `data-pick-card="${esc(card.id)}"` : ""}>
+    <figure class="pick-card${on ? " on" : ""}${selectable ? "" : " locked"}${forShip ? " ship-pick" : ""}" ${selectable ? `data-pick-card="${esc(card.id)}"` : ""}>
       <div class="shot">
         ${cardShot(card)}
         ${mark}
+        ${shipBadge}
+      </div>
+      ${cardMark(card)}
+      ${cardSourceLine(card)}
+    </figure>
+  `;
+}
+
+function boxedFigure(card) {
+  const qty = Number(card.count) > 0 ? `<span class="qty-badge">${card.count}장</span>` : "";
+  return `
+    <figure class="box-card" data-card="${esc(card.id)}">
+      <div class="shot">
+        ${cardShot(card)}
+        <span class="box-badge in">담김</span>
+        ${qty}
       </div>
       ${cardMark(card)}
       ${cardSourceLine(card)}
@@ -1810,19 +1827,23 @@ function postcodeLayer() {
 function shipBasket() {
   const cart = state.owned.filter((card) => card.status === "shipping_cart");
   const stored = state.owned.filter((card) => card.status === "stored");
-  const figures = groupCards(cart).map(cardFigure).join("");
+  const figures = groupCards(cart).map(boxedFigure).join("");
   const addLabel = state.shipPick ? "닫기" : "카드 추가";
   const picker = state.shipPick
     ? `
-      <div class="ship-picker">
+      <section class="ship-section is-add">
+        <div class="ship-section-head"><h2>더 담을 수 있는 카드</h2><span>${stored.length}장</span></div>
         ${stored.length
-          ? `<div class="owned picker">${stored.map(pickFigure).join("")}</div>
+          ? `<div class="owned picker">${stored.map((card) => pickFigure(card, true)).join("")}</div>
              <button type="button" class="ship-confirm" data-ship-add-confirm ${state.picked.length ? "" : "disabled"}>${icon("track")}<span>${state.picked.length ? `${state.picked.length}장 담기` : "담을 카드 선택"}</span></button>`
           : `<p class="empty">담을 수 있는 카드가 없어요.</p>`}
-      </div>`
+      </section>`
     : "";
   return `
-    <div class="owned">${figures}<button type="button" class="ship-add" data-ship-add>${addLabel}</button></div>
+    <section class="ship-section is-in">
+      <div class="ship-section-head"><h2>배송박스에 담긴 카드</h2><span>${cart.length}장</span></div>
+      <div class="owned">${figures}<button type="button" class="ship-add" data-ship-add>${addLabel}</button></div>
+    </section>
     ${picker}`;
 }
 
