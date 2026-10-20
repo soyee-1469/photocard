@@ -1899,6 +1899,11 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   border-radius: 18px;
 }
 .open-stage.is-rtl .open-over { transform: scaleX(-1); }
+.open-stage.tear-2.is-mid:not(.is-vert) .open-over {
+  left: var(--tear-origin-x, 0px);
+  transform-origin: 0 50%;
+  clip-path: inset(0 calc(100% - var(--tear-span, 0px)) 0 0);
+}
 .open-stage.is-vert .open-over {
   top: var(--tear-top, 0px);
   left: var(--tear-left, 0px);
@@ -1907,6 +1912,9 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   aspect-ratio: auto;
   transform-origin: 0 32.819%;
   transform: rotate(90deg);
+}
+.open-stage.tear-2.is-mid.is-vert .open-over {
+  clip-path: inset(0 calc(100% - var(--tear-span, 0px)) 0 0);
 }
 .open-stage.is-vert.is-up .open-over { transform: rotate(-90deg); }
 .tear-spark {
@@ -2184,6 +2192,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   .open-stack.is-scatter ~ .fly-card.is-front .fly-spin { animation: none; transform: rotateX(18deg) rotateZ(-16deg) rotateY(22deg); transform-origin: 50% 62%; }
   .open-stack.is-scatter .pack-piece { animation: none; opacity: 0; }
   .open-turn-icon { animation: none; }
+  .deck.is-shuffle .deck-card { animation: none; }
+  .deck.is-picked .deck-card.is-choice { animation: none; top: 32%; transform: translate(-50%, -50%) scale(2.75); }
+  .deck.is-picked .deck-card.is-choice .deck-spin { animation: none; transform: none; }
+  .deck-stage.is-cover .deck-cover { animation: none; opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 .cut-line {
   position: absolute;
@@ -2275,6 +2287,149 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   opacity: 1;
   pointer-events: auto;
   touch-action: manipulation;
+}
+.deck-note {
+  margin: 8px 0 0;
+  color: #96969d;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+.deck-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #000;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+.deck-hint {
+  margin: 18px 0 0;
+  color: #f4f4f5;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+.deck-stage .deck-note { margin-top: 6px; }
+.deck {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18%;
+  bottom: 12%;
+}
+.deck-card {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: calc(var(--i) + 1);
+  width: 98px;
+  aspect-ratio: 659 / 1024;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  transform: translate(-50%, -50%) translate(calc(var(--i) * 3px), calc(var(--i) * -3px)) rotate(calc(var(--i) * -1.1deg));
+  transition: transform 0.45s ease, opacity 0.4s ease, box-shadow 0.35s ease;
+}
+.deck-spin {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+}
+.deck-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.deck-face.back { transform: rotateY(180deg); }
+.deck-card img,
+.deck-blank {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
+}
+.deck.is-shuffle .deck-card {
+  z-index: 1;
+  animation: none;
+  transition: transform 0.34s cubic-bezier(0.22, 0.7, 0.2, 1);
+  transform: translate(-50%, -50%) translate(var(--x, 0px), var(--y, 0px)) rotate(0deg) scale(0.66);
+}
+.deck.is-fan:not(.is-picked) ~ .deck-again {
+  opacity: 1;
+  pointer-events: auto;
+}
+.deck-again {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 24px;
+  z-index: 6;
+  width: auto;
+  height: 60px;
+  min-height: 60px;
+  border-radius: 12px;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+}
+.deck-again svg { flex: none; }
+.deck.is-fan .deck-card {
+  transform: translate(-50%, -50%) translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r));
+}
+.deck.is-picked .deck-card.is-choice {
+  z-index: 8;
+  perspective: 900px;
+  transition: none;
+  animation: deck-take 0.7s cubic-bezier(0.16, 0.72, 0.2, 1) forwards;
+  box-shadow: none;
+}
+.deck.is-picked .deck-card.is-choice .deck-spin {
+  animation: deck-spin 0.75s ease-in-out forwards;
+}
+.deck.is-picked .deck-card:not(.is-choice) {
+  opacity: 0;
+  transition: transform 0.85s ease, opacity 0.7s ease;
+  transform: translate(-50%, -50%) translate(calc(var(--fan-x) * 1.9), calc(var(--fan-y) + 48px)) rotate(var(--fan-r)) scale(0.78);
+}
+@keyframes deck-take {
+  0% { top: 42%; transform: translate(-50%, -50%) translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r)) scale(1); }
+  100% { top: 32%; transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(2.75); }
+}
+@keyframes deck-spin {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+.deck-cover {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  z-index: 9;
+  width: 168px;
+  aspect-ratio: 659 / 1024;
+  object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.72);
+}
+.deck-stage.is-cover .deck-cover {
+  animation: deck-wrap 0.85s ease 1.2s forwards;
+}
+@keyframes deck-wrap {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 @keyframes open-turn {
   0%, 100% { transform: translateX(-8px); }

@@ -2101,7 +2101,19 @@ const OPEN_CUT = {
 
 // 1은 통이미지로 포장 위쪽을 찢고, 2는 자른 찢어짐을 손가락 높이에 붙인다.
 const TEAR_METHOD = 2;
+// false면 결제 뒤 바로 포장 개봉으로 간다. 덱 연출만 뺄 때 이 값만 바꾸면 된다.
+const CARD_DECK = true;
+const DECK_FAN = [
+  { x: -105, y: 16, r: -18 },
+  { x: -55, y: 5, r: -9 },
+  { x: 0, y: 0, r: 0 },
+  { x: 55, y: 5, r: 9 },
+  { x: 105, y: 16, r: 18 },
+];
 const OPEN_BASE = "tears/base.jpg?v=4";
+const DECK_PACK = "tears/base.png?v=1";
+const DECK_BACK = "tears/back.png?v=1";
+const DECK_HIT = { x0: 0.111, y0: 0.057, x1: 0.885, y1: 0.971 };
 const OPEN_OVERS = [1, 2, 3, 4].map((index) => (
   TEAR_METHOD === 1 ? `tears/method-1/over-${index}.png?v=1` : `tears/over-${index}.png?v=5`
 ));
@@ -2140,25 +2152,48 @@ function tearInk(stage, frame) {
   const box = stack.getBoundingClientRect();
   if (!box.width || !box.height) return null;
   const ink = TEAR_INK[Math.max(0, Math.min(TEAR_INK.length, frame) - 1)];
+  const mid = stage.classList.contains("is-mid");
+  const span = (parseFloat(stack.style.getPropertyValue("--tear-span")) || 0);
   if (stage.classList.contains("is-vert")) {
     const thick = (parseFloat(stack.style.getPropertyValue("--tear-thick")) || 0) / box.width;
     const left = (parseFloat(stack.style.getPropertyValue("--tear-left")) || 0) / box.width;
     const anchor = 85 / 259;
     const up = stage.classList.contains("is-up");
     const across = (iy) => left + (up ? 1 : -1) * (iy - anchor) * thick;
-    return {
-      x0: Math.min(across(ink.y0), across(ink.y1)),
-      x1: Math.max(across(ink.y0), across(ink.y1)),
-      y0: up ? 1 - ink.x1 : ink.x0,
-      y1: up ? 1 - ink.x0 : ink.x1,
-    };
+    const x0 = Math.min(across(ink.y0), across(ink.y1));
+    const x1 = Math.max(across(ink.y0), across(ink.y1));
+    if (!mid) {
+      return {
+        x0,
+        x1,
+        y0: up ? 1 - ink.x1 : ink.x0,
+        y1: up ? 1 - ink.x0 : ink.x1,
+      };
+    }
+    const originY = (parseFloat(stack.style.getPropertyValue("--tear-origin-y")) || 0) / box.height;
+    const shown = Math.min(ink.x1, span / box.height);
+    if (shown <= ink.x0) return null;
+    const y0 = up ? originY - shown : originY + ink.x0;
+    const y1 = up ? originY - ink.x0 : originY + shown;
+    return { x0, x1, y0: Math.min(y0, y1), y1: Math.max(y0, y1) };
   }
   const top = (parseFloat(stack.style.getPropertyValue("--tear-top")) || 0) / box.height;
   const height = (box.width * (259 / 985)) / box.height;
   const fromRight = stage.classList.contains("is-rtl");
+  if (!mid) {
+    return {
+      x0: fromRight ? 1 - ink.x1 : ink.x0,
+      x1: fromRight ? 1 - ink.x0 : ink.x1,
+      y0: top + ink.y0 * height,
+      y1: top + ink.y1 * height,
+    };
+  }
+  const originX = (parseFloat(stack.style.getPropertyValue("--tear-origin-x")) || 0) / box.width;
+  const shown = Math.min(ink.x1, span / box.width);
+  if (shown <= ink.x0) return null;
   return {
-    x0: fromRight ? 1 - ink.x1 : ink.x0,
-    x1: fromRight ? 1 - ink.x0 : ink.x1,
+    x0: fromRight ? originX - shown : originX + ink.x0,
+    x1: fromRight ? originX - ink.x0 : originX + shown,
     y0: top + ink.y0 * height,
     y1: top + ink.y1 * height,
   };
@@ -2281,7 +2316,7 @@ function sealedPack() {
   return `
     <header class="bar open-bar"><h1>Photocard Open</h1>${count > 1 ? `<span class="result-progress">${state.revealIndex + 1} / ${count}</span>` : ""}</header>
     <div class="open-stage tear-${TEAR_METHOD}" data-open-stage>
-      <video class="open-fire-src" data-fireworks src="fx/fireworks.mp4?v=2" muted loop playsinline preload="auto"></video>
+      <video class="open-fire-src" data-fireworks src="fx/fireworks.mp4?v=4" muted loop playsinline preload="auto"></video>
       <div class="open-stack">
         <div class="env-back"></div>
         ${cardLayer}
@@ -2528,7 +2563,165 @@ function draw(item, count) {
   state.balance -= item.price * count;
   state.reveal = picked;
   state.revealIndex = 0;
-  showPack();
+  beginOpen();
+}
+
+function beginOpen() {
+  if (!CARD_DECK) {
+    showPack();
+    return;
+  }
+  state.sheet = null;
+  state.openPhase = "deck";
+  state.openCut = "idle";
+  state.motionArmed = false;
+  state.screen = "open";
+  state.tab = "home";
+  render();
+}
+
+function cardDeck() {
+  const packs = DECK_FAN.map((spot, index) => `
+    <button type="button" class="deck-card" data-deck-pick="${index}" style="--i:${index};--fan-x:${spot.x}px;--fan-y:${spot.y}px;--fan-r:${spot.r}deg" aria-label="포장 ${index + 1}">
+      <span class="deck-spin">
+        <img class="deck-face" src="${DECK_PACK}" alt="" draggable="false" />
+        <img class="deck-face back" src="${DECK_BACK}" alt="" draggable="false" />
+      </span>
+    </button>`).join("");
+  return `
+    <header class="bar open-bar"><h1>Photocard Open</h1></header>
+    <div class="deck-stage" data-deck>
+      <p class="deck-hint" data-deck-hint>한 장을 선택하세요</p>
+      <div class="deck" data-deck-cards>${packs}</div>
+      <button class="ghost deck-again" type="button" data-deck-again><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>한 번 더 섞기</button>
+      <img class="deck-cover" src="${DECK_PACK}" alt="" draggable="false" />
+    </div>
+  `;
+}
+
+function deckCardAt(deck, clientX, clientY) {
+  const cards = [...deck.querySelectorAll(".deck-card")].sort((a, b) => {
+    const za = Number(getComputedStyle(a).zIndex) || 0;
+    const zb = Number(getComputedStyle(b).zIndex) || 0;
+    return zb - za;
+  });
+  return cards.find((card) => {
+    const width = card.offsetWidth;
+    const height = card.offsetHeight;
+    const parent = card.offsetParent;
+    if (!width || !height || !parent) return false;
+    const parentBox = parent.getBoundingClientRect();
+    const origin = getComputedStyle(card).transformOrigin.split(" ");
+    const originX = parseFloat(origin[0]) || width / 2;
+    const originY = parseFloat(origin[1]) || height / 2;
+    const matrix = new DOMMatrix(getComputedStyle(card).transform);
+    const inverse = matrix.inverse();
+    if (!inverse) return false;
+    const local = inverse.transformPoint(new DOMPoint(
+      clientX - (parentBox.left + card.offsetLeft + originX),
+      clientY - (parentBox.top + card.offsetTop + originY),
+    ));
+    const x = local.x + originX;
+    const y = local.y + originY;
+    return x >= width * DECK_HIT.x0 && x <= width * DECK_HIT.x1
+      && y >= height * DECK_HIT.y0 && y <= height * DECK_HIT.y1;
+  }) || null;
+}
+
+function armDeck() {
+  const stage = document.querySelector("[data-deck]");
+  if (!stage || stage.dataset.bound) return;
+  stage.dataset.bound = "1";
+  const deck = stage.querySelector("[data-deck-cards]");
+  const hint = stage.querySelector("[data-deck-hint]");
+  const cards = [...deck.querySelectorAll(".deck-card")];
+  const row = [-120, -60, 0, 60, 120];
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let stops = [];
+  let seats = cards.map((_, index) => index);
+  const later = (fn, ms) => {
+    stops.push(window.setTimeout(fn, ms));
+  };
+  const clearInline = () => {
+    cards.forEach((card) => {
+      card.style.removeProperty("--x");
+      card.style.removeProperty("--y");
+      card.style.zIndex = "";
+    });
+  };
+  const layout = (lifted) => {
+    cards.forEach((card, index) => {
+      const moving = lifted?.has(index);
+      card.style.setProperty("--x", `${row[seats[index]]}px`);
+      card.style.setProperty("--y", moving ? "-30px" : "0px");
+      card.style.zIndex = moving ? "8" : String(seats[index] + 1);
+    });
+  };
+  const swap = () => {
+    let first = Math.floor(Math.random() * cards.length);
+    let second = Math.floor(Math.random() * (cards.length - 1));
+    if (second >= first) second += 1;
+    const seat = seats[first];
+    seats[first] = seats[second];
+    seats[second] = seat;
+    layout(new Set([first, second]));
+    cards[first].style.zIndex = "9";
+    cards[second].style.zIndex = "7";
+    later(() => layout(null), 340);
+  };
+  const gather = () => {
+    cards.forEach((card, index) => {
+      card.style.setProperty("--x", `${(index - 2) * 4}px`);
+      card.style.setProperty("--y", `${(2 - index) * 3}px`);
+      card.style.zIndex = String(index + 1);
+    });
+  };
+  const playShuffle = () => {
+    stops.forEach((id) => window.clearTimeout(id));
+    stops = [];
+    deck.classList.remove("is-fan", "is-shuffle", "is-picked");
+    stage.classList.remove("is-cover");
+    seats = cards.map((_, index) => index);
+    clearInline();
+    if (hint) hint.textContent = "한 장을 선택하세요";
+    if (reduced) {
+      deck.classList.add("is-fan");
+      return;
+    }
+    cards.forEach((card, index) => {
+      card.style.setProperty("--x", `${row[index]}px`);
+      card.style.setProperty("--y", "0px");
+    });
+    void deck.offsetWidth;
+    deck.classList.add("is-shuffle");
+    [420, 940, 1460, 1980].forEach((ms) => later(swap, ms));
+    later(gather, 2460);
+    later(() => {
+      if (!stage.isConnected) return;
+      clearInline();
+      deck.classList.remove("is-shuffle");
+      deck.classList.add("is-fan");
+    }, 2920);
+  };
+  playShuffle();
+  stage.addEventListener("click", (event) => {
+    const again = event.target.closest("[data-deck-again]");
+    if (again) {
+      event.stopPropagation();
+      if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
+      playShuffle();
+      return;
+    }
+    const pick = deckCardAt(deck, event.clientX, event.clientY);
+    if (!pick || !deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
+    event.stopPropagation();
+    deck.classList.add("is-picked");
+    pick.classList.add("is-choice");
+    if (hint) hint.textContent = "선택 완료";
+    window.setTimeout(() => {
+      if (stage.isConnected) showPack();
+    }, reduced ? 240 : 800);
+  });
 }
 
 function showPack() {
@@ -3121,11 +3314,27 @@ function inTearBand(box, clientY) {
   return y >= band.top && y <= band.bottom;
 }
 
+function tearFromEdge(box, clientX, clientY, vertical) {
+  const reach = 0.28;
+  if (vertical) {
+    const band = tearBand();
+    const y = (clientY - box.top) / box.height;
+    const edge = (band.bottom - band.top) * reach;
+    return y <= band.top + edge || y >= band.bottom - edge;
+  }
+  const x = (clientX - box.left) / box.width;
+  const face = PACK_FACE.right - PACK_FACE.left;
+  const edge = face * reach;
+  return x <= PACK_FACE.left + edge || x >= PACK_FACE.right - edge;
+}
+
 function placeTear(stage, clientX, clientY) {
   const stack = stage.querySelector(".open-stack");
   if (!stack) return;
   const box = stack.getBoundingClientRect();
   const anchor = 85 / 259;
+  const band = tearBand();
+  const mid = stage.classList.contains("is-mid");
   if (stage.classList.contains("is-vert")) {
     const span = PACK_FACE.right - PACK_FACE.left;
     const minX = box.width * (PACK_FACE.left + span * TEAR_EDGE);
@@ -3133,22 +3342,61 @@ function placeTear(stage, clientX, clientY) {
     const x = Math.max(minX, Math.min(maxX, clientX - box.left));
     const long = box.height;
     const thick = long * (259 / 985);
-    const top = stage.classList.contains("is-up") ? box.height - anchor * thick : -anchor * thick;
     stack.style.setProperty("--tear-left", `${x}px`);
-    stack.style.setProperty("--tear-top", `${top}px`);
     stack.style.setProperty("--tear-long", `${long}px`);
     stack.style.setProperty("--tear-thick", `${thick}px`);
-    stage.dataset.tearY = String((clientY - box.top) / box.height);
+    if (!mid) {
+      const top = stage.classList.contains("is-up") ? box.height - anchor * thick : -anchor * thick;
+      stack.style.setProperty("--tear-top", `${top}px`);
+      stage.dataset.tearY = String((clientY - box.top) / box.height);
+      return;
+    }
+    const minY = box.height * band.top;
+    const maxY = box.height * band.bottom;
+    const originY = Math.max(minY, Math.min(maxY, clientY - box.top));
+    stack.style.setProperty("--tear-top", `${originY - anchor * thick}px`);
+    stack.style.setProperty("--tear-origin-y", `${originY}px`);
+    stack.style.setProperty("--tear-span", "0px");
+    stage.dataset.tearY = String(originY / box.height);
     return;
   }
   const stripH = box.width * (259 / 985);
-  const band = tearBand();
   const minY = box.height * band.top;
   const maxY = box.height * band.bottom;
   const local = Math.max(minY, Math.min(maxY, clientY - box.top));
-  const top = local - stripH * anchor;
-  stack.style.setProperty("--tear-top", `${top}px`);
+  stack.style.setProperty("--tear-top", `${local - stripH * anchor}px`);
   stage.dataset.tearY = String(local / box.height);
+  if (!mid) return;
+  const originX = Math.max(box.width * PACK_FACE.left, Math.min(box.width * PACK_FACE.right, clientX - box.left));
+  stack.style.setProperty("--tear-origin-x", `${originX}px`);
+  stack.style.setProperty("--tear-span", "0px");
+}
+
+function growTear(stage, clientX, clientY) {
+  const stack = stage.querySelector(".open-stack");
+  if (!stack) return;
+  const box = stack.getBoundingClientRect();
+  if (!box.width || !box.height) return;
+  let span = parseFloat(stack.style.getPropertyValue("--tear-span")) || 0;
+  if (stage.classList.contains("is-vert")) {
+    const originY = parseFloat(stack.style.getPropertyValue("--tear-origin-y")) || 0;
+    const y = clientY - box.top;
+    const up = stage.classList.contains("is-up");
+    const band = tearBand();
+    const travel = up ? originY - y : y - originY;
+    const limit = up ? originY - box.height * band.top : box.height * band.bottom - originY;
+    span = Math.max(span, Math.min(Math.max(0, limit), Math.max(0, travel)));
+  } else {
+    const originX = parseFloat(stack.style.getPropertyValue("--tear-origin-x")) || 0;
+    const x = clientX - box.left;
+    const faceMin = box.width * PACK_FACE.left;
+    const faceMax = box.width * PACK_FACE.right;
+    const rtl = stage.classList.contains("is-rtl");
+    const travel = rtl ? originX - x : x - originX;
+    const limit = rtl ? originX - faceMin : faceMax - originX;
+    span = Math.max(span, Math.min(Math.max(0, limit), Math.max(0, travel)));
+  }
+  stack.style.setProperty("--tear-span", `${span}px`);
 }
 
 let openCutListen = null;
@@ -3169,9 +3417,14 @@ function armOpenCut() {
     tracking = true;
     startX = event.clientX;
     startY = event.clientY;
-    stage.classList.toggle("is-rtl", event.clientX >= box.left + box.width / 2);
-    if (TEAR_METHOD === 2) placeTear(stage, event.clientX, event.clientY);
-    else delete stage.dataset.tearY;
+    if (TEAR_METHOD === 2) {
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
+      delete stage.dataset.tearAxis;
+      placeTear(stage, event.clientX, event.clientY);
+    } else {
+      stage.classList.toggle("is-rtl", event.clientX >= box.left + box.width / 2);
+      delete stage.dataset.tearY;
+    }
     const origin = packBox(stage);
     if (origin) {
       stage.dataset.fingerX = String((event.clientX - origin.left) / origin.width);
@@ -3213,13 +3466,19 @@ function armOpenCut() {
       const dy = event.clientY - startY;
       if (!stage.dataset.tearAxis && dragSpan(dx, dy) >= 10) {
         const vertical = Math.abs(dy) > Math.abs(dx);
+        const fromEdge = box ? tearFromEdge(box, startX, startY, vertical) : false;
         stage.dataset.tearAxis = vertical ? "v" : "h";
         stage.classList.toggle("is-vert", vertical);
         stage.classList.toggle("is-up", vertical && dy < 0);
-        if (vertical) placeTear(stage, startX, startY);
+        stage.classList.toggle("is-mid", !fromEdge);
+        stage.classList.toggle("is-rtl", !vertical && (fromEdge ? startX >= box.left + box.width / 2 : dx < 0));
+        placeTear(stage, startX, startY);
       }
+      if (stage.dataset.tearAxis && stage.classList.contains("is-mid")) growTear(stage, event.clientX, event.clientY);
     }
-    const frame = dragFrame(stage, dragSpan(event.clientX - startX, event.clientY - startY));
+    const frame = TEAR_METHOD === 2 && !stage.dataset.tearAxis
+      ? 0
+      : dragFrame(stage, dragSpan(event.clientX - startX, event.clientY - startY));
     showOpenFrame(stage, frame);
   });
   listen("pointerup", (event) => {
@@ -3232,7 +3491,7 @@ function armOpenCut() {
     const span = dragSpan(dx, dy);
     if (span < OPEN_CUT.minDistance) {
       showOpenFrame(stage, 0);
-      stage.classList.remove("is-rtl", "is-vert", "is-up");
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
       delete stage.dataset.tearAxis;
       stage.querySelectorAll(".tear-spark").forEach((spark) => spark.remove());
       return;
@@ -3249,7 +3508,7 @@ function armOpenCut() {
     stage.classList.remove("is-touching");
     if (state.openCut === "idle") {
       showOpenFrame(stage, 0);
-      stage.classList.remove("is-rtl", "is-vert", "is-up");
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
       delete stage.dataset.tearAxis;
     }
   });
@@ -3552,6 +3811,7 @@ function render() {
   let view = home();
   if (state.screen === "detail" && item) view = detail(item);
   else if (state.screen === "card") view = ownedDetail();
+  else if (state.screen === "open" && state.openPhase === "deck") view = cardDeck();
   else if (state.screen === "open" && state.openPhase === "pack") view = sealedPack();
   else if (state.screen === "open" && state.openPhase === "motion") view = openMotion();
   else if (state.screen === "result" || state.screen === "open") view = result();
@@ -3571,6 +3831,7 @@ function render() {
   paintBoard();
   mountPostcode();
   armMotion();
+  armDeck();
   armOpenCut();
 }
 
@@ -3767,7 +4028,7 @@ app.addEventListener("click", (event) => {
     state.screen = "open";
   } else if (next) {
     state.revealIndex += 1;
-    showPack();
+    beginOpen();
   } else if (again) {
     state.resultBox = false;
     state.sheet = Number(again.dataset.again);
