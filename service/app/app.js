@@ -326,10 +326,71 @@ const state = {
   openCut: "idle",
   motionArmed: false,
   owned: seedOwned(),
+  // 포인트 교환(mock). TP와 교환 내역은 localStorage에 남긴다.
+  tp: 0,
+  exchanges: [],
+  exWallet: 0,
+  exTott: "",
+  exTp: "",
+  exDate: "",
+  // 첫 진입: splash → push → marketing → consent → guide → done
+  boot: "done",
+  guideFrom: "home",
+  guideSeen: false,
+  guidePage: 0,
 };
 
 const ORDERS_KEY = "photocard-orders-v1";
 const ADDRESS_KEY = "photocard-addresses-v1";
+const WALLET_KEY = "photocard-wallet-v1";
+const ONBOARD_KEY = "photocard-onboard-v1";
+
+// TOTT → TP mock 환율. 실제 연동 전까지 상수 하나로 둔다.
+const EXCHANGE_RATE = 100;
+const EXCHANGE_MIN = 50;
+const WALLETS = [
+  { id: "phantom-1", short: "Fr92nqkb…8v7qy7Bu", full: "Fr92nqkbQx4tL9v2mAe7Hs8v7qy7Bu" },
+  { id: "phantom-2", short: "0x5961…gb2485", full: "0x5961c3f0a8d14e7b92ab2485" },
+];
+
+function loadWallet() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WALLET_KEY) || "null");
+    if (!saved) return;
+    if (Number.isFinite(Number(saved.balance))) state.balance = Number(saved.balance);
+    state.tp = Number(saved.tp) || 0;
+    state.exchanges = Array.isArray(saved.exchanges) ? saved.exchanges : [];
+    state.exWallet = WALLETS.some((_, index) => index === Number(saved.wallet)) ? Number(saved.wallet) : 0;
+  } catch (error) {
+    console.warn(error);
+  }
+}
+
+function persistWallet() {
+  localStorage.setItem(WALLET_KEY, JSON.stringify({
+    balance: state.balance,
+    tp: state.tp,
+    exchanges: state.exchanges,
+    wallet: state.exWallet,
+  }));
+}
+
+function loadOnboard() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ONBOARD_KEY) || "null");
+    return saved && typeof saved === "object" ? saved : {};
+  } catch (error) {
+    console.warn(error);
+    return {};
+  }
+}
+
+function saveOnboard(patch) {
+  localStorage.setItem(ONBOARD_KEY, JSON.stringify({ ...loadOnboard(), ...patch }));
+}
+
+loadWallet();
+state.boot = loadOnboard().done ? "done" : "splash";
 
 function orderCards(cardIds) {
   return cardIds.map((id) => {
@@ -484,40 +545,25 @@ const FACTS = {
   ship: "국내·해외 실물 배송 가능",
 };
 
-const PERKS = ["실물 카드", "보관 가능", "배송 가능"];
+// 배송은 Ver.02라 '배송 가능' 혜택은 뺀다.
+const PERKS = ["실물 카드", "보관 가능"];
 
 const GUIDES = {
   random: [
     "상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.",
-    "재고 상황에 따라 일부 카드는 추첨 대상에서 제외될 수 있어요.",
     "동일한 카드가 다시 나올 수 있어요.",
-    "결제가 완료되면 뽑기 결과가 확정돼요.",
   ],
-  storage: [
-    "뽑은 포토카드는 바로 배송되지 않고 마이 앨범에 보관돼요.",
-    "원하는 카드를 골라 배송바구니에 담을 수 있어요.",
-    "여러 장을 모아 한 번에 배송 요청할 수 있어요.",
-  ],
-  shipping: [
-    "국내·해외 배송을 지원해요.",
-    "배송비는 배송 요청 시 선택한 국가와 수량에 따라 안내돼요.",
-    "해외 배송의 경우 관세나 현지 세금이 추가될 수 있어요.",
-  ],
-  condition: [
-    "공식 상품의 제작·포장 과정에서 미세한 스크래치, 눌림, 인쇄점, 재단 차이가 있을 수 있어요.",
-    "상품 상태에 따라 교환·환불 기준이 달라질 수 있으니, 큰 이상이 있는 경우 고객센터로 문의해 주세요.",
-  ],
-  refund: [
-    "랜덤 상품 특성상 단순 변심이나 원하는 카드가 나오지 않은 경우에는 변경이 어려울 수 있어요.",
-    "결제 후 뽑기 결과가 확정된 상품은 결과 변경이 어려워요.",
-    "상품에 큰 이상이 있는 경우 고객센터에서 확인 후 안내해 드려요.",
+  photocard: [
+    "뽑은 포토카드는 보유카드에서 확인이 가능해요.",
+    "배송 기능은 추후 업데이트 될 예정이에요.(국내, 해외)",
+    "공식 상품의 제작 및 포장 과정에서 미세한 스크래치, 인쇄점, 재단차이가 있을 수 있어요.",
+    "상품은 구매 후 교환 또는 환불이 불가능합니다.",
   ],
 };
 
 const SHEET_NOTES = [
-  "뽑은 카드는 마이앨범에 보관돼요.",
-  "배송은 별도로 신청해요.",
-  "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요.",
+  "뽑은 카드는 보유 카드에 보관됩니다.",
+  "동일 카드가 중복으로 뽑힐 수 있습니다.",
 ];
 
 function registerStore() {
@@ -543,7 +589,7 @@ function factValue(item, key) {
 }
 
 function perkLabels(item) {
-  const custom = (item?.perks || []).map((line) => String(line || "").trim());
+  const custom = (item?.perks || []).slice(0, PERKS.length).map((line) => String(line || "").trim());
   if (!custom.some(Boolean)) return PERKS;
   return PERKS.map((label, index) => custom[index] || label);
 }
@@ -552,8 +598,9 @@ function summaryLine(item) {
   return String(item?.summary || "").trim() || "공식 실물 포토카드 랜덤팩";
 }
 
+// 관리자 값은 앞의 두 칸만 쓴다. 세 번째 칸(옛 배송 문구)은 더 이상 쓰지 않는다.
 function sheetNotes(item) {
-  const notes = item?.sheetNotes || [];
+  const notes = (item?.sheetNotes || []).slice(0, SHEET_NOTES.length);
   return SHEET_NOTES.map((line, index) => String(notes[index] || "").trim() || line);
 }
 
@@ -1018,7 +1065,7 @@ function artistsPage() {
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>전체 아티스트</h1>
-      <span class="icon-btn" aria-hidden="true"></span>
+      ${searchButton()}
     </header>
     <div class="scroll">
       <div class="artist-list">${rows || `<p class="empty">등록된 아티스트가 없어요.</p>`}</div>
@@ -1105,14 +1152,8 @@ function home() {
     </header>`
     : `
     <header class="bar">
-      <button type="button" data-back="exit" aria-label="뒤로">←</button>
       <h1>포토카드</h1>
-      <span class="bar-tools">
-        <button type="button" class="icon-btn" data-search aria-label="검색">${searchIcon()}</button>
-        <button type="button" class="icon-btn" data-drawer aria-label="메뉴">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
-        </button>
-      </span>
+      ${searchButton()}
     </header>`;
   const profiles = artistProfiles().map((profile) => `
     <button type="button" class="profile" data-profile="${esc(profile.id)}">
@@ -1134,17 +1175,8 @@ function home() {
         </div>
         <div class="banner-dots">${dots}</div>
       </div>`;
-  const albums = catalog().filter((item) => listed(item));
-  const albumBlock = state.searchOpen
-    ? ""
-    : `
-      <section class="album-block">
-        ${midBanner()}
-        <h2>ALL</h2>
-        <div class="album-grid">
-          ${albums.map(productTile).join("")}
-        </div>
-      </section>`;
+  // 슬라이드 7 순서: 프로필 레일, 배너, NEW, 이용 방법 안내 배너. 관리자 중간 배너는 그 아래에 둔다.
+  const below = state.searchOpen ? "" : `${guideBanner()}${midBanner()}`;
 
   return `
     ${header}
@@ -1152,9 +1184,24 @@ function home() {
       ${rail}
       ${banner}
       <div class="shelf-wrap">${state.searchOpen ? "" : `<h2>NEW</h2>`}${list}</div>
-      ${albumBlock}
+      ${below}
     </div>
   `;
+}
+
+function guideBanner() {
+  return `
+    <section class="guide-banner-wrap">
+      <button type="button" class="guide-banner" data-nav="guide">
+        <img src="pack_closed.png" alt="" />
+        <span class="guide-banner-copy">
+          <small>이용 방법 안내</small>
+          <strong>포토카드, 이렇게 뽑아요</strong>
+          <span>상품 선택부터 개봉, 보유 카드까지 한눈에</span>
+        </span>
+        <i class="guide-banner-arrow" aria-hidden="true">›</i>
+      </button>
+    </section>`;
 }
 
 function groupCards(list) {
@@ -1244,13 +1291,13 @@ function cardSourceLine(card) {
   return `<p class="card-source">${esc(card.album || "")}${extra}</p>`;
 }
 
+// 배송 상태 표시(statusBadge)는 Ver.02라 보유 카드 격자에서 뺀다.
 function cardFigure(card) {
   const qty = Number(card.count) > 0 ? `<span class="qty-badge">${card.count}장</span>` : "";
   return `
     <figure data-card="${esc(card.id)}">
       <div class="shot">
         ${cardShot(card)}
-        ${statusBadge(card.status)}
         ${qty}
       </div>
       ${cardMark(card)}
@@ -1292,21 +1339,13 @@ function boxedFigure(card) {
   `;
 }
 
+// 보유 카드(슬라이드 22·23). 배송 상태 드롭다운과 배송바구니 링크는 Ver.02라 숨긴다.
 function album() {
-  const statusOptions = [
-    ["all", "전체"],
-    ["stored", "보관중"],
-    ["shipped", "배송중"],
-    ["delivered", "수령완료"],
-  ];
-  const statusId = statusOptions.some(([id]) => id === state.focusStatus) ? state.focusStatus : "all";
-  const pool = state.owned.filter((card) => card.status !== "shipping_cart");
-  const source = statusId === "all" ? pool : pool.filter((card) => card.status === statusId);
+  const source = state.owned;
   const artists = [...new Set(source.map((card) => card.artist))];
   const selected = artists.includes(state.albumArtist) ? state.albumArtist : "all";
   const shown = selected === "all" ? source : source.filter((card) => card.artist === selected);
-  const cards = state.pickMode ? shown : groupCards(shown);
-  const statusMarkup = statusOptions.map(([id, label]) => `<option value="${id}"${id === statusId ? " selected" : ""}>${label}</option>`).join("");
+  const cards = groupCards(shown.map((card) => ({ ...card, status: "stored" })));
   const chips = ["all", ...artists]
     .map((artist) => {
       const label = artist === "all" ? "전체" : artist;
@@ -1314,35 +1353,20 @@ function album() {
       return `<button class="${on}" data-artist="${esc(artist)}">${esc(label)}</button>`;
     })
     .join("");
-  const figures = state.pickMode ? cards.map(pickFigure) : cards.map(cardFigure);
+  const figures = cards.map(cardFigure);
   const body = figures.length
     ? `<div class="owned gallery">${figures.join("")}</div>`
-    : `<p class="empty">아직 뽑은 카드가 없어요.</p>`;
-  const inCart = state.owned.filter((card) => card.status === "shipping_cart").length;
-  const pickBar = state.pickMode
-    ? `
-    <div class="pick-bar">
-      <span>${state.picked.length}장 선택</span>
-      <button type="button" class="primary" data-pick-add ${state.picked.length ? "" : "disabled"}>배송바구니 담기</button>
-    </div>`
-    : "";
+    : `<p class="empty album-empty">보유 카드가 없습니다.<br>포토카드를 구매해보세요.</p>`;
   return `
     <header class="bar">
-      <h1>마이 앨범</h1>
-      <span class="bar-tools">
-        <button class="cart-link" data-menu="ship" aria-label="배송바구니 ${inCart}장">${icon("track")}<span>${inCart}장</span></button>
-        ${menuButton()}
-      </span>
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>보유 카드</h1>
+      ${searchButton()}
     </header>
     <div class="album-filters">
-      <div class="artist-tabs">${chips}</div>
-      <label class="status-drop">
-        <select data-album-status aria-label="상태">${statusMarkup}</select>
-        ${icon("caret")}
-      </label>
+      <div class="artist-tabs snap">${chips}</div>
     </div>
     <div class="scroll">${body}</div>
-    ${pickBar}
   `;
 }
 
@@ -1506,9 +1530,7 @@ function ownedBackSrc(card) {
 }
 
 function otherCards(card) {
-  const pool = state.cardFrom === "ship"
-    ? state.owned.filter((item) => item.status === "shipping_cart")
-    : state.owned.filter((item) => item.status !== "shipping_cart");
+  const pool = state.owned.map((item) => ({ ...item, status: "stored" }));
   const figures = groupCards(pool.filter((item) => item.id !== card.id)).map(cardFigure).join("");
   if (!figures) return "";
   return `
@@ -1522,37 +1544,20 @@ function ownedDetail() {
   const card = ownedCard();
   if (!card) return album();
   const pack = catalog().find((item) => item.artist === card.artist && item.album === card.album);
-  const copies = card.status === "stored" ? storedCopies(card) : [];
-  const qty = Math.min(Math.max(state.shipQty, 1), Math.max(copies.length, 1));
-  const stepper = copies.length > 1
-    ? `
-      <div class="qty-line">
-        <span>보유 ${copies.length}장</span>
-        <span class="qty-row">
-          <span>배송할 수량</span>
-          <button type="button" data-qty="-1" ${qty <= 1 ? "disabled" : ""}>−</button>
-          <strong>${qty}</strong>
-          <button type="button" data-qty="1" ${qty >= copies.length ? "disabled" : ""}>+</button>
-        </span>
-      </div>`
-    : "";
-  const addLabel = copies.length > 1 ? `${qty}장 배송바구니 담기` : "배송바구니 담기";
-  const action = card.status === "stored"
-    ? `${stepper}<button class="primary" data-cart-many="${card.id}">${addLabel}</button>`
-    : card.status === "shipping_cart"
-      ? `<button class="primary" data-receive="${card.id}">배송받기</button>`
-      : "";
+  // 배송바구니 담기·배송받기는 Ver.02라 카드 상세에서 뺀다.
+  const copies = state.owned.filter((item) => sameDesign(item, card));
+  const action = "";
   const member = card.member ? `<tr><th>멤버</th><td>${esc(card.member)}</td></tr>` : "";
   const back = ownedBackSrc(card);
   const backFace = back
     ? `<figure><img class="guard" src="${back}" alt="뒷면" draggable="false" /><figcaption>뒷면</figcaption></figure>`
     : "";
   return `
-    <div class="detail-top">
+    <header class="bar">
       <button data-back="${state.cardFrom}" aria-label="뒤로">←</button>
-      <strong>포토카드</strong>
-      ${menuButton()}
-    </div>
+      <h1>보유 카드</h1>
+      ${searchButton()}
+    </header>
     <div class="scroll">
       <div class="owned-detail">
         <div class="owned-faces${back ? "" : " is-single"}">
@@ -1570,7 +1575,7 @@ function ownedDetail() {
             ${member}
             <tr><th>번호</th><td>${esc(card.no)}</td></tr>
             <tr><th>등급</th><td>${esc(card.rarity)}</td></tr>
-            <tr><th>상태</th><td>${esc(STATUS[card.status])}</td></tr>
+            <tr><th>보유 수량</th><td>${copies.length}장</td></tr>
             <tr><th>보유 번호</th><td>${esc(card.id)}</td></tr>
           </table>
         </div>
@@ -1912,8 +1917,58 @@ function icon(name) {
   return `<svg class="ico" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="${ICON_PATH[name]}"/></svg>`;
 }
 
+function searchButton() {
+  return `<button type="button" class="icon-btn" data-search aria-label="검색">${searchIcon()}</button>`;
+}
+
+// 햄버거 드로어는 하단 탭바로 대체했다. 드로어 코드는 남기고 헤더에서는 검색 버튼을 쓴다.
 function menuButton() {
-  return `<button type="button" class="icon-btn" data-drawer aria-label="메뉴"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>`;
+  return searchButton();
+}
+
+const TAB_ICONS = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v10h13V10"></path><path d="M10 20v-6h4v6"></path></svg>`,
+  products: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L21 7H6.3"></path><circle cx="9.5" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle></svg>`,
+  exchange: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4.6"></path><path d="M5 3v4.5h4.5"></path><path d="M4 13a8 8 0 0 0 14.5 4.6"></path><path d="M19 21v-4.5h-4.5"></path></svg>`,
+  album: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="11" height="15" rx="1.6"></rect><path d="M5 7.5v11A1.5 1.5 0 0 0 6.5 20H15"></path></svg>`,
+  mypage: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>`,
+};
+
+const TABS = [
+  ["home", "홈"],
+  ["products", "상품"],
+  ["exchange", "포인트 교환"],
+  ["album", "보유카드"],
+  ["mypage", "마이페이지"],
+];
+
+function activeTab() {
+  const screen = state.screen;
+  if (["artists", "artist", "detail"].includes(screen)) return "products";
+  if (screen.startsWith("exchange")) return "exchange";
+  if (screen === "album" || screen === "card" || state.tab === "album") return "album";
+  if (["mypage", "wished", "purchases", "guide", "notice"].includes(screen) || state.tab === "mypage") return "mypage";
+  return "home";
+}
+
+// 개봉 연출(셔플·찢기)과 첫 진입 화면에서는 탭바를 숨긴다(Q2 기본값).
+function showTabBar() {
+  if (state.boot !== "done") return false;
+  if (state.screen === "open") return false;
+  return true;
+}
+
+function tabBar() {
+  if (!showTabBar()) return "";
+  const current = activeTab();
+  return `
+    <nav class="tabbar" aria-label="주요 메뉴">
+      ${TABS.map(([id, label]) => `
+        <button type="button" data-nav="${id}" class="${id === current ? "on" : ""}" aria-current="${id === current ? "page" : "false"}">
+          ${TAB_ICONS[id]}
+          <span>${label}</span>
+        </button>`).join("")}
+    </nav>`;
 }
 
 function menuGroup(id, label, body) {
@@ -1931,10 +1986,8 @@ function drawer() {
   if (!state.menuOpen) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
   const mine = [
-    item("album", "마이앨범"),
+    item("album", "보유 카드"),
     item("wished", "찜"),
-    item("ship", "배송바구니"),
-    item("track", "배송내역"),
   ].join("");
   return `
     <div class="nav-bg">
@@ -1964,8 +2017,8 @@ function noticeItems() {
     console.warn(error);
   }
   return [{
-    title: "보관과 배송",
-    body: "뽑은 카드는 마이 앨범에 보관돼요. 실물로 받을 카드만 배송바구니에 담아요.",
+    title: "보유 카드 안내",
+    body: "뽑은 카드는 보유 카드에 보관돼요. 같은 카드를 여러 장 뽑으면 장수로 표시돼요.",
     start: "2026-10-08",
   }];
 }
@@ -1983,28 +2036,77 @@ function notices() {
   }).join("");
   return `
     <header class="bar">
-      <button data-back="home" aria-label="뒤로">←</button>
+      <button data-back="mypage" aria-label="뒤로">←</button>
       <h1>공지사항</h1>
-      ${menuButton()}
+      ${searchButton()}
     </header>
     <div class="scroll">${articles}</div>
   `;
 }
 
+// 마이페이지(슬라이드 24). 배송바구니·배송내역 진입은 Ver.02라 뺀다.
 function mypage() {
-  const cart = state.owned.filter((card) => card.status === "shipping_cart").length;
+  const card = (label, attrs) => `<button type="button" class="menu-card" ${attrs}><span>${label}</span><i aria-hidden="true">›</i></button>`;
+  const line = (label, attrs) => `<button type="button" class="menu-line" ${attrs}>${label}</button>`;
   return `
     <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
       <h1>마이페이지</h1>
-      <span class="bar-tools"><span class="balance">${balanceLabel()}</span>${menuButton()}</span>
+      ${searchButton()}
     </header>
     <div class="scroll">
-      <div class="stat-row">
-        <button data-menu="wished">${icon("heart")}<strong>${state.wished.length}</strong><span>찜</span></button>
-        <button data-menu="ship">${icon("track")}<strong>${cart}</strong><span>배송바구니</span></button>
-        <button data-menu="track">${icon("ship")}<strong>${state.shipments.length}</strong><span>배송내역</span></button>
+      <div class="menu-cards">
+        ${card("구매 내역", `data-nav="purchases"`)}
+        ${card("찜 목록", `data-nav="wished"`)}
+        ${card("공지사항", `data-nav="notice"`)}
+        ${card("이벤트", `data-soon="이벤트"`)}
+      </div>
+      <div class="menu-box">
+        ${line("1:1 문의", `data-soon="1:1 문의"`)}
+        ${line("이용자 가이드", `data-nav="guide"`)}
+        ${line("FAQ", `data-soon="FAQ"`)}
+        ${line("이용약관", `data-soon="이용약관"`)}
+        ${line("SNS", `data-soon="SNS"`)}
       </div>
     </div>
+  `;
+}
+
+function purchaseDate(value) {
+  const text = String(value || "");
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return formatDate(text.slice(0, 10));
+  return formatDate(text);
+}
+
+// 구매 내역(Q22 기본값): 결제 기록을 단순 목록으로 보여 준다.
+function purchases() {
+  const orders = readOrderStore()
+    .filter((order) => order.kind === "purchase")
+    .sort((a, b) => String(b.purchasedOn || "").localeCompare(String(a.purchasedOn || "")));
+  const rows = orders.length
+    ? orders.map((order) => {
+      const item = product(order.productId);
+      const cover = item?.cover ? `<img src="${esc(item.cover)}" alt="" />` : `<span class="thumb-blank"></span>`;
+      const price = Number.isFinite(Number(order.price)) && order.price != null ? tott(order.price) : "—";
+      return `
+        <article class="purchase">
+          <span class="thumb">${cover}</span>
+          <span>
+            <p class="purchase-when">${esc(purchaseDate(order.purchasedOn) || "—")}</p>
+            <p class="name">${esc(order.productName || order.album || "")}</p>
+            <p class="meta">${esc(order.artist || "")} · ${Number(order.count) || (order.cards || []).length}장</p>
+          </span>
+          <strong>${price}</strong>
+        </article>`;
+    }).join("")
+    : `<p class="empty">구매 내역이 없어요.</p>`;
+  return `
+    <header class="bar">
+      <button data-back="mypage" aria-label="마이페이지">←</button>
+      <h1>구매 내역</h1>
+      ${searchButton()}
+    </header>
+    <div class="scroll"><div class="list">${rows}</div></div>
   `;
 }
 
@@ -2029,8 +2131,8 @@ function wished() {
   return `
     <header class="bar">
       <button data-back="mypage" aria-label="마이페이지">←</button>
-      <h1>찜</h1>
-      ${menuButton()}
+      <h1>찜 목록</h1>
+      ${searchButton()}
     </header>
     <div class="scroll"><div class="list">${rows}</div></div>
   `;
@@ -2064,10 +2166,11 @@ function detail(item) {
       </div>
       ${fiveNote}`;
   return `
-    <div class="detail-top">
+    <header class="bar">
       <button data-back="${state.productFrom === "artist" || state.productFrom === "artists" ? state.productFrom : ""}" aria-label="뒤로">←</button>
-      <strong>${esc(item.artist)}</strong>
-    </div>
+      <h1>${esc(item.artist)}</h1>
+      ${searchButton()}
+    </header>
     <div class="scroll">
       <img class="cover" src="${item.cover}" alt="" />
       <div class="detail">
@@ -2084,10 +2187,10 @@ function detail(item) {
           <p class="lead">${lineup(item.cards.length)}</p>
           <p class="lead">${tott(item.price)}</p>
         </div>
+        <p class="pay-note">TOTT 결제 · TP 결제는 준비 중이에요</p>
         <div class="perks">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"></rect></svg>${esc(perkLabels(item)[0])}</span>
           <span>${icon("track")}${esc(perkLabels(item)[1])}</span>
-          <span>${icon("ship")}${esc(perkLabels(item)[2])}</span>
         </div>
         <section class="section">
           <h3>포토카드 구성 ${item.cards.length}종</h3>
@@ -2105,10 +2208,7 @@ function detail(item) {
         </section>
         <div class="guides">
           ${guideSection("랜덤 상품 안내", item, "random")}
-          ${guideSection("보관 안내", item, "storage")}
-          ${guideSection("배송 안내", item, "shipping")}
-          ${guideSection("상품 상태 안내", item, "condition")}
-          ${guideSection("교환·환불 안내", item, "refund")}
+          ${guideSection("포토카드 안내", item, "photocard")}
         </div>
       </div>
     </div>
@@ -2344,7 +2444,7 @@ function sealedPack() {
     ? `<img class="fly-face back" src="${back}" alt="" draggable="false" />`
     : `<span class="fly-face back fly-blank"></span>`;
   return `
-    <header class="bar open-bar"><h1>Photocard Open</h1>${count > 1 ? `<span class="result-progress">${state.revealIndex + 1} / ${count}</span>` : ""}</header>
+    ${openBar(count > 1 ? `${count}장 뽑기` : "")}
     <div class="open-stage tear-${TEAR_METHOD}" data-open-stage>
       <video class="open-fire-src" data-fireworks src="fx/fireworks.mp4?v=4" muted loop playsinline preload="auto"></video>
       <div class="open-stack">
@@ -2382,55 +2482,107 @@ function openMotion() {
   `;
 }
 
-function result() {
-  const item = product(state.productId);
-  const card = state.reveal[state.revealIndex];
-  const count = state.reveal.length;
-  const index = state.revealIndex + 1;
-  const last = index === count;
-  const progress = count > 1 ? `<span class="result-progress">${index} / ${count}</span>` : "";
-  const who = [card.member, card.rarity].filter(Boolean).join(" · ");
+// 개봉 흐름 공통 헤더(슬라이드 11~17): ←는 결과 화면으로 건너뛴다(Q13 기본값).
+function openBar(note) {
+  return `
+    <header class="bar open-bar">
+      <button type="button" data-open-skip aria-label="결과로 건너뛰기">←</button>
+      <h1>Photocard Open</h1>
+      ${note ? `<span class="result-progress">${esc(note)}</span>` : ""}
+    </header>`;
+}
+
+function cardWho(card) {
+  return [card.member, card.rarity].filter(Boolean).join(" · ");
+}
+
+function revealSlide(card, index) {
   const back = revealBackSrc(card);
   const backFace = back
     ? `<img class="reveal-face back" src="${back}" alt="" draggable="false" />`
     : `<span class="reveal-face back reveal-back-blank"></span>`;
-  const boxed = card.status === "shipping_cart";
-  const boxButton = boxed
-    ? `<button class="ghost" type="button" data-result-box-go>배송박스 보기</button>`
-    : `<button class="ghost" type="button" data-result-box>배송박스에 담기</button>`;
-  const status = boxed
-    ? `<p class="result-status">배송박스</p>`
-    : `<p class="result-status">마이앨범에서 확인 가능해요</p>`;
-  const next = last
-    ? `
-      <div class="result-actions">
-        <button class="primary" data-again="1">한 번 더 뽑기</button>
-        <div class="result-split">
-          ${boxButton}
-          <button class="ghost" data-tab="home">다른 팩 보기</button>
-        </div>
-        <button class="ghost" data-nav="album">마이앨범</button>
-        <button class="result-more" data-again="5">이 팩 5번 연속 뽑기</button>
-      </div>`
-    : `<div class="result-actions"><button class="primary" data-next>다음 카드 ${index + 1}/${count}</button></div>`;
   return `
-    <header class="bar result-bar"><h1>${boxed ? "배송박스" : ""}</h1>${progress}</header>
+    <div class="result-slide" data-result-slide="${index}">
+      <div class="reveal-flip">
+        <div class="reveal-spin">
+          <img class="reveal-face front guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />
+          ${backFace}
+        </div>
+      </div>
+    </div>`;
+}
+
+// 결과 화면(슬라이드 14·17). 5장 뽑기는 좌우 스와이프 캐러셀로 다섯 장을 모두 보여 준다.
+function result() {
+  const item = product(state.productId);
+  const count = state.reveal.length;
+  const index = Math.max(0, Math.min(count - 1, state.revealIndex));
+  const card = state.reveal[index];
+  const many = count > 1;
+  const progress = many ? `${index + 1} / ${count}` : "";
+  const dots = many
+    ? `<div class="result-dots" data-result-dots>${state.reveal.map((_, i) => `<i class="${i === index ? "on" : ""}"></i>`).join("")}</div>`
+    : "";
+  const otherLabel = many ? "1장 뽑기 구매" : "5장 연속 뽑기 구매";
+  const otherCount = many ? 1 : 5;
+  return `
+    <header class="bar open-bar">
+      <button type="button" data-result-close aria-label="닫기">←</button>
+      <h1>Photocard Open</h1>
+      ${progress ? `<span class="result-progress" data-result-progress>${progress}</span>` : ""}
+    </header>
     <div class="scroll">
       <div class="result">
-        <div class="reveal-flip">
-          <div class="reveal-spin">
-            <img class="reveal-face front guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />
-            ${backFace}
-          </div>
+        <div class="result-top">
+          <button type="button" class="result-mine" data-nav="album">보유 카드</button>
         </div>
+        <div class="result-cards${many ? " is-many" : ""}" data-result-cards>
+          ${state.reveal.map(revealSlide).join("")}
+        </div>
+        ${dots}
         ${artistMark(item)}
-        <h2>${esc(item.album)} ${esc(card.no)}</h2>
-        ${who ? `<p class="result-grade">${esc(who)}</p>` : ""}
-        ${status}
-        ${next}
+        <h2 data-result-name>${esc(item.album)} ${esc(card.no)}</h2>
+        <p class="result-grade" data-result-grade>${esc(cardWho(card))}</p>
+        <p class="result-status">보유 카드에서 확인 가능해요</p>
+        <div class="result-actions">
+          <button class="primary" data-again="1">한 번 더 뽑기</button>
+          <div class="result-split">
+            <button class="ghost" data-nav="products">다른 상품 보기</button>
+            <button class="ghost" data-again="${otherCount}">${otherLabel}</button>
+          </div>
+          <button class="ghost" data-result-close>닫기</button>
+        </div>
       </div>
     </div>
   `;
+}
+
+// 5장 결과 캐러셀: 스와이프하면 이름·등급·n / 5 표시를 바꾼다.
+function armResultCarousel() {
+  const rail = document.querySelector("[data-result-cards]");
+  if (!rail || rail.dataset.bound || state.reveal.length < 2) return;
+  rail.dataset.bound = "1";
+  const item = product(state.productId);
+  const name = document.querySelector("[data-result-name]");
+  const grade = document.querySelector("[data-result-grade]");
+  const progress = document.querySelector("[data-result-progress]");
+  const dots = [...document.querySelectorAll("[data-result-dots] i")];
+  const width = () => rail.clientWidth || 1;
+  if (state.revealIndex > 0) rail.scrollLeft = width() * state.revealIndex;
+  let timer = 0;
+  rail.addEventListener("scroll", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      const index = Math.max(0, Math.min(state.reveal.length - 1, Math.round(rail.scrollLeft / width())));
+      if (index === state.revealIndex) return;
+      state.revealIndex = index;
+      const card = state.reveal[index];
+      if (name) name.textContent = `${item.album} ${card.no}`;
+      if (grade) grade.textContent = cardWho(card);
+      if (progress) progress.textContent = `${index + 1} / ${state.reveal.length}`;
+      dots.forEach((dot, i) => dot.classList.toggle("on", i === index));
+    }, 60);
+  }, { passive: true });
 }
 
 function balanceLabel() {
@@ -2591,6 +2743,7 @@ function draw(item, count) {
     })),
   });
   state.balance -= item.price * count;
+  persistWallet();
   state.reveal = picked;
   state.revealIndex = 0;
   beginOpen();
@@ -2610,20 +2763,29 @@ function beginOpen() {
   render();
 }
 
+// 셔플 화면(슬라이드 11·15·16): SKIP, [한 번 더 섞기 | 바로 오픈하기], 선택 뒤 중간 연출.
 function cardDeck() {
+  const count = state.reveal.length;
   const packs = DECK_FAN.map((spot, index) => `
     <button type="button" class="deck-card" data-deck-pick="${index}" style="--i:${index};--fan-x:${spot.x}px;--fan-y:${spot.y}px;--fan-r:${spot.r}deg" aria-label="포장 ${index + 1}">
       <span class="deck-spin">
         <img class="deck-face" src="${DECK_PACK}" alt="" draggable="false" />
+        <span class="prism" aria-hidden="true"></span>
         <img class="deck-face back" src="${DECK_BACK}" alt="" draggable="false" />
       </span>
     </button>`).join("");
   return `
-    <header class="bar open-bar"><h1>Photocard Open</h1></header>
+    ${openBar(count > 1 ? `${count}장 뽑기` : "")}
     <div class="deck-stage" data-deck>
       <p class="deck-hint" data-deck-hint>한 장을 선택하세요</p>
+      <button class="deck-skip" type="button" data-open-skip>SKIP</button>
       <div class="deck" data-deck-cards>${packs}</div>
-      <button class="ghost deck-again" type="button" data-deck-again><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>한 번 더 섞기</button>
+      <span class="deck-ring" aria-hidden="true"></span>
+      <span class="deck-flash" aria-hidden="true"></span>
+      <div class="deck-actions">
+        <button class="ghost deck-again" type="button" data-deck-again><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>한 번 더 섞기</button>
+        <button class="primary deck-direct" type="button" data-deck-direct>바로 오픈하기</button>
+      </div>
       <img class="deck-cover" src="${DECK_PACK}" alt="" draggable="false" />
     </div>
   `;
@@ -2734,6 +2896,37 @@ function armDeck() {
     }, 2920);
   };
   playShuffle();
+  // 중간 연출(슬라이드 16): 나머지 넉 장이 X자 네 방향으로 퍼지고, 고른 포장이 가운데서 커지며 돈다.
+  const corners = [[-104, -176], [104, -176], [-104, 176], [104, 176]];
+  const choose = (pick) => {
+    if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
+    deck.classList.add("is-picked");
+    pick.classList.add("is-choice");
+    let seat = 0;
+    cards.forEach((card) => {
+      if (card === pick) return;
+      const [x, y] = corners[seat];
+      seat += 1;
+      card.style.setProperty("--sx", `${x}px`);
+      card.style.setProperty("--sy", `${y}px`);
+    });
+    if (hint) hint.textContent = "선택 완료";
+    if (!reduced) {
+      stage.classList.add("is-burst");
+      const prism = pick.querySelector(".prism");
+      const shine = () => {
+        if (!prism || !stage.isConnected) return;
+        prism.classList.remove("is-shine");
+        void prism.offsetWidth;
+        prism.classList.add("is-shine");
+      };
+      later(shine, 200);
+      later(shine, 700);
+    }
+    later(() => {
+      if (stage.isConnected) showPack();
+    }, reduced ? 240 : 1500);
+  };
   stage.addEventListener("click", (event) => {
     const again = event.target.closest("[data-deck-again]");
     if (again) {
@@ -2742,15 +2935,19 @@ function armDeck() {
       playShuffle();
       return;
     }
+    // 바로 오픈하기: 고르지 않고 무작위 한 장으로 같은 연출을 거쳐 개봉한다(Q11 기본값).
+    const direct = event.target.closest("[data-deck-direct]");
+    if (direct) {
+      event.stopPropagation();
+      if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
+      choose(cards[Math.floor(Math.random() * cards.length)]);
+      return;
+    }
+    if (event.target.closest("[data-open-skip]")) return;
     const pick = deckCardAt(deck, event.clientX, event.clientY);
     if (!pick || !deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
     event.stopPropagation();
-    deck.classList.add("is-picked");
-    pick.classList.add("is-choice");
-    if (hint) hint.textContent = "선택 완료";
-    window.setTimeout(() => {
-      if (stage.isConnected) showPack();
-    }, reduced ? 240 : 800);
+    choose(pick);
   });
 }
 
@@ -3014,7 +3211,7 @@ const NOTES = {
   result: `<h2>결과</h2><p>포장을 연 뒤에 카드 앞면이 나와요.</p>`,
   five: `<h2>5장 연속</h2><p>같은 팩 5장을 한 장씩 이어서 열어요.</p>`,
   mypage: `<h2>마이페이지</h2><p>찜, 배송, 배송 현황으로 가는 메뉴예요.</p>`,
-  album: `<h2>마이 앨범</h2><p>가진 카드예요. 보관 중인 카드만 배송바구니에 담아요.</p>`,
+  album: `<h2>보유 카드</h2><p>가진 카드예요. 같은 카드는 장수로 묶여요.</p>`,
   card: `<h2>보유 카드</h2><p>카드 한 장의 앞뒷면과 상태예요.</p>`,
   stored: `<h2>보관 중</h2><p>뽑고 아직 배송 전인 카드예요.</p>`,
   ship: `<h2>배송바구니</h2><p>뽑은 카드를 모아 배송비를 내는 화면이에요.</p>`,
@@ -3466,10 +3663,11 @@ function armOpenCut() {
   const listen = (type, handler) => document.addEventListener(type, handler, { signal });
   listen("pointerdown", (event) => {
     if (!stage.isConnected || state.openCut !== "idle") return;
+    // 헤더(←)처럼 무대 밖에서 시작한 터치는 잡지 않는다. 포인터를 잡으면 버튼 클릭이 사라진다.
+    if (!stage.contains(event.target)) return;
     const box = packBox(stage);
     if (!box) return;
     if (TEAR_METHOD === 1) {
-      if (!stage.contains(event.target)) return;
       beginTear(event, box);
       return;
     }
@@ -3577,13 +3775,8 @@ function midBanners() {
       return { open: banner.packId, image: banner.image, alt: lines.line1, ...lines };
     });
   }
-  return [
-    {
-      nav: "album",
-      image: "album-banner.png",
-      alt: "뽑은 포토카드는 마이앨범에 보관돼요",
-    },
-  ];
+  // 기본 중간 배너는 홈의 이용 방법 안내 배너(guideBanner)가 대신한다.
+  return [];
 }
 
 function midSlide(banner) {
@@ -3836,16 +4029,489 @@ function adminShipScreen(status) {
     </section>`;
 }
 
+let toastTimer = 0;
+
+function toast(message) {
+  state.toast = message;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    state.toast = "";
+    render();
+  }, 1600);
+}
+
+// ---- 포인트 교환 (슬라이드 19~21, mock) ----
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function clockText(date = new Date()) {
+  return `${date.getFullYear()}.${pad2(date.getMonth() + 1)}.${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function exchangeWhen(iso) {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${String(date.getFullYear()).slice(2)}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function tottText(amount) {
+  const value = Number(amount) || 0;
+  return Number.isInteger(value) ? value.toLocaleString("ko-KR") : value.toLocaleString("ko-KR", { maximumFractionDigits: 6 });
+}
+
+function tpText(amount) {
+  return Math.round(Number(amount) || 0).toLocaleString("ko-KR");
+}
+
+function currentWallet() {
+  return WALLETS[state.exWallet] || WALLETS[0];
+}
+
+function exchangeRow(entry) {
+  return `
+    <article class="ex-row">
+      <span class="ex-icon" aria-hidden="true">${TAB_ICONS.exchange}</span>
+      <span class="ex-body">
+        <strong>교환</strong>
+        <small>${esc(exchangeWhen(entry.at))}</small>
+      </span>
+      <span class="ex-amount">
+        <strong><em>- ${tottText(entry.tott)}</em> TOTT</strong>
+        <strong><b>+ ${tpText(entry.tp)}</b> TP</strong>
+        <small>보유 ${tpText(entry.tpAfter)} TP</small>
+      </span>
+    </article>`;
+}
+
+function exchange() {
+  const wallet = currentWallet();
+  const recent = state.exchanges.slice(0, 3);
+  const options = WALLETS.map((item, index) => `<option value="${index}"${index === state.exWallet ? " selected" : ""}>${esc(item.short)}</option>`).join("");
+  const history = recent.length
+    ? `<div class="ex-list">${recent.map(exchangeRow).join("")}</div>`
+    : `
+      <div class="ex-empty">
+        <p>TOTT 교환 내역은 첫 교환 이후부터 확인할 수 있어요.<br>아래를 완료하면, 내역이 생겨요.</p>
+        <div class="ex-empty-box"><span><b>1</b> 보유한 TOTT를 TP로 교환하기(포인트 교환)</span></div>
+      </div>`;
+  return `
+    <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>포인트 교환</h1>
+      ${searchButton()}
+    </header>
+    <div class="scroll ex-scroll">
+      <section class="wallet-card">
+        <div class="wallet-top">
+          <time data-clock>${clockText()}</time>
+          <button type="button" data-ex-refresh aria-label="새로고침"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 0 1-14.3 4.9"></path><path d="M4 12a8 8 0 0 1 14.3-4.9"></path><path d="M18 3v4.5h-4.5"></path><path d="M6 21v-4.5h4.5"></path></svg></button>
+        </div>
+        <div class="wallet-body">
+          <label class="wallet-addr">
+            <span class="wallet-logo" aria-hidden="true">P</span>
+            <select data-ex-wallet aria-label="지갑 주소">${options}</select>
+            ${icon("caret")}
+          </label>
+          <div class="wallet-sum">
+            <p class="wallet-coin"><span class="coin-mark" aria-hidden="true">T</span>토마톡(TOTT)</p>
+            <strong class="wallet-amount">${tottText(state.balance)}<small>TOTT</small></strong>
+            <p class="wallet-coin tp"><span class="coin-mark tp" aria-hidden="true">P</span>포인트(TP)</p>
+            <strong class="wallet-amount tp">${tpText(state.tp)}<small>TP</small></strong>
+          </div>
+          <div class="wallet-actions">
+            <button type="button" class="primary" data-nav="exchange-form">교환하기</button>
+            <button type="button" class="ghost" data-nav="exchange-history">전체 내역</button>
+          </div>
+        </div>
+        <p class="wallet-note">${esc(wallet.full)}</p>
+      </section>
+      <section class="ex-section">
+        <div class="ex-head">
+          <h2>거래 내역</h2>
+          <button type="button" data-nav="exchange-history">전체 보기 +</button>
+        </div>
+        ${history}
+      </section>
+    </div>
+  `;
+}
+
+function exchangeHistory() {
+  const day = state.exDate;
+  const rows = state.exchanges.filter((entry) => !day || String(entry.at || "").slice(0, 10) === day);
+  const body = rows.length
+    ? `<div class="ex-list">${rows.map(exchangeRow).join("")}</div>`
+    : `<p class="empty">${day ? "이 날짜의 교환 내역이 없어요." : "아직 교환 내역이 없어요."}</p>`;
+  return `
+    <header class="bar">
+      <button data-back="exchange" aria-label="포인트 교환">←</button>
+      <h1>교환 내역</h1>
+      ${searchButton()}
+    </header>
+    <div class="ex-filter">
+      <label>지정된 날짜만 보기
+        <input type="date" data-field="exDate" value="${esc(day)}" />
+      </label>
+      <button type="button" data-ex-date-clear ${day ? "" : "disabled"}>전체</button>
+    </div>
+    <div class="scroll">${body}</div>
+  `;
+}
+
+function exchangeAmounts() {
+  const tott = Number(String(state.exTott).replace(/,/g, ""));
+  const safe = Number.isFinite(tott) ? Math.max(0, tott) : 0;
+  return { tott: safe, tp: Math.round(safe * EXCHANGE_RATE) };
+}
+
+function exchangeReady() {
+  const { tott } = exchangeAmounts();
+  return tott >= EXCHANGE_MIN && tott <= state.balance;
+}
+
+function exchangeHint() {
+  const { tott } = exchangeAmounts();
+  if (!tott) return "";
+  if (tott < EXCHANGE_MIN) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
+  if (tott > state.balance) return "보유한 TOTT보다 많아요.";
+  return "";
+}
+
+function exchangeForm() {
+  const wallet = currentWallet();
+  const { tp } = exchangeAmounts();
+  const ready = exchangeReady();
+  const hint = exchangeHint();
+  const tpValue = state.exTp !== "" ? state.exTp : (tp ? tpText(tp) : "");
+  return `
+    <header class="bar">
+      <button data-back="exchange" aria-label="포인트 교환">←</button>
+      <h1>포인트 교환</h1>
+      ${searchButton()}
+    </header>
+    <div class="scroll ex-form">
+      <h2>TOTT → TP 교환</h2>
+      <p class="ex-desc">토마톡 앱에 연동되어있는 팬텀 지갑을 통해<br>TOTT를 TP로 교환 할 수 있습니다.</p>
+      <h3>지갑 주소</h3>
+      <div class="ex-wallet">
+        <span class="wallet-logo" aria-hidden="true">P</span>
+        <span><small>Wallet</small><strong>${esc(wallet.short)}</strong></span>
+      </div>
+      <div class="ex-balance"><span>보유 TOTT</span><strong><em>${tottText(state.balance)}</em> TOTT</strong></div>
+      <div class="ex-box">
+        <label class="ex-field">
+          <span>TOTT 기준 입력</span>
+          <span class="ex-input">
+            <input data-field="exTott" inputmode="decimal" placeholder="교환 TOTT 수량" value="${esc(state.exTott)}" />
+            <b>TOTT</b>
+          </span>
+        </label>
+        <div class="ex-chips">
+          ${[10, 25, 50, 75].map((pct) => `<button type="button" data-ex-pct="${pct}">${pct}%</button>`).join("")}
+          <button type="button" data-ex-pct="100">최대</button>
+        </div>
+        <span class="ex-swap" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v16"></path><path d="m3.5 7.5 3.5-3.5 3.5 3.5"></path><path d="M17 20V4"></path><path d="m13.5 16.5 3.5 3.5 3.5-3.5"></path></svg></span>
+        <label class="ex-field">
+          <span><b class="ex-tp">TP</b> 기준 입력</span>
+          <span class="ex-input">
+            <input data-field="exTp" inputmode="numeric" placeholder="보낼 금액" value="${esc(tpValue)}" />
+            <b>TP</b>
+          </span>
+        </label>
+        <div class="ex-chips">
+          ${[1000, 3000, 5000, 10000].map((amount) => `<button type="button" data-ex-add="${amount}">+ ${amount.toLocaleString("ko-KR")} TP</button>`).join("")}
+          <button type="button" data-ex-pct="100">최대</button>
+        </div>
+        <p class="ex-rate">1 TOTT = ${EXCHANGE_RATE.toLocaleString("ko-KR")} TP <small>(mock 환율)</small></p>
+        <p class="ex-hint" data-ex-hint>${esc(hint)}</p>
+      </div>
+      <section class="ex-notice">
+        <h3>교환 안내 사항</h3>
+        <ol>
+          <li>최소 변경 가능한 금액은 50 TOTT 에요. 최소 변경 수량보다 적을 경우 교환이 되지 않아요.</li>
+          <li>실시간 TOTT 가격변동으로 인해 실제 지급 TP 수량이 달라질 수 있어요.</li>
+          <li>TP 교환 비율은 KRW 와 1:1 로 맞춰져 있어요.</li>
+          <li>한번 교환 된 TP 는 다시 TOTT 로 변경할 수 없어요.</li>
+          <li>지갑별 TOTT 수량과 TP 수량이 다르므로 확인을 잘해주세요.</li>
+          <li>지갑에 보유한 TP 는 다른 지갑으로 이동이 불가능 해요.</li>
+        </ol>
+      </section>
+    </div>
+    <div class="buy">
+      <button class="primary" type="button" data-ex-confirm ${ready ? "" : "disabled"}>확인</button>
+    </div>
+  `;
+}
+
+// 입력 중에는 전체 render 없이 반대쪽 칸과 확인 버튼만 갱신한다(포커스 유지).
+function syncExchangeForm(changed) {
+  const tottInput = app.querySelector("[data-field=exTott]");
+  const tpInput = app.querySelector("[data-field=exTp]");
+  if (changed === "tott") {
+    const { tp } = exchangeAmounts();
+    state.exTp = tp ? tpText(tp) : "";
+    if (tpInput) tpInput.value = state.exTp;
+  } else {
+    const tp = Number(String(state.exTp).replace(/,/g, ""));
+    const safe = Number.isFinite(tp) && tp > 0 ? tp : 0;
+    const tott = safe / EXCHANGE_RATE;
+    state.exTott = safe ? String(Number(tott.toFixed(6))) : "";
+    if (tottInput) tottInput.value = state.exTott;
+  }
+  const button = app.querySelector("[data-ex-confirm]");
+  if (button) button.disabled = !exchangeReady();
+  const hint = app.querySelector("[data-ex-hint]");
+  if (hint) hint.textContent = exchangeHint();
+}
+
+function setExchangeTott(amount) {
+  const value = Math.max(0, Number(amount) || 0);
+  state.exTott = value ? String(Number(value.toFixed(6))) : "";
+  state.exTp = value ? tpText(value * EXCHANGE_RATE) : "";
+}
+
+function runExchange() {
+  if (!exchangeReady()) return false;
+  const { tott, tp } = exchangeAmounts();
+  state.balance = Number((state.balance - tott).toFixed(6));
+  state.tp += tp;
+  state.exchanges.unshift({
+    id: `EX_${Date.now()}`,
+    at: new Date().toISOString(),
+    wallet: currentWallet().id,
+    tott,
+    tp,
+    tpAfter: state.tp,
+  });
+  persistWallet();
+  state.exTott = "";
+  state.exTp = "";
+  return true;
+}
+
+let clockTimer = 0;
+
+function armClock() {
+  window.clearInterval(clockTimer);
+  if (!document.querySelector("[data-clock]")) return;
+  clockTimer = window.setInterval(() => {
+    const node = document.querySelector("[data-clock]");
+    if (!node) {
+      window.clearInterval(clockTimer);
+      return;
+    }
+    node.textContent = clockText();
+  }, 1000);
+}
+
+// ---- 이용 가이드 (슬라이드 25) ----
+
+const GUIDE_PAGES = [
+  {
+    image: "/assets/covers/jump.jpg",
+    title: "상품을 고르고 뽑기",
+    body: "홈에서 아티스트와 상품을 고른 뒤 1장 뽑기 또는 5장 연속 뽑기를 눌러요.",
+  },
+  {
+    image: "tears/base.png",
+    title: "TOTT로 결제하기",
+    body: "지갑을 연결하고 TOTT로 결제해요. 포인트 교환에서 TOTT를 TP로 바꿀 수 있어요.",
+  },
+  {
+    image: "pack_closed.png",
+    title: "포장을 밀어 열기",
+    body: "포장을 손가락으로 밀어 열고, 나온 카드를 드래그해 앞뒤를 확인해요.",
+  },
+  {
+    image: "/assets/covers/crazy.jpg",
+    title: "보유 카드에 보관",
+    body: "뽑은 카드는 보유 카드에서 언제든 볼 수 있어요. 같은 카드는 장수로 표시돼요.",
+  },
+];
+
+function guidePages() {
+  return `
+    <div class="guide-rail" data-guide-rail>
+      ${GUIDE_PAGES.map((page, index) => `
+        <section class="guide-page" data-guide-page="${index}">
+          <span class="guide-step">${index + 1} / ${GUIDE_PAGES.length}</span>
+          <img src="${page.image}" alt="" draggable="false" />
+          <h2>${esc(page.title)}</h2>
+          <p>${esc(page.body)}</p>
+        </section>`).join("")}
+    </div>
+    <div class="guide-dots" data-guide-dots>${GUIDE_PAGES.map((_, index) => `<i class="${index === state.guidePage ? "on" : ""}"></i>`).join("")}</div>`;
+}
+
+// 첫 진입에서는 마지막 장까지 봐야 '시작하기'가 켜지고 건너뛸 수 없다. 다시 볼 때는 언제든 닫는다.
+function guide(firstRun) {
+  const last = state.guidePage >= GUIDE_PAGES.length - 1;
+  const action = firstRun
+    ? (state.guideSeen
+      ? `<button class="primary" type="button" data-guide-start>시작하기</button>`
+      : `<button class="primary" type="button" data-guide-next>다음</button>`)
+    : (last
+      ? `<button class="primary" type="button" data-guide-close>확인</button>`
+      : `<button class="primary" type="button" data-guide-next>다음</button>`);
+  const note = firstRun && !state.guideSeen
+    ? `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.</p>`
+    : "";
+  const header = firstRun
+    ? `<header class="bar"><h1>포토카드 이용 가이드</h1></header>`
+    : `
+      <header class="bar">
+        <button data-back="${esc(state.guideFrom)}" aria-label="뒤로">←</button>
+        <h1>포토카드 이용 가이드</h1>
+        ${searchButton()}
+      </header>`;
+  return `
+    ${header}
+    <div class="guide-body">
+      ${guidePages()}
+    </div>
+    <div class="buy guide-foot">
+      ${note}
+      ${action}
+    </div>
+  `;
+}
+
+function armGuide() {
+  const rail = document.querySelector("[data-guide-rail]");
+  if (!rail || rail.dataset.bound) return;
+  rail.dataset.bound = "1";
+  const width = () => rail.clientWidth || 1;
+  if (state.guidePage > 0) rail.scrollLeft = width() * state.guidePage;
+  let timer = 0;
+  rail.addEventListener("scroll", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      const index = Math.max(0, Math.min(GUIDE_PAGES.length - 1, Math.round(rail.scrollLeft / width())));
+      const reachedEnd = index === GUIDE_PAGES.length - 1;
+      const changed = index !== state.guidePage || (reachedEnd && !state.guideSeen);
+      state.guidePage = index;
+      if (reachedEnd) state.guideSeen = true;
+      if (changed) render();
+    }, 60);
+  }, { passive: true });
+}
+
+function nextGuidePage() {
+  const rail = document.querySelector("[data-guide-rail]");
+  const next = Math.min(GUIDE_PAGES.length - 1, state.guidePage + 1);
+  if (!rail) {
+    state.guidePage = next;
+    if (next === GUIDE_PAGES.length - 1) state.guideSeen = true;
+    render();
+    return;
+  }
+  rail.scrollTo({ left: rail.clientWidth * next, behavior: "smooth" });
+}
+
+// ---- 첫 진입 (슬라이드 3~6) ----
+
+const SPLASH_IMAGES = ["/assets/covers/jump.jpg", "/assets/covers/crazy.jpg", "/assets/covers/ive-empathy.jpg"];
+
+function splash() {
+  return `
+    <div class="splash">
+      <div class="splash-rail" data-splash-rail>
+        ${SPLASH_IMAGES.map((src, index) => `
+          <figure class="splash-slide">
+            <img src="${src}" alt="" draggable="false" />
+            <figcaption><strong>포토카드</strong><span>TOMATOK ${index + 1} / ${SPLASH_IMAGES.length}</span></figcaption>
+          </figure>`).join("")}
+      </div>
+      <div class="splash-dots" data-splash-dots>${SPLASH_IMAGES.map((_, index) => `<i class="${index === 0 ? "on" : ""}"></i>`).join("")}</div>
+      <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>
+      <p class="splash-foot">ⓒ Copyright, ${new Date().getFullYear()}</p>
+    </div>`;
+}
+
+function consentWhen(iso) {
+  const date = iso ? new Date(iso) : new Date();
+  return `${date.getFullYear()}년 ${pad2(date.getMonth() + 1)}월 ${pad2(date.getDate())}일 ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function bootModal() {
+  const saved = loadOnboard();
+  if (state.boot === "push") {
+    return `
+      <div class="boot-bg">
+        <div class="boot-modal">
+          <p class="boot-title">‘토마톡’에서<br>PUSH 알림을 보내고자 합니다.</p>
+          <div class="boot-split">
+            <button type="button" data-push="no">허용 안 함</button>
+            <button type="button" data-push="yes">허용</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  if (state.boot === "marketing") {
+    return `
+      <div class="boot-bg">
+        <div class="boot-modal">
+          <p class="boot-title">‘TOMATOK’ 마케팅 수신<br>동의를 하시겠습니까?</p>
+          <div class="boot-split">
+            <button type="button" data-marketing="no">허용 안 함</button>
+            <button type="button" data-marketing="yes">허용</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  if (state.boot === "consent") {
+    const agreed = Boolean(saved.marketing);
+    return `
+      <div class="boot-bg">
+        <div class="boot-modal boot-consent">
+          <p class="boot-title">마케팅 Push 알림 동의 안내</p>
+          <dl>
+            <div><dt>전송자</dt><dd>TOMATOK</dd></div>
+            <div><dt>처리 일시</dt><dd>${esc(consentWhen(saved.decidedAt))}</dd></div>
+            <div><dt>처리 내용</dt><dd>${agreed ? "수신 완료" : "거부 처리 완료"}</dd></div>
+          </dl>
+          <p class="boot-copy">Push 알림 동의 상태는 하단 메뉴<br>마이 페이지 &gt; 내 기본정보 설정에서<br>변경 하실 수 있습니다.</p>
+          <button type="button" class="boot-ok" data-boot-next="guide">확인</button>
+        </div>
+      </div>`;
+  }
+  return "";
+}
+
+function bootView() {
+  if (state.boot === "guide") return guide(true);
+  return splash() + bootModal();
+}
+
+function armSplash() {
+  const rail = document.querySelector("[data-splash-rail]");
+  if (!rail || rail.dataset.bound) return;
+  rail.dataset.bound = "1";
+  const dots = [...document.querySelectorAll("[data-splash-dots] i")];
+  rail.addEventListener("scroll", () => {
+    const index = Math.round(rail.scrollLeft / (rail.clientWidth || 1));
+    dots.forEach((dot, i) => dot.classList.toggle("on", i === index));
+  }, { passive: true });
+}
+
 function render() {
   const item = product(state.productId);
   let view = home();
-  if (state.screen === "detail" && item) view = detail(item);
+  if (state.boot !== "done") view = bootView();
+  else if (state.screen === "detail" && item) view = detail(item);
   else if (state.screen === "card") view = ownedDetail();
   else if (state.screen === "open" && state.openPhase === "deck") view = cardDeck();
   else if (state.screen === "open" && state.openPhase === "pack") view = sealedPack();
   else if (state.screen === "open" && state.openPhase === "motion") view = openMotion();
   else if (state.screen === "result" || state.screen === "open") view = result();
   else if (state.screen === "wished") view = wished();
+  else if (state.screen === "purchases") view = purchases();
+  else if (state.screen === "guide") view = guide(false);
+  else if (state.screen === "exchange") view = exchange();
+  else if (state.screen === "exchange-history") view = exchangeHistory();
+  else if (state.screen === "exchange-form") view = exchangeForm();
   else if (state.tab === "track" || state.screen === "track") view = state.shipmentId ? shipmentDetail() : tracking();
   else if (state.tab === "album") view = album();
   else if (state.tab === "ship" || state.screen === "ship") view = ship();
@@ -3853,7 +4519,8 @@ function render() {
   else if (state.screen === "artist") view = artistPage();
   else if (state.screen === "notice") view = notices();
   else if (state.tab === "mypage" || state.screen === "mypage") view = mypage();
-  app.innerHTML = view + drawer() + sheet() + walletModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
+  app.classList.toggle("has-tabbar", showTabBar());
+  app.innerHTML = view + tabBar() + drawer() + sheet() + walletModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
   blurFronts();
   protectFronts();
   startBanner();
@@ -3863,6 +4530,10 @@ function render() {
   armMotion();
   armDeck();
   armOpenCut();
+  armResultCarousel();
+  armClock();
+  armGuide();
+  armSplash();
 }
 
 app.addEventListener("click", (event) => {
@@ -3916,8 +4587,73 @@ app.addEventListener("click", (event) => {
   const shipmentHit = event.target.closest("[data-shipment]");
   const trackCopy = event.target.closest("[data-track-copy]");
   const trackStatus = event.target.closest("[data-track-status]");
+  const openSkip = event.target.closest("[data-open-skip]");
+  const resultClose = event.target.closest("[data-result-close]");
+  const soon = event.target.closest("[data-soon]");
+  const bootNext = event.target.closest("[data-boot-next]");
+  const pushPick = event.target.closest("[data-push]");
+  const marketingPick = event.target.closest("[data-marketing]");
+  const guideNext = event.target.closest("[data-guide-next]");
+  const guideStart = event.target.closest("[data-guide-start]");
+  const guideClose = event.target.closest("[data-guide-close]");
+  const exPct = event.target.closest("[data-ex-pct]");
+  const exAdd = event.target.closest("[data-ex-add]");
+  const exConfirm = event.target.closest("[data-ex-confirm]");
+  const exRefresh = event.target.closest("[data-ex-refresh]");
+  const exDateClear = event.target.closest("[data-ex-date-clear]");
   if (openOk) {
     finishOpen();
+  } else if (openSkip) {
+    // SKIP과 개봉 화면의 ←: 남은 연출을 모두 건너뛰고 결과로 간다(Q12·Q13 기본값).
+    if (state.screen !== "open") return;
+    state.revealIndex = 0;
+    finishOpen();
+  } else if (resultClose) {
+    // 닫기: 그 상품의 구매 화면(상세)으로 돌아간다(Q15 기본값).
+    state.sheet = null;
+    state.screen = "detail";
+    state.tab = "home";
+  } else if (soon) {
+    toast(`${soon.dataset.soon} 기능은 준비 중이에요.`);
+  } else if (bootNext) {
+    state.boot = bootNext.dataset.bootNext;
+    if (state.boot === "guide") {
+      state.guidePage = 0;
+      state.guideSeen = false;
+    }
+  } else if (pushPick) {
+    saveOnboard({ push: pushPick.dataset.push === "yes", decidedAt: new Date().toISOString() });
+    state.boot = "marketing";
+  } else if (marketingPick) {
+    saveOnboard({ marketing: marketingPick.dataset.marketing === "yes", decidedAt: new Date().toISOString() });
+    state.boot = "consent";
+  } else if (guideNext) {
+    nextGuidePage();
+    return;
+  } else if (guideStart) {
+    if (!state.guideSeen) return;
+    saveOnboard({ done: true, guideSeenAt: new Date().toISOString() });
+    state.boot = "done";
+    state.screen = "home";
+    state.tab = "home";
+  } else if (guideClose) {
+    const to = state.guideFrom;
+    state.screen = to === "mypage" ? "mypage" : "home";
+    state.tab = to === "mypage" ? "mypage" : "home";
+  } else if (exPct) {
+    setExchangeTott(state.balance * (Number(exPct.dataset.exPct) / 100));
+  } else if (exAdd) {
+    const { tp } = exchangeAmounts();
+    const next = Math.min(state.balance * EXCHANGE_RATE, tp + Number(exAdd.dataset.exAdd));
+    setExchangeTott(next / EXCHANGE_RATE);
+  } else if (exConfirm) {
+    if (exConfirm.disabled || !runExchange()) return;
+    state.screen = "exchange";
+    toast("교환이 완료됐어요.");
+  } else if (exRefresh) {
+    toast("지갑 정보를 새로 불러왔어요.");
+  } else if (exDateClear) {
+    state.exDate = "";
   } else if (drawerOpen) {
     state.menuOpen = true;
   } else if (drawerClose) {
@@ -3951,6 +4687,31 @@ app.addEventListener("click", (event) => {
       state.profile = "";
       state.searchOpen = false;
       state.query = "";
+    } else if (name === "products") {
+      // 탭바 '상품'과 결과의 '다른 상품 보기'는 전체 아티스트로 간다(Q1 기본값).
+      resetCatalog();
+      state.profile = "";
+      state.tab = "home";
+      state.screen = "artists";
+      state.searchOpen = false;
+      state.query = "";
+    } else if (name === "exchange" || name === "exchange-form" || name === "exchange-history") {
+      state.tab = "exchange";
+      state.screen = name;
+      if (name === "exchange-form") {
+        state.exTott = "";
+        state.exTp = "";
+      }
+      if (name === "exchange-history") state.exDate = "";
+    } else if (name === "guide") {
+      state.guideFrom = state.screen === "mypage" ? "mypage" : "home";
+      state.guidePage = 0;
+      state.guideSeen = false;
+      state.tab = state.guideFrom;
+      state.screen = "guide";
+    } else if (name === "purchases") {
+      state.tab = "mypage";
+      state.screen = "purchases";
     } else if (name === "album") {
       state.tab = "album";
       state.screen = "album";
@@ -4022,6 +4783,9 @@ app.addEventListener("click", (event) => {
     } else if (to === "album" || to === "ship" || to === "track" || to === "mypage") {
       state.screen = to;
       state.tab = to === "album" ? "album" : "mypage";
+    } else if (to === "exchange") {
+      state.screen = "exchange";
+      state.tab = "exchange";
     } else {
       state.screen = "home";
       state.tab = "home";
@@ -4048,10 +4812,16 @@ app.addEventListener("click", (event) => {
     state.sheet = count;
   } else if (pay) {
     const buying = product(state.productId);
+    const count = Number(pay.dataset.pay);
     if (saleWord(buying)) return;
-    if (Number(pay.dataset.pay) === 5 && !canDrawFive(buying)) return;
+    if (count === 5 && !canDrawFive(buying)) return;
     if (!state.walletConnected) return;
-    draw(product(state.productId), Number(pay.dataset.pay));
+    if (state.balance < buying.price * count) {
+      toast("TOTT가 부족해요.");
+      render();
+      return;
+    }
+    draw(buying, count);
   } else if (unseal) {
     state.openPhase = "motion";
     state.motionArmed = false;
@@ -4327,6 +5097,17 @@ app.addEventListener("change", (event) => {
     render();
     return;
   }
+  if (event.target.matches("select[data-ex-wallet]")) {
+    state.exWallet = Number(event.target.value) || 0;
+    persistWallet();
+    render();
+    return;
+  }
+  if (event.target.matches("[data-field=exDate]")) {
+    state.exDate = event.target.value;
+    render();
+    return;
+  }
   if (event.target.matches("select[data-album-status]")) {
     const next = event.target.value;
     state.focusStatus = next === "all" ? null : next;
@@ -4339,6 +5120,11 @@ app.addEventListener("input", (event) => {
   const field = event.target.dataset.field;
   if (!field) return;
   state[field] = event.target.value;
+  if (field === "exTott" || field === "exTp") {
+    syncExchangeForm(field === "exTott" ? "tott" : "tp");
+    return;
+  }
+  if (field === "exDate") return; // change 이벤트에서 다시 그린다.
   if (field === "query" || field === "catalogQuery") {
     const caret = event.target.selectionStart;
     render();
