@@ -4720,7 +4720,7 @@ function historyGroups() {
   const groups = [];
   walletLedger(historyWallet().id)
     .filter((row) => kind === "all" || (kind === "move" ? row.kind === "send" || row.kind === "receive" : row.kind === kind))
-    .filter((row) => String(row.at).slice(0, 7) === key)
+    .filter((row) => (state.exDate ? String(row.at).slice(0, 10) === state.exDate : String(row.at).slice(0, 7) === key))
     .forEach((row) => {
       const day = String(row.at).slice(0, 10);
       let group = groups.find((item) => item.day === day);
@@ -4762,7 +4762,7 @@ function exchangeHistory() {
             ${isOpen ? `<div class="ledger">${group.rows.map(ledgerRow).join("")}</div>` : ""}
           </section>`;
       }).join("")
-    : `<div class="wallet-empty tall"><strong>거래 내역이 없어요.</strong></div>`;
+    : `<div class="wallet-empty tall"><strong>${state.exDate ? "이 날짜의 거래 내역이 없어요." : "거래 내역이 없어요."}</strong></div>`;
   return `
     <header class="bar light-bar center-bar">
       <button data-back="wallet" aria-label="지갑">←</button>
@@ -4772,7 +4772,11 @@ function exchangeHistory() {
     <div class="scroll light hist">
       ${picker}
       <div class="artist-tabs light-tabs hist-tabs">${chips}</div>
-      <h2 class="hist-period">${historyMonth().title}</h2>
+      <div class="hist-date">
+        <label>지정된 날짜만 보기<input type="date" data-field="exDate" value="${esc(state.exDate)}" /></label>
+        <button type="button" data-ex-date-clear ${state.exDate ? "" : "disabled"}>전체</button>
+      </div>
+      <h2 class="hist-period">${state.exDate ? state.exDate.replace(/-/g, ".") : historyMonth().title}</h2>
       ${body}
     </div>
   `;
@@ -5117,21 +5121,34 @@ function nextGuidePage() {
 
 const SPLASH_IMAGES = ["/assets/covers/jump.jpg", "/assets/covers/crazy.jpg", "/assets/covers/ive-empathy.jpg"];
 
+// 스플래시: 검은 우주 배경 위에 무지개 궤도, 골드 엠블럼, 미스터리 포장, 떠다니는 포토카드(2026-10-23 시안).
 function splash() {
+  // 떠다니는 카드: 실물 포토카드 한 장과 유리 느낌의 "?" 카드들
+  // 실루엣 카드: 사진 대신 여자·남자 가수 실루엣만 보여준다
+  const silhouette = (cls, who) => who === "f"
+    ? `<span class="mys-card sil ${cls}"><svg viewBox="0 0 60 92" aria-hidden="true"><path d="M30 10C20 10 15 19 15 31c0 8-2 16-5 25l4 2c4-8 5-15 5-19 2 4 6 7 11 7s9-3 11-7c0 4 1 11 5 19l4-2c-3-9-5-17-5-25 0-12-5-21-15-21z"/><path d="M24 45v11C14 59 6 68 6 92h48c0-24-8-33-18-36V45z"/></svg><small>TOMATOK</small></span>`
+    : `<span class="mys-card sil ${cls}"><svg viewBox="0 0 60 92" aria-hidden="true"><circle cx="30" cy="27" r="12.5"/><path d="M24 36v14C12 53 4 64 4 92h52c0-28-8-39-20-42V36z"/></svg><small>TOMATOK</small></span>`;
+  const mystery = (cls) => `<span class="mys-card back ${cls}"><b>?</b><i class="mys-q-star"></i><small>TOMATOK</small></span>`;
+  const sparks = [1, 2, 3, 4, 5, 6].map((index) => `<i class="mys-spark s${index}"></i>`).join("");
   return `
-    <div class="splash">
-      <div class="splash-rail" data-splash-rail>
-        ${SPLASH_IMAGES.map((src, index) => `
-          <figure class="splash-slide">
-            <img src="${src}" alt="" draggable="false" />
-            <figcaption><strong>포토카드</strong><span>TOMATOK ${index + 1} / ${SPLASH_IMAGES.length}</span></figcaption>
-          </figure>`).join("")}
+    <div class="splash splash-mystery">
+      <div class="mys-stage" aria-hidden="true">
+        <div class="mys-stars a"></div>
+        <div class="mys-stars b"></div>
+        <div class="mys-stars c"></div>
+        <img class="mys-orbit" src="/assets/splash/orbit.png?v=1" alt="" draggable="false" />
+        ${mystery("c3 far")}
+        ${mystery("c4 far")}
+        ${silhouette("c1", "f")}
+        ${mystery("c2")}
+        ${silhouette("c5", "m")}
+        <div class="mys-pack"><div class="mys-pack-float"><img src="${DECK_PACK}" alt="" draggable="false" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" /><i class="mys-gloss"></i></div></div>
+        ${sparks}
+        <img class="mys-emblem" src="/assets/splash/emblem.png?v=1" alt="TOMATOK PHOTOCARD" draggable="false" />
+        <i class="mys-emblem-shine"></i>
       </div>
-      <button type="button" class="splash-arrow prev" data-splash-move="-1" aria-label="이전 이미지" disabled>‹</button>
-      <button type="button" class="splash-arrow next" data-splash-move="1" aria-label="다음 이미지">›</button>
-      <div class="splash-dots" data-splash-dots>${SPLASH_IMAGES.map((_, index) => `<button type="button" class="${index === 0 ? "on" : ""}" data-splash-to="${index}" aria-label="${index + 1}번째 이미지"></button>`).join("")}</div>
       <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>
-      <p class="splash-foot">ⓒ Copyright, ${new Date().getFullYear()}</p>
+      <p class="splash-foot">ⓒ Copyright, ${new Date().getFullYear()} <b>NEEDSPERSAND</b></p>
     </div>`;
 }
 
@@ -5498,6 +5515,7 @@ app.addEventListener("click", (event) => {
     toast("시세를 새로 불러왔어요.");
   } else if (exDateClear) {
     state.exDate = "";
+    state.historyOpen = null;
   } else if (drawerOpen) {
     state.menuOpen = true;
   } else if (drawerClose) {
@@ -5956,6 +5974,7 @@ app.addEventListener("change", (event) => {
   }
   if (event.target.matches("[data-field=exDate]")) {
     state.exDate = event.target.value;
+    state.historyOpen = null;
     render();
     return;
   }
