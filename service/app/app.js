@@ -1917,6 +1917,12 @@ const ICON_PATH = {
   plus: "M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z",
   minus: "M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z",
   caret: "M213.66,101.66l-80,80a8,8,0,0,1-11.32,0l-80-80A8,8,0,0,1,48,88H208a8,8,0,0,1,5.66,13.66Z",
+  // Phosphor regular (phosphoricons.com)
+  bell: "M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z",
+  megaphone: "M248,120a48.05,48.05,0,0,0-48-48H160.2c-2.91-.17-53.62-3.74-101.91-44.24A16,16,0,0,0,32,40V200a16,16,0,0,0,26.29,12.25c37.77-31.68,77-40.76,93.71-43.3v31.72A16,16,0,0,0,159.12,214l11,7.33A16,16,0,0,0,194.5,212l11.77-44.36A48.07,48.07,0,0,0,248,120ZM48,199.93V40h0c42.81,35.91,86.63,45,104,47.24v65.48C134.65,155,90.84,164.07,48,199.93Zm131,8,0,.11-11-7.33V168h21.6ZM200,152H168V88h32a32,32,0,1,1,0,64Z",
+  checkCircle: "M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z",
+  check: "M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z",
+  x: "M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z",
 };
 
 function icon(name) {
@@ -4444,47 +4450,65 @@ function consentWhen(iso) {
   return `${date.getFullYear()}년 ${pad2(date.getMonth() + 1)}월 ${pad2(date.getDate())}일 ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 
+// 첫 진입 팝업(슬라이드 4~6)은 토마톡 기본 모달과 같은 바텀시트로 띄운다.
+function bootSheet({ kicker, iconName, badge, title, body, primary, secondary, extra = "" }) {
+  const mark = badge
+    ? `<span class="boot-badge ${badge === "x" ? "no" : "ok"}" aria-hidden="true">${icon(badge)}</span>`
+    : "";
+  return `
+    <div class="sheet-bg boot-bg">
+      <div class="sheet boot-sheet">
+        <span class="sheet-grab"></span>
+        <p class="boot-kicker">${esc(kicker)}</p>
+        <span class="boot-icon" aria-hidden="true">${icon(iconName)}${mark}</span>
+        <h2 class="boot-title">${title}</h2>
+        ${body ? `<p class="boot-copy">${body}</p>` : ""}
+        ${extra}
+        ${primary}
+        ${secondary}
+      </div>
+    </div>`;
+}
+
 function bootModal() {
   const saved = loadOnboard();
   if (state.boot === "push") {
-    return `
-      <div class="boot-bg">
-        <div class="boot-modal">
-          <p class="boot-title">‘토마톡’에서<br>PUSH 알림을 보내고자 합니다.</p>
-          <div class="boot-split">
-            <button type="button" data-push="no">허용 안 함</button>
-            <button type="button" data-push="yes">허용</button>
-          </div>
-        </div>
-      </div>`;
+    return bootSheet({
+      kicker: "PUSH 알림",
+      iconName: "bell",
+      title: "‘토마톡’에서<br>PUSH 알림을 보내고자 합니다.",
+      body: "새 상품과 뽑기 소식을 알려드려요.",
+      primary: `<button type="button" class="primary" data-push="yes">허용</button>`,
+      secondary: `<button type="button" class="boot-link" data-push="no">허용 안 함</button>`,
+    });
   }
   if (state.boot === "marketing") {
-    return `
-      <div class="boot-bg">
-        <div class="boot-modal">
-          <p class="boot-title">‘TOMATOK’ 마케팅 수신<br>동의를 하시겠습니까?</p>
-          <div class="boot-split">
-            <button type="button" data-marketing="no">허용 안 함</button>
-            <button type="button" data-marketing="yes">허용</button>
-          </div>
-        </div>
-      </div>`;
+    return bootSheet({
+      kicker: "마케팅 수신 동의",
+      iconName: "megaphone",
+      title: "‘TOMATOK’ 마케팅 수신<br>동의를 하시겠습니까?",
+      body: "이벤트와 혜택 안내를 받아요.",
+      primary: `<button type="button" class="primary" data-marketing="yes">허용</button>`,
+      secondary: `<button type="button" class="boot-link" data-marketing="no">허용 안 함</button>`,
+    });
   }
   if (state.boot === "consent") {
     const agreed = Boolean(saved.marketing);
-    return `
-      <div class="boot-bg">
-        <div class="boot-modal boot-consent">
-          <p class="boot-title">마케팅 Push 알림 동의 안내</p>
-          <dl>
-            <div><dt>전송자</dt><dd>TOMATOK</dd></div>
-            <div><dt>처리 일시</dt><dd>${esc(consentWhen(saved.decidedAt))}</dd></div>
-            <div><dt>처리 내용</dt><dd>${agreed ? "수신 완료" : "거부 처리 완료"}</dd></div>
-          </dl>
-          <p class="boot-copy">Push 알림 동의 상태는 하단 메뉴<br>마이 페이지 &gt; 내 기본정보 설정에서<br>변경 하실 수 있습니다.</p>
-          <button type="button" class="boot-ok" data-boot-next="guide">확인</button>
-        </div>
-      </div>`;
+    return bootSheet({
+      kicker: "마케팅 Push 알림 동의 안내",
+      iconName: "bell",
+      badge: agreed ? "check" : "x",
+      title: agreed ? "마케팅 Push 수신이 완료됐어요." : "마케팅 Push 거부 처리가 완료됐어요.",
+      body: "Push 알림 동의 상태는 하단 메뉴<br>마이 페이지 &gt; 내 기본정보 설정에서<br>변경 하실 수 있습니다.",
+      extra: `
+        <dl class="boot-facts boot-consent">
+          <div><dt>전송자</dt><dd>TOMATOK</dd></div>
+          <div><dt>처리 일시</dt><dd>${esc(consentWhen(saved.decidedAt))}</dd></div>
+          <div><dt>처리 내용</dt><dd>${agreed ? "수신 완료" : "거부 처리 완료"}</dd></div>
+        </dl>`,
+      primary: `<button type="button" class="primary" data-boot-next="guide">확인</button>`,
+      secondary: "",
+    });
   }
   return "";
 }

@@ -3064,46 +3064,63 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .splash-dots { display: flex; justify-content: center; gap: 6px; padding: 14px 0 0; }
 #app .splash-go { margin: 14px 16px 0; height: 56px; min-height: 56px; border-radius: 12px; font-size: 16px; font-weight: 700; }
 .splash-foot { margin: 0; padding: 14px 0 18px; color: var(--muted); font-size: 12px; text-align: center; }
-.boot-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px;
-  background: rgba(0, 0, 0, 0.6);
-}
-.boot-modal {
-  width: 100%;
-  padding: 28px 20px 0;
-  border-radius: 16px;
-  background: #fff;
-  color: #111;
-  text-align: center;
-}
-.boot-title { margin: 0 0 24px; font-size: 16px; font-weight: 700; line-height: 1.5; }
-.boot-split { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #d8d8dc; }
-.boot-split button { height: 48px; font-size: 15px; font-weight: 600; color: #1f6fe0; }
-.boot-split button + button { border-left: 1px solid #d8d8dc; font-weight: 700; }
-.boot-consent { padding: 24px 20px 20px; text-align: left; }
-.boot-consent .boot-title { text-align: center; margin-bottom: 18px; }
-.boot-consent dl { margin: 0; display: grid; gap: 6px; font-size: 14px; }
-.boot-consent dl div { display: flex; gap: 6px; }
-.boot-consent dt { flex: none; color: #555; }
-.boot-consent dt::after { content: " :"; }
-.boot-consent dd { margin: 0; font-weight: 600; }
-.boot-copy { margin: 16px 0 0; font-size: 13px; line-height: 1.55; color: #333; }
-.boot-ok {
-  display: block;
-  width: 140px;
-  height: 40px;
-  margin: 20px auto 0;
-  border-radius: 6px;
-  background: #777;
+/* 첫 진입 바텀시트: 손잡이, 작은 제목, 큰 원형 아이콘, 굵은 헤드라인, 설명, 텍스트 링크 */
+.boot-bg { z-index: 7; }
+.boot-sheet { padding: 12px 24px 24px; text-align: center; }
+.boot-kicker { margin: 10px 0 0; color: #d5d5d8; font-size: 15px; font-weight: 600; }
+.boot-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin: 22px auto 0;
+  border-radius: 50%;
+  background: #3a3a3e;
   color: #fff;
+}
+.boot-icon .ico { width: 52px; height: 52px; }
+.boot-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pink);
+  border: 3px solid var(--surface);
+  color: #fff;
+}
+.boot-badge.ok { background: #2fb36a; }
+.boot-badge .ico { width: 14px; height: 14px; }
+.boot-sheet .boot-title { margin: 22px 0 0; font-size: 20px; font-weight: 800; line-height: 1.4; text-align: center; }
+.boot-sheet .boot-copy { margin: 14px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.boot-facts {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #1c1c1f;
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  text-align: left;
+}
+.boot-facts div { display: flex; justify-content: space-between; gap: 12px; }
+.boot-facts dt { color: var(--muted); }
+.boot-facts dd { margin: 0; font-weight: 700; }
+.boot-sheet .primary { width: 100%; min-height: 52px; margin-top: 24px; font-size: 16px; }
+#app .boot-link {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 8px 0 2px;
+  color: #d5d5d8;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* 스플래시 좌우 화살표와 점 버튼 */
