@@ -93,7 +93,7 @@ function card(no, member, front, back, version) {
 function pack(partial) {
   return {
     cover: "",
-    price: 25,
+    price: 2500,
     status: "draft",
     eventName: "",
     kind: "group",

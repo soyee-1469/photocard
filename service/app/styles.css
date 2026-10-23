@@ -3407,3 +3407,15 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .nav-box { margin-top: 12px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 14px; }
 .nav-box .nav-item { padding: 12px 0; font-size: 15px; font-weight: 600; }
 .nav-box .nav-item:last-child { border-bottom: 0; }
+
+/* TP 가격 + 원화·USD 보조 표기 */
+.price { display: inline-grid; gap: 1px; }
+.price-sub { display: block; color: var(--muted); font-size: 11px; font-weight: 500; letter-spacing: 0; white-space: nowrap; }
+.tile-price .price-sub { font-size: 10px; line-height: 1.3; }
+.detail-offer { height: auto; min-height: 50px; padding: 8px 0; }
+.detail-offer .lead .price { text-align: right; }
+.sheet-line strong .price { text-align: right; }
+.sheet-line strong .price-sub { font-size: 10px; }
+.purchase > strong .price { text-align: right; }
+.purchase > strong .price-sub { font-size: 10px; }
+.rate-note { margin: 10px 0 0; color: #6f6f76; font-size: 10px; line-height: 1.5; text-align: center; }

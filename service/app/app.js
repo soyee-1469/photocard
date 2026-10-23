@@ -111,7 +111,7 @@ const PRODUCTS = [
     eventType: "album",
     eventName: "",
     cover: "/assets/covers/jump.jpg",
-    price: 25,
+    price: 2500,
     home: true,
     banner: true,
     cards: [
@@ -130,7 +130,7 @@ const PRODUCTS = [
     eventType: "album",
     eventName: "",
     cover: "/assets/covers/crazy.jpg",
-    price: 25,
+    price: 2500,
     home: true,
     sale: "out",
     cards: [1, 2, 3, 4, 5].map((no) => ({
@@ -149,7 +149,7 @@ const PRODUCTS = [
     eventType: "album",
     eventName: "",
     cover: "/assets/covers/easy.jpg",
-    price: 25,
+    price: 2500,
     home: true,
     sale: "soon",
     cards: [
@@ -168,7 +168,7 @@ const PRODUCTS = [
     eventType: "pob",
     eventName: "MAKESTAR",
     cover: "/assets/covers/ive-empathy.jpg",
-    price: 25,
+    price: 2500,
     home: true,
     cards: [20, 22, 24, 26, 28].map((front, index) => ({
       no: String(index + 1).padStart(2, "0"),
@@ -186,7 +186,7 @@ const PRODUCTS = [
     eventType: "japan",
     eventName: "WPCR-18718",
     cover: "/assets/covers/rosie.jpg",
-    price: 25,
+    price: 2500,
     home: true,
     cards: [59, 61, 63, 65].map((front, index) => ({
       no: String(index + 1).padStart(2, "0"),
@@ -344,7 +344,7 @@ const ORDERS_KEY = "photocard-orders-v1";
 const ADDRESS_KEY = "photocard-addresses-v1";
 const WALLET_KEY = "photocard-wallet-v2";
 // mock 초기 TP. 저장된 지갑이 없을 때만 쓴다.
-const TP_SEED = 5000;
+const TP_SEED = 50000;
 const ONBOARD_KEY = "photocard-onboard-v1";
 
 // TOTT → TP mock 환율. 실제 연동 전까지 상수 하나로 둔다.
@@ -396,6 +396,104 @@ function saveOnboard(patch) {
 
 loadWallet();
 state.boot = loadOnboard().done ? "done" : "splash";
+
+// ---- 시세·환율 ----
+// TP는 원화 1:1 고정이라 상품 가격은 시세와 무관하다. 시세는 TOTT 참고 표기와 USD 보조 표기에만 쓴다.
+// API가 정해지면 관리자(배송정책 화면)의 '시세 API 주소'에 넣는다. 응답 예: { "tottKrw": 60.39, "usdKrw": 1400, "at": "2026-10-23T14:05:00Z" }
+const RATES_KEY = "photocard-rates-v1";
+const RATES_CONFIG_KEY = "photocard-rates-config-v1";
+const RATES_INTERVAL = 5 * 60 * 1000;
+const RATES_DEFAULT = { tottKrw: 1, usdKrw: 1400, at: "" };
+
+function ratesConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RATES_CONFIG_KEY) || "null") || {};
+    return {
+      api: String(saved.api || "").trim(),
+      tottKrw: Number(saved.tottKrw) > 0 ? Number(saved.tottKrw) : RATES_DEFAULT.tottKrw,
+      usdKrw: Number(saved.usdKrw) > 0 ? Number(saved.usdKrw) : RATES_DEFAULT.usdKrw,
+    };
+  } catch (error) {
+    console.warn(error);
+    return { api: "", ...RATES_DEFAULT };
+  }
+}
+
+function rates() {
+  const config = ratesConfig();
+  try {
+    const saved = JSON.parse(localStorage.getItem(RATES_KEY) || "null");
+    if (saved && Number(saved.tottKrw) > 0 && Number(saved.usdKrw) > 0) {
+      return { tottKrw: Number(saved.tottKrw), usdKrw: Number(saved.usdKrw), at: saved.at || "", fetchedAt: Number(saved.fetchedAt) || 0 };
+    }
+  } catch (error) {
+    console.warn(error);
+  }
+  return { tottKrw: config.tottKrw, usdKrw: config.usdKrw, at: "", fetchedAt: 0 };
+}
+
+async function fetchRates() {
+  const url = ratesConfig().api;
+  if (!url) return false;
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) return false;
+    const data = await response.json();
+    const tottKrw = Number(data.tottKrw);
+    const usdKrw = Number(data.usdKrw);
+    if (!(tottKrw > 0) || !(usdKrw > 0)) return false;
+    localStorage.setItem(RATES_KEY, JSON.stringify({ tottKrw, usdKrw, at: data.at || new Date().toISOString(), fetchedAt: Date.now() }));
+    paintPrices();
+    return true;
+  } catch (error) {
+    console.warn(error);
+    return false;
+  }
+}
+
+let ratesTimer = 0;
+
+function startRates() {
+  fetchRates();
+  window.clearInterval(ratesTimer);
+  ratesTimer = window.setInterval(fetchRates, RATES_INTERVAL);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    if (Date.now() - (rates().fetchedAt || 0) >= RATES_INTERVAL) fetchRates();
+  });
+}
+
+function isKorean() {
+  return (document.documentElement.lang || "ko").toLowerCase().startsWith("ko");
+}
+
+function tpNumber(amount) {
+  return Math.round(Number(amount) || 0).toLocaleString("ko-KR");
+}
+
+// 보조 표기: TP는 원화 1:1, USD는 환율로 나눈다. 한국어면 ₩ 먼저, 아니면 $ 먼저.
+function priceSub(tp) {
+  const amount = Number(tp) || 0;
+  const { usdKrw } = rates();
+  const won = `₩${Math.round(amount).toLocaleString("ko-KR")}`;
+  const dollar = `$${(amount / usdKrw).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return isKorean() ? `≈ ${won} · ${dollar}` : `≈ ${dollar} · ${won}`;
+}
+
+function rateNote() {
+  const { at, usdKrw, tottKrw } = rates();
+  const when = at ? `${clockText(new Date(at)).slice(11)} 기준` : "기본값";
+  return `환율 ${when} · 1 TP = ₩1 · 1 USD = ₩${Math.round(usdKrw).toLocaleString("ko-KR")} · 1 TOTT ≈ ${tpNumber(tottKrw)} TP`;
+}
+
+function paintPrices() {
+  document.querySelectorAll("[data-price-sub]").forEach((node) => {
+    node.textContent = priceSub(node.dataset.priceSub);
+  });
+  document.querySelectorAll("[data-rate-note]").forEach((node) => {
+    node.textContent = rateNote();
+  });
+}
 
 function orderCards(cardIds) {
   return cardIds.map((id) => {
@@ -701,9 +799,14 @@ function lineup(count) {
   return `${count}종 중 랜덤 1장`;
 }
 
-// 포토카드 결제 단위는 TP다. TOTT는 포인트 교환에서 TP로 바꿔 쓴다.
+// 포토카드 결제 단위는 TP다. TOTT는 토마톡 지갑에서 TP로 바꿔 쓴다.
 function tott(amount) {
-  return `${amount}<span class="tott">TP</span>`;
+  return `${tpNumber(amount)}<span class="tott">TP</span>`;
+}
+
+// TP 금액 + 원화·USD 보조 표기. 시세가 갱신되면 paintPrices()가 보조 줄만 바꾼다.
+function priceBlock(amount) {
+  return `<span class="price"><span class="price-main">${tott(amount)}</span><small class="price-sub" data-price-sub="${Number(amount) || 0}">${priceSub(amount)}</small></span>`;
 }
 
 function setTitle(item) {
@@ -1053,7 +1156,7 @@ function productTile(item) {
       <span class="tile-who">${artistMark(item)}</span>
       <span class="tile-name">${esc(setTitle(item))}</span>
       <span class="tile-line">${esc(lineup(item.cards.length))}</span>
-      <span class="tile-price">${tott(item.price)}</span>
+      <span class="tile-price">${priceBlock(item.price)}</span>
     </button>`;
 }
 
@@ -2055,7 +2158,7 @@ function purchases() {
     ? orders.map((order) => {
       const item = product(order.productId);
       const cover = item?.cover ? `<img src="${esc(item.cover)}" alt="" />` : `<span class="thumb-blank"></span>`;
-      const price = Number.isFinite(Number(order.price)) && order.price != null ? tott(order.price) : "—";
+      const price = Number.isFinite(Number(order.price)) && order.price != null ? priceBlock(order.price) : "—";
       return `
         <article class="purchase">
           <span class="thumb">${cover}</span>
@@ -2153,7 +2256,7 @@ function detail(item) {
         <p class="kind">${esc(summaryLine(item))}</p>
         <div class="detail-offer">
           <p class="lead">${lineup(item.cards.length)}</p>
-          <p class="lead">${tott(item.price)}</p>
+          <p class="lead">${priceBlock(item.price)}</p>
         </div>
         <p class="pay-note">TP로 결제해요 · TOTT는 토마톡 지갑에서 TP로 바꿔요</p>
         <div class="perks">
@@ -2572,14 +2675,14 @@ function sheet() {
   const cost = item.price * count;
   const rows = count === 1
     ? [
-        ["현재가격", tott(cost)],
-        ["보유", tott(state.tp)],
-        ["차감 후 남은 잔액", tott(state.tp - cost)],
+        ["현재가격", priceBlock(cost)],
+        ["보유", priceBlock(state.tp)],
+        ["차감 후 남은 잔액", priceBlock(state.tp - cost)],
       ]
     : [
-        ["5장 뽑기", tott(cost)],
-        ["보유", tott(state.tp)],
-        ["결제 후", tott(state.tp - cost)],
+        ["5장 뽑기", priceBlock(cost)],
+        ["보유", priceBlock(state.tp)],
+        ["결제 후", priceBlock(state.tp - cost)],
       ];
   if (!state.walletConnected) {
     return `
@@ -2610,6 +2713,7 @@ function sheet() {
             )
             .join("")}
         </div>
+        <p class="rate-note" data-rate-note>${esc(rateNote())}</p>
         <div class="sheet-note">
           ${sheetNotes(item).map((line) => `<p>${esc(line)}</p>`).join("")}
         </div>
@@ -4379,8 +4483,8 @@ function demoScene(kind) {
     return `
       <div class="demo demo-pick" aria-hidden="true">
         <div class="demo-tiles">
-          <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>25 TP</small></span>
-          <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>25 TP</small></span>
+          <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>2,500 TP</small></span>
+          <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>2,500 TP</small></span>
         </div>
         <span class="demo-btn">1장 뽑기</span>
         ${finger}
@@ -4392,9 +4496,9 @@ function demoScene(kind) {
         <img class="demo-bg" src="/assets/covers/jump.jpg" alt="" />
         <div class="demo-sheet">
           <i class="demo-grab"></i>
-          <div><span>현재가격</span><b>25 TP</b></div>
-          <div><span>보유</span><b>5,000 TP</b></div>
-          <div><span>차감 후 남은 잔액</span><b>4,975 TP</b></div>
+          <div><span>현재가격</span><b>2,500 TP</b></div>
+          <div><span>보유</span><b>50,000 TP</b></div>
+          <div><span>차감 후 남은 잔액</span><b>47,500 TP</b></div>
           <span class="demo-btn">결제하기</span>
         </div>
         ${finger}
@@ -5313,3 +5417,4 @@ document.addEventListener("keyup", (event) => {
 
 ensurePurchases();
 render();
+startRates();

@@ -1554,6 +1554,26 @@ function orderDetail(order) {
 }
 
 const POLICY_KEY = "photocard-shipping-policy-v1";
+// 앱의 시세·환율 설정. API가 정해지기 전에는 기본값으로 보조 표기를 만든다.
+const RATES_CONFIG_KEY = "photocard-rates-config-v1";
+
+function loadRatesConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RATES_CONFIG_KEY) || "null") || {};
+    return { api: saved.api || "", tottKrw: saved.tottKrw || "", usdKrw: saved.usdKrw || "" };
+  } catch (error) {
+    return { api: "", tottKrw: "", usdKrw: "" };
+  }
+}
+
+function saveRatesConfig() {
+  const config = {
+    api: String(document.getElementById("rates-api")?.value || "").trim(),
+    tottKrw: String(document.getElementById("rates-tott")?.value || "").trim(),
+    usdKrw: String(document.getElementById("rates-usd")?.value || "").trim(),
+  };
+  localStorage.setItem(RATES_CONFIG_KEY, JSON.stringify(config));
+}
 const NOTICE_KEY = "photocard-notices-v1";
 let policy = loadPolicy();
 let notices = loadNotices();
@@ -2048,6 +2068,7 @@ function renderCards() {
 }
 
 function renderPolicy() {
+  const ratesConfig = loadRatesConfig();
   const zones = policy.zones.map((zone, index) => `
     <tr>
       <td><input data-zone="${index}" data-zone-field="country" value="${escapeAttr(zone.country)}" placeholder="국가" /></td>
@@ -2089,7 +2110,23 @@ function renderPolicy() {
       </table>
       <button class="text-btn" id="add-zone" type="button">국가 추가</button>
     </section>
-    <button class="save" id="save-policy" type="button">이 브라우저에 저장</button>`;
+    <button class="save" id="save-policy" type="button">이 브라우저에 저장</button>
+    <section class="policy-block">
+      <h3>시세·환율</h3>
+      <p class="hint">상품 가격은 TP(원화 1:1)로 고정이에요. 여기 값은 앱의 "≈ ₩ · $" 보조 표기와 TOTT 참고 환율에만 써요. API 주소를 넣으면 앱이 5분마다 받아오고, 비어 있으면 아래 기본값을 써요. 응답 형식: {"tottKrw": 60.39, "usdKrw": 1400, "at": "ISO 시각"}</p>
+      <div class="grid cols-3">
+        <label>시세 API 주소
+          <input id="rates-api" value="${escapeAttr(ratesConfig.api)}" placeholder="https://…/rates" />
+        </label>
+        <label>1 TOTT = 원 (기본값)
+          <input id="rates-tott" type="number" min="0" step="any" value="${escapeAttr(ratesConfig.tottKrw)}" placeholder="1" />
+        </label>
+        <label>1 USD = 원 (기본값)
+          <input id="rates-usd" type="number" min="0" step="any" value="${escapeAttr(ratesConfig.usdKrw)}" placeholder="1400" />
+        </label>
+      </div>
+      <button class="save" id="save-rates" type="button">시세 설정 저장</button>
+    </section>`;
 }
 
 function noticeCategories() {
@@ -2418,6 +2455,11 @@ document.body.addEventListener("click", (event) => {
   if (event.target.id === "save-policy") {
     savePolicy();
     toast("배송정책을 이 브라우저에 저장했다");
+    return;
+  }
+  if (event.target.id === "save-rates") {
+    saveRatesConfig();
+    toast("시세 설정을 이 브라우저에 저장했다");
     return;
   }
   const problem = event.target.closest("[data-order-problem]");
