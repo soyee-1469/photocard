@@ -1244,10 +1244,14 @@ button:disabled { opacity: 0.4; }
 
 .sheet {
   width: 100%;
+  max-height: calc(100% - 56px);
+  overflow-y: auto;
+  scrollbar-width: none;
   background: var(--surface);
   border-radius: 20px 20px 0 0;
   padding: 12px 20px 20px;
 }
+.sheet::-webkit-scrollbar { display: none; }
 
 .sheet-grab {
   display: block;
@@ -1260,9 +1264,9 @@ button:disabled { opacity: 0.4; }
 
 .sheet-cover {
   display: block;
-  width: 112px;
-  height: 112px;
-  margin: 0 auto 12px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 10px;
   border-radius: 14px;
   object-fit: cover;
   background: #000;
@@ -1271,8 +1275,8 @@ button:disabled { opacity: 0.4; }
 .sheet h2 { margin: 12px 0 0; font-size: 20px; font-weight: 800; text-align: center; }
 .sheet-lineup { margin: 8px 0 0; color: #96969d; font-size: 13px; text-align: center; }
 .sheet-box {
-  margin-top: 22px;
-  padding: 20px;
+  margin-top: 16px;
+  padding: 12px 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   background: #1c1c1f;
@@ -1311,7 +1315,7 @@ button:disabled { opacity: 0.4; }
   text-align: center;
 }
 .sheet-copy.sub { color: var(--muted); font-size: 13px; }
-.sheet .primary { width: 100%; min-height: 48px; margin-top: 24px; font-size: 16px; }
+.sheet .primary { width: 100%; min-height: 48px; margin-top: 16px; font-size: 16px; }
 .sheet .ghost {
   width: 100%;
   min-height: 48px;
@@ -2771,191 +2775,134 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .guide-dots i.on,
 .splash-dots i.on { background: #fff; width: 16px; border-radius: 3px; }
 
-/* 포인트 교환 (슬라이드 19~21) */
-.ex-scroll { padding: 4px 16px 24px; }
-.wallet-card {
-  border-radius: 18px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #e3243b 0%, #b8162a 100%);
-  color: #fff;
-}
-.wallet-top {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 8px 12px 6px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
-}
+/* 토마톡 지갑 mock + TOTT · TP 교환 (밝은 테마: 토마톡 지갑 화면) */
+.light { background: #f4f4f6; color: #111; }
+.light-bar { background: #fff; color: #111; border-bottom: 1px solid #e6e6ea; }
+.light-bar h1 { color: #111; }
+.light-bar .icon-btn, .light-bar > button { color: #111; }
+.wallet-mock-tag { padding: 3px 8px; border-radius: 999px; background: #fdecee; color: #d8262f; font-size: 10px; font-weight: 700; }
+.light .empty { color: #777; }
+.wallet-hero { background: #d8262f; padding: 8px 12px 0; }
+.wallet-top { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 2px 4px 8px; font-size: 12px; color: #fff; }
 .wallet-top button { width: 24px; height: 24px; display: grid; place-items: center; color: #fff; }
-.wallet-top button svg { width: 16px; height: 16px; }
-.wallet-body { margin: 0 8px; padding: 12px 14px 16px; border-radius: 14px; background: #fff; color: #111; }
-.wallet-addr {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: #f1f1f4;
-  color: #111;
-}
-.wallet-addr select {
-  flex: 1;
-  min-width: 0;
-  appearance: none;
-  -webkit-appearance: none;
-  border: 0;
-  background: transparent;
-  color: #111;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  color-scheme: light;
-}
-.wallet-addr .ico { width: 16px; height: 16px; color: #111; }
-.wallet-logo {
-  width: 24px;
-  height: 24px;
-  flex: none;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #5a46d6;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 800;
-}
+.wallet-top button .ico { width: 16px; height: 16px; }
+.wallet-card { margin-bottom: -24px; padding: 12px 14px 8px; border-radius: 18px 18px 14px 14px; background: #fff; color: #111; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); }
+.wallet-addr { display: flex; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px; background: #f1f1f4; color: #111; }
+.wallet-addr select { flex: 1; min-width: 0; appearance: none; -webkit-appearance: none; border: 0; background: transparent; color: #111; font: inherit; font-size: 14px; font-weight: 700; color-scheme: light; }
+.wallet-addr button { width: 26px; height: 26px; display: grid; place-items: center; color: #333; }
+.wallet-addr button .ico { width: 18px; height: 18px; }
+.wallet-logo { width: 24px; height: 24px; flex: none; border-radius: 50%; display: grid; place-items: center; background: #5a46d6; color: #fff; font-size: 12px; font-weight: 800; }
+.wallet-logo.small { width: 18px; height: 18px; font-size: 10px; margin-right: 6px; vertical-align: -3px; display: inline-grid; }
 .wallet-sum { margin-top: 14px; }
 .wallet-coin { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 700; color: #222; }
-.wallet-coin.tp { margin-top: 10px; }
-.coin-mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: #e3243b;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-}
-.coin-mark.tp { background: #111; }
-.wallet-amount { display: block; margin-top: 2px; font-size: 28px; font-weight: 800; letter-spacing: -0.01em; color: #111; }
-.wallet-amount small { margin-left: 6px; font-size: 12px; font-weight: 600; color: #666; }
-.wallet-amount.tp { font-size: 22px; }
-.wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
-#app .wallet-actions button { height: 48px; min-height: 48px; border-radius: 12px; font-size: 15px; font-weight: 700; }
-#app .wallet-actions .ghost { background: #f1f1f4; color: #111; }
-.wallet-note { margin: 0; padding: 8px 14px 10px; font-size: 10px; color: rgba(255, 255, 255, 0.75); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ex-section { margin-top: 16px; padding: 14px; border-radius: 16px; background: var(--surface); }
-.ex-head { display: flex; align-items: center; justify-content: space-between; }
-.ex-head h2 { margin: 0; font-size: 15px; font-weight: 700; }
-.ex-head button { color: var(--muted); font-size: 12px; font-weight: 600; }
-.ex-empty { padding: 20px 4px 8px; text-align: center; }
-.ex-empty p { margin: 0 0 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.ex-empty-box { padding: 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 12px; color: #d5d5d8; text-align: left; }
-.ex-empty-box b { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: 6px; border-radius: 50%; background: #3a3a3e; font-size: 10px; }
-.ex-list { display: grid; }
-.ex-row {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 0;
-  border-top: 1px solid var(--line);
-}
-.ex-section .ex-row:first-child { border-top: 0; }
-.scroll > .ex-list { padding: 0 16px 24px; }
-.ex-icon { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #26262a; color: #fff; }
-.ex-icon svg { width: 18px; height: 18px; }
-.ex-body { display: grid; gap: 2px; }
-.ex-body strong { font-size: 14px; }
-.ex-body small { color: var(--muted); font-size: 11px; }
-.ex-amount { display: grid; gap: 2px; text-align: right; font-size: 11px; }
-.ex-amount strong { font-weight: 600; color: var(--muted); }
-.ex-amount em { font-style: normal; font-weight: 800; color: #ff5a6a; font-size: 14px; }
-.ex-amount b { font-weight: 800; color: #4fd37d; font-size: 14px; }
-.ex-amount small { color: var(--muted); }
-.ex-filter { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px 12px; }
-.ex-filter label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 600; }
-.ex-filter input {
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface);
-  color: #fff;
-  font: inherit;
-  font-size: 12px;
-  color-scheme: dark;
-}
-.ex-filter button { padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 12px; font-weight: 600; }
-.ex-form { padding: 4px 16px 24px; }
-.ex-form h2 { margin: 8px 0 0; font-size: 20px; font-weight: 800; }
-.ex-form h3 { margin: 20px 0 8px; font-size: 14px; font-weight: 700; }
-.ex-desc { margin: 10px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.ex-wallet {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #16122c;
-  border: 1px solid #2d2650;
-}
-.ex-wallet > span:last-child { display: grid; }
-.ex-wallet small { color: #9d8cff; font-size: 11px; font-weight: 700; }
-.ex-wallet strong { font-size: 14px; }
-.ex-balance {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 13px;
-}
-.ex-balance strong { color: var(--muted); font-size: 12px; }
-.ex-balance em { font-style: normal; color: #ff5a6a; font-size: 20px; font-weight: 800; margin-right: 4px; }
-.ex-box { margin-top: 12px; padding: 14px; border-radius: 14px; background: var(--surface); }
+.coin-mark { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; background: #e3243b; color: #fff; font-size: 10px; font-weight: 800; vertical-align: -3px; }
+.coin-mark.tp { background: #2fb36a; font-size: 8px; }
+.wallet-amount { display: block; margin-top: 2px; font-size: 30px; font-weight: 800; letter-spacing: -0.01em; color: #111; }
+.wallet-approx { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; color: #666; font-size: 13px; }
+.wallet-approx > span:first-child { display: inline-flex; align-items: center; gap: 4px; }
+.wallet-approx .ico { width: 14px; height: 14px; }
+.wallet-toggle { display: inline-flex; border: 1px solid #d8d8dc; border-radius: 999px; padding: 2px; }
+.wallet-toggle button { padding: 3px 10px; border-radius: 999px; color: #888; font-size: 11px; font-weight: 700; }
+.wallet-toggle button.on { background: #222; color: #fff; }
+.wallet-tp { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; margin-top: 12px; padding: 10px 0; border-top: 1px solid #ececf0; border-bottom: 1px solid #ececf0; }
+.wallet-tp > strong { font-size: 16px; font-weight: 800; }
+.wallet-tp > strong small { font-size: 11px; font-weight: 600; color: #666; }
+.wallet-exchange { display: inline-flex; align-items: center; gap: 2px; padding: 6px 10px 6px 12px; border-radius: 999px; background: #e3243b; color: #fff; font-size: 12px; font-weight: 700; }
+.wallet-exchange .ico { width: 14px; height: 14px; }
+.wallet-actions { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 0 4px; }
+.wallet-actions button { display: grid; justify-items: center; gap: 4px; color: #222; font-size: 12px; font-weight: 600; }
+.wallet-actions .ico { width: 26px; height: 26px; }
+.wallet-section { padding: 36px 16px 0; }
+.wallet-section + .wallet-section { padding-top: 24px; }
+.wallet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.wallet-head h2 { margin: 0; font-size: 16px; font-weight: 800; color: #111; }
+.wallet-head h2 small { font-size: 12px; font-weight: 600; color: #777; margin-left: 4px; }
+.wallet-head button { color: #5a46d6; font-size: 12px; font-weight: 700; }
+.nft-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.nft-box { position: relative; display: grid; place-items: end start; aspect-ratio: 1; padding: 8px; border-radius: 12px; background: linear-gradient(160deg, #ddd 0%, #bbb 100%); color: #fff; }
+.nft-box b { padding: 3px 8px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); font-size: 10px; }
+.nft-box.add { place-items: center; background: #fff; border: 1px dashed #c9c9cf; color: #999; font-size: 22px; text-align: center; }
+.nft-box.add small { display: block; font-size: 10px; }
+.token-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.token-card { padding: 12px; border-radius: 12px; background: #fff; }
+.token-card p { margin: 0 0 8px; font-size: 14px; }
+.token-card p small { color: #888; font-size: 11px; }
+.token-card div { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; font-size: 12px; color: #666; }
+.token-card div + div { margin-top: 6px; }
+.token-card strong { color: #111; text-align: right; font-size: 12px; }
+.token-card .up span, .token-card .up strong { color: #1f9d55; }
+.token-card .down span, .token-card .down strong { color: #d8262f; }
+.ledger { display: grid; }
+.ledger-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 10px; align-items: center; padding: 12px; background: #fff; border-bottom: 1px solid #ececf0; }
+.ledger-row:first-child { border-radius: 12px 12px 0 0; }
+.ledger-row:last-child { border-radius: 0 0 12px 12px; border-bottom: 0; }
+.scroll.light > .ledger { padding: 12px 16px 24px; }
+.scroll.light > .ledger .ledger-row { border-radius: 0; }
+.ledger-icon { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #f1f1f4; color: #333; }
+.ledger-icon .ico { width: 20px; height: 20px; }
+.ledger-body { display: grid; gap: 2px; min-width: 0; }
+.ledger-body strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ledger-body small { color: #888; font-size: 11px; }
+.ledger-amount { display: grid; gap: 2px; justify-items: end; font-size: 13px; }
+.ledger-amount strong { font-weight: 800; }
+.ledger-amount strong small { font-size: 10px; font-weight: 600; color: #666; margin-left: 2px; }
+.ledger-amount .plus { color: #1f9d55; }
+.ledger-amount .minus { color: #d8262f; }
+.ledger-badge { padding: 2px 7px; border-radius: 999px; background: #2fb36a; color: #fff; font-size: 10px; font-style: normal; font-weight: 700; }
+.ledger-badge.receive { background: #2f6fe0; }
+.ledger-badge.use { background: #666; }
+.wallet-foot { margin: 20px 16px 24px; color: #888; font-size: 11px; text-align: center; }
+.light-buy { background: #f4f4f6; }
+.light-tabs { background: #f4f4f6; padding-top: 12px; }
+.light-tabs button { border-color: #d8d8dc; color: #666; }
+.light-tabs button.on { background: #222; border-color: #222; color: #fff; }
+.light-filter { background: #f4f4f6; }
+.light-filter label { color: #666; }
+.light-filter input { background: #fff; color: #111; border-color: #d8d8dc; color-scheme: light; }
+.light-filter button { border-color: #d8d8dc; color: #333; }
+.ex-form { padding: 12px 16px 28px; }
+.ex-card { padding: 14px 16px; border-radius: 14px; background: #fff; }
+.ex-card + .ex-card { margin-top: 10px; }
+.ex-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; font-size: 14px; color: #333; }
+.ex-line.top { align-items: flex-start; }
+.ex-line > strong { display: grid; justify-items: end; gap: 4px; font-weight: 800; color: #111; text-align: right; }
+.ex-line > strong .red { font-style: normal; color: #d8262f; font-size: 18px; }
+.ex-line > strong small { font-weight: 600; color: #777; font-size: 12px; }
+.ex-chip-btn { padding: 5px 10px; border-radius: 999px; background: #f1f1f4; color: #333; font-size: 11px; font-weight: 700; }
+.ex-chip-btn b { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 4px; border-radius: 50%; background: #f5c400; color: #111; font-size: 9px; }
+.ex-head-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 20px 4px 8px; }
+.ex-head-row h2 { margin: 0; font-size: 15px; font-weight: 700; color: #111; }
+.ex-head-row small { color: #888; font-size: 11px; text-align: right; }
 .ex-field { display: grid; gap: 6px; }
-.ex-field > span:first-child { font-size: 12px; font-weight: 700; color: #d5d5d8; }
-.ex-field .ex-tp { font-size: 16px; }
+.ex-field > span:first-child { font-size: 14px; font-weight: 600; color: #222; }
+.ex-field > span:first-child small { color: #888; font-weight: 500; font-size: 11px; margin-left: 4px; }
 .ex-input { display: flex; align-items: center; gap: 8px; }
-.ex-input input {
-  flex: 1;
-  min-width: 0;
-  height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: #0f0f11;
-  color: #fff;
-  font: inherit;
-  font-size: 15px;
-  text-align: right;
-}
-.ex-input b { flex: none; width: 36px; font-size: 12px; color: var(--muted); }
-.ex-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.ex-chips button {
-  padding: 5px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-}
-.ex-swap { display: grid; place-items: center; width: 100%; margin: 12px 0; color: var(--muted); }
-.ex-swap svg { width: 22px; height: 22px; }
-.ex-rate { margin: 12px 0 0; color: var(--muted); font-size: 11px; }
-.ex-rate small { font-size: 10px; }
-.ex-hint { min-height: 16px; margin: 4px 0 0; color: #ff5a6a; font-size: 11px; }
-.ex-notice { margin-top: 20px; }
-.ex-notice h3 { color: #ff5a6a; }
+.ex-input input { flex: 1; min-width: 0; height: 48px; padding: 0 12px; border: 1px solid #e3e3e8; border-radius: 8px; background: #fff; color: #111; font: inherit; font-size: 20px; font-weight: 700; text-align: right; }
+.ex-input input::placeholder { color: #999; }
+.ex-input b { flex: none; width: 36px; font-size: 12px; color: #444; }
+.ex-chips { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; margin-top: 10px; }
+.ex-chips button { color: #999; font-size: 13px; font-weight: 600; }
+.ex-swap { display: grid; place-items: center; width: 100%; margin: 12px 0; color: #444; }
+.ex-swap .ico { width: 22px; height: 22px; }
+.ex-warn { display: flex; align-items: center; gap: 4px; margin: 10px 0 0; color: #666; font-size: 11px; }
+.ex-warn .ico { width: 14px; height: 14px; color: #d8262f; flex: none; }
+.ex-rate { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 14px 0 0; color: #444; font-size: 12px; font-weight: 600; }
+.ex-rate button { width: 20px; height: 20px; display: grid; place-items: center; color: #444; }
+.ex-rate .ico { width: 14px; height: 14px; }
+.ex-hint { min-height: 16px; margin: 6px 0 0; color: #d8262f; font-size: 11px; text-align: center; }
+.ex-preview .ex-line { border-top: 1px solid #ececf0; }
+.ex-preview .ex-line:first-child { border-top: 0; }
+.ex-preview .green { color: #1f9d55; }
+#app .ex-confirm { width: 100%; margin-top: 14px; height: 56px; min-height: 56px; border-radius: 12px; background: #d8262f; font-size: 17px; }
+#app .ex-confirm:disabled { background: #c9c9cf; color: #fff; opacity: 1; }
+.ex-notice { margin-top: 22px; }
+.ex-notice h3 { display: flex; align-items: center; gap: 4px; margin: 0 0 8px; color: #d8262f; font-size: 15px; font-weight: 800; }
+.ex-notice h3 .ico { width: 16px; height: 16px; }
 .ex-notice ol { margin: 0; padding-left: 18px; }
-.ex-notice li { color: var(--muted); font-size: 12px; line-height: 1.5; margin-bottom: 4px; }
+.ex-notice li { color: #444; font-size: 12px; line-height: 1.6; }
+.sheet-short { margin: 14px 0 0; color: #ff5a6a; font-size: 12px; line-height: 1.5; text-align: center; }
+.sheet .ghost:disabled { opacity: 0.4; }
+.light [data-clock] { color: #fff; }
 
 /* 이용 가이드 (슬라이드 25) */
 .guide-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -3419,3 +3366,5 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .purchase > strong .price { text-align: right; }
 .purchase > strong .price-sub { font-size: 10px; }
 .rate-note { margin: 10px 0 0; color: #6f6f76; font-size: 10px; line-height: 1.5; text-align: center; }
+.sheet-line strong .price.short { color: #ff5a6a; }
+.light ~ .toast, .light-bar ~ .toast { background: #222; color: #fff; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
