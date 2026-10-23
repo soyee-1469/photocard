@@ -4424,7 +4424,9 @@ function splash() {
             <figcaption><strong>포토카드</strong><span>TOMATOK ${index + 1} / ${SPLASH_IMAGES.length}</span></figcaption>
           </figure>`).join("")}
       </div>
-      <div class="splash-dots" data-splash-dots>${SPLASH_IMAGES.map((_, index) => `<i class="${index === 0 ? "on" : ""}"></i>`).join("")}</div>
+      <button type="button" class="splash-arrow prev" data-splash-move="-1" aria-label="이전 이미지" disabled>‹</button>
+      <button type="button" class="splash-arrow next" data-splash-move="1" aria-label="다음 이미지">›</button>
+      <div class="splash-dots" data-splash-dots>${SPLASH_IMAGES.map((_, index) => `<button type="button" class="${index === 0 ? "on" : ""}" data-splash-to="${index}" aria-label="${index + 1}번째 이미지"></button>`).join("")}</div>
       <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>
       <p class="splash-foot">ⓒ Copyright, ${new Date().getFullYear()}</p>
     </div>`;
@@ -4489,11 +4491,29 @@ function armSplash() {
   const rail = document.querySelector("[data-splash-rail]");
   if (!rail || rail.dataset.bound) return;
   rail.dataset.bound = "1";
-  const dots = [...document.querySelectorAll("[data-splash-dots] i")];
-  rail.addEventListener("scroll", () => {
-    const index = Math.round(rail.scrollLeft / (rail.clientWidth || 1));
+  const dots = [...document.querySelectorAll("[data-splash-dots] button")];
+  const prev = document.querySelector("[data-splash-move='-1']");
+  const next = document.querySelector("[data-splash-move='1']");
+  const paint = () => {
+    const index = splashIndex(rail);
     dots.forEach((dot, i) => dot.classList.toggle("on", i === index));
-  }, { passive: true });
+    if (prev) prev.disabled = index <= 0;
+    if (next) next.disabled = index >= SPLASH_IMAGES.length - 1;
+  };
+  rail.addEventListener("scroll", paint, { passive: true });
+  paint();
+}
+
+function splashIndex(rail) {
+  return Math.max(0, Math.min(SPLASH_IMAGES.length - 1, Math.round(rail.scrollLeft / (rail.clientWidth || 1))));
+}
+
+// 스플래시 화살표·점: 마우스로도 넘길 수 있게 레일을 한 장씩 스크롤한다.
+function moveSplash(target) {
+  const rail = document.querySelector("[data-splash-rail]");
+  if (!rail) return;
+  const index = Math.max(0, Math.min(SPLASH_IMAGES.length - 1, target));
+  rail.scrollTo({ left: rail.clientWidth * index, behavior: "smooth" });
 }
 
 function render() {
@@ -4615,6 +4635,13 @@ app.addEventListener("click", (event) => {
     state.tab = "home";
   } else if (soon) {
     toast(`${soon.dataset.soon} 기능은 준비 중이에요.`);
+  } else if (event.target.closest("[data-splash-move]")) {
+    const rail = document.querySelector("[data-splash-rail]");
+    if (rail) moveSplash(splashIndex(rail) + Number(event.target.closest("[data-splash-move]").dataset.splashMove));
+    return;
+  } else if (event.target.closest("[data-splash-to]")) {
+    moveSplash(Number(event.target.closest("[data-splash-to]").dataset.splashTo));
+    return;
   } else if (bootNext) {
     state.boot = bootNext.dataset.bootNext;
     if (state.boot === "guide") {

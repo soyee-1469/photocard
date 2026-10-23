@@ -3105,3 +3105,26 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   font-size: 15px;
   font-weight: 700;
 }
+
+/* 스플래시 좌우 화살표와 점 버튼 */
+.splash { position: relative; }
+.splash-arrow {
+  position: absolute;
+  top: calc(50% - 60px);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  padding-bottom: 3px;
+}
+.splash-arrow.prev { left: 12px; }
+.splash-arrow.next { right: 12px; }
+.splash-arrow:disabled { opacity: 0.25; }
+.splash-dots button { width: 6px; height: 6px; padding: 0; border-radius: 50%; background: #3a3a3e; }
+.splash-dots button.on { width: 16px; border-radius: 3px; background: #fff; }
