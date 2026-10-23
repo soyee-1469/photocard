@@ -1071,7 +1071,7 @@ function artistsPage() {
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>전체 아티스트</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll">
       <div class="artist-list">${rows || `<p class="empty">등록된 아티스트가 없어요.</p>`}</div>
@@ -1159,7 +1159,7 @@ function home() {
     : `
     <header class="bar">
       <h1>포토카드</h1>
-      ${searchButton()}
+      <span class="bar-tools">${searchButton()}${menuButton()}</span>
     </header>`;
   const profiles = artistProfiles().map((profile) => `
     <button type="button" class="profile" data-profile="${esc(profile.id)}">
@@ -1367,7 +1367,7 @@ function album() {
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>보유 카드</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="album-filters">
       <div class="artist-tabs snap">${chips}</div>
@@ -1562,7 +1562,7 @@ function ownedDetail() {
     <header class="bar">
       <button data-back="${state.cardFrom}" aria-label="뒤로">←</button>
       <h1>보유 카드</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll">
       <div class="owned-detail">
@@ -1933,9 +1933,8 @@ function searchButton() {
   return `<button type="button" class="icon-btn" data-search aria-label="검색">${searchIcon()}</button>`;
 }
 
-// 햄버거 드로어는 하단 탭바로 대체했다. 드로어 코드는 남기고 헤더에서는 검색 버튼을 쓴다.
 function menuButton() {
-  return searchButton();
+  return `<button type="button" class="icon-btn" data-drawer aria-label="메뉴"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>`;
 }
 
 const TAB_ICONS = {
@@ -1946,61 +1945,12 @@ const TAB_ICONS = {
   mypage: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>`,
 };
 
-const TABS = [
-  ["home", "홈"],
-  ["products", "상품"],
-  ["exchange", "포인트 교환"],
-  ["album", "보유카드"],
-  ["mypage", "마이페이지"],
-];
-
-function activeTab() {
-  const screen = state.screen;
-  if (["artists", "artist", "detail"].includes(screen)) return "products";
-  if (screen.startsWith("exchange")) return "exchange";
-  if (screen === "album" || screen === "card" || state.tab === "album") return "album";
-  if (["mypage", "wished", "purchases", "guide", "notice"].includes(screen) || state.tab === "mypage") return "mypage";
-  return "home";
-}
-
-// 개봉 연출(셔플·찢기)과 첫 진입 화면에서는 탭바를 숨긴다(Q2 기본값).
-function showTabBar() {
-  if (state.boot !== "done") return false;
-  if (state.screen === "open") return false;
-  return true;
-}
-
-function tabBar() {
-  if (!showTabBar()) return "";
-  const current = activeTab();
-  return `
-    <nav class="tabbar" aria-label="주요 메뉴">
-      ${TABS.map(([id, label]) => `
-        <button type="button" data-nav="${id}" class="${id === current ? "on" : ""}" aria-current="${id === current ? "page" : "false"}">
-          ${TAB_ICONS[id]}
-          <span>${label}</span>
-        </button>`).join("")}
-    </nav>`;
-}
-
-function menuGroup(id, label, body) {
-  const open = Boolean(state.menuGroups[id]);
-  return `
-    <button type="button" class="nav-group" data-menu-group="${id}" aria-expanded="${open}">
-      <span>${label}</span>
-      <i class="nav-chevron" aria-hidden="true"></i>
-    </button>
-    ${open ? `<div class="nav-sub">${body}</div>` : ""}
-  `;
-}
-
+// 햄버거 드로어. 메뉴는 마이페이지(슬라이드 24)와 같고, 맨 위에 홈·보유 카드 진입만 둔다.
+// 포인트 교환은 토마톡 지갑에서 하므로 여기에는 없다.
 function drawer() {
   if (!state.menuOpen) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
-  const mine = [
-    item("album", "보유 카드"),
-    item("wished", "찜"),
-  ].join("");
+  const soon = (label) => `<button type="button" class="nav-item nav-sub-item" data-soon="${esc(label)}">${esc(label)}</button>`;
   return `
     <div class="nav-bg">
       <aside class="nav-panel">
@@ -2009,12 +1959,18 @@ function drawer() {
           <button type="button" data-drawer-close aria-label="닫기">닫기</button>
         </div>
         ${item("home", "홈")}
-        ${menuGroup("mypage", "MY", mine)}
-        ${menuGroup("artist", "아티스트", [
-          item("artists", "전체 아티스트"),
-          ...artistProfiles().map((profile) => `<button type="button" class="nav-item nav-artist" data-nav-artist="${esc(profile.id)}">${esc(profile.name)}</button>`),
-        ].join(""))}
+        ${item("album", "보유 카드")}
+        ${item("purchases", "구매 내역")}
+        ${item("wished", "찜 목록")}
         ${item("notice", "공지사항")}
+        ${soon("이벤트")}
+        <div class="nav-box">
+          ${soon("1:1 문의")}
+          <button type="button" class="nav-item nav-sub-item" data-nav="guide">이용자 가이드</button>
+          ${soon("FAQ")}
+          ${soon("이용약관")}
+          ${soon("SNS")}
+        </div>
       </aside>
       <button type="button" class="nav-dim" data-drawer-close aria-label="메뉴 닫기"></button>
     </div>
@@ -2048,9 +2004,9 @@ function notices() {
   }).join("");
   return `
     <header class="bar">
-      <button data-back="mypage" aria-label="뒤로">←</button>
+      <button data-back="home" aria-label="홈">←</button>
       <h1>공지사항</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll">${articles}</div>
   `;
@@ -2064,7 +2020,7 @@ function mypage() {
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>마이페이지</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll">
       <div class="menu-cards">
@@ -2114,9 +2070,9 @@ function purchases() {
     : `<p class="empty">구매 내역이 없어요.</p>`;
   return `
     <header class="bar">
-      <button data-back="mypage" aria-label="마이페이지">←</button>
+      <button data-back="home" aria-label="홈">←</button>
       <h1>구매 내역</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll"><div class="list">${rows}</div></div>
   `;
@@ -2142,9 +2098,9 @@ function wished() {
     : `<p class="empty">찜한 상품이 없어요.</p>`;
   return `
     <header class="bar">
-      <button data-back="mypage" aria-label="마이페이지">←</button>
+      <button data-back="home" aria-label="홈">←</button>
       <h1>찜 목록</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll"><div class="list">${rows}</div></div>
   `;
@@ -2181,7 +2137,7 @@ function detail(item) {
     <header class="bar">
       <button data-back="${state.productFrom === "artist" || state.productFrom === "artists" ? state.productFrom : ""}" aria-label="뒤로">←</button>
       <h1>${esc(item.artist)}</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll">
       <img class="cover" src="${item.cover}" alt="" />
@@ -2199,7 +2155,7 @@ function detail(item) {
           <p class="lead">${lineup(item.cards.length)}</p>
           <p class="lead">${tott(item.price)}</p>
         </div>
-        <p class="pay-note">TP로 결제해요 · TOTT는 포인트 교환에서 TP로 바꿔요</p>
+        <p class="pay-note">TP로 결제해요 · TOTT는 토마톡 지갑에서 TP로 바꿔요</p>
         <div class="perks">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"></rect></svg>${esc(perkLabels(item)[0])}</span>
           <span>${icon("track")}${esc(perkLabels(item)[1])}</span>
@@ -4121,6 +4077,7 @@ function toast(message) {
 }
 
 // ---- 포인트 교환 (슬라이드 19~21, mock) ----
+// 교환은 토마톡 지갑에서 하기로 결정돼(2026-10-23) 앱 안에는 진입점이 없다. 화면 코드는 참고용으로 남긴다.
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -4180,7 +4137,7 @@ function exchange() {
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>포인트 교환</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll ex-scroll">
       <section class="wallet-card">
@@ -4228,7 +4185,7 @@ function exchangeHistory() {
     <header class="bar">
       <button data-back="exchange" aria-label="포인트 교환">←</button>
       <h1>교환 내역</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="ex-filter">
       <label>지정된 날짜만 보기
@@ -4269,7 +4226,7 @@ function exchangeForm() {
     <header class="bar">
       <button data-back="exchange" aria-label="포인트 교환">←</button>
       <h1>포인트 교환</h1>
-      ${searchButton()}
+      ${menuButton()}
     </header>
     <div class="scroll ex-form">
       <h2>TOTT → TP 교환</h2>
@@ -4398,7 +4355,7 @@ const GUIDE_PAGES = [
   {
     demo: "pay",
     title: "TP로 결제하기",
-    body: "포인트 교환에서 TOTT를 TP로 바꾼 뒤, 지갑을 연결하고 TP로 결제해요.",
+    body: "토마톡 지갑에서 TOTT를 TP로 바꾼 뒤, 지갑을 연결하고 TP로 결제해요.",
   },
   {
     demo: "open",
@@ -4499,7 +4456,7 @@ function guide(firstRun) {
       <header class="bar">
         <button data-back="${esc(state.guideFrom)}" aria-label="뒤로">←</button>
         <h1>포토카드 이용 가이드</h1>
-        ${searchButton()}
+        ${menuButton()}
       </header>`;
   return `
     ${header}
@@ -4693,8 +4650,7 @@ function render() {
   else if (state.screen === "artist") view = artistPage();
   else if (state.screen === "notice") view = notices();
   else if (state.tab === "mypage" || state.screen === "mypage") view = mypage();
-  app.classList.toggle("has-tabbar", showTabBar());
-  app.innerHTML = view + tabBar() + drawer() + sheet() + walletModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
+  app.innerHTML = view + drawer() + sheet() + walletModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
   blurFronts();
   protectFronts();
   startBanner();
@@ -4789,6 +4745,7 @@ app.addEventListener("click", (event) => {
     state.screen = "detail";
     state.tab = "home";
   } else if (soon) {
+    state.menuOpen = false;
     toast(`${soon.dataset.soon} 기능은 준비 중이에요.`);
   } else if (event.target.closest("[data-splash-move]")) {
     const rail = document.querySelector("[data-splash-rail]");
@@ -4886,7 +4843,7 @@ app.addEventListener("click", (event) => {
       }
       if (name === "exchange-history") state.exDate = "";
     } else if (name === "guide") {
-      state.guideFrom = state.screen === "mypage" ? "mypage" : "home";
+      state.guideFrom = "home";
       state.guidePage = 0;
       state.guideSeen = false;
       state.tab = state.guideFrom;
@@ -4999,7 +4956,7 @@ app.addEventListener("click", (event) => {
     if (count === 5 && !canDrawFive(buying)) return;
     if (!state.walletConnected) return;
     if (state.tp < buying.price * count) {
-      toast("TP가 부족해요. 포인트 교환에서 TOTT를 TP로 바꿔 주세요.");
+      toast("TP가 부족해요. 토마톡 지갑에서 TOTT를 TP로 교환해 주세요.");
       render();
       return;
     }

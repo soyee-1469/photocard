@@ -2634,43 +2634,6 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 
 /* ===== 화면설계서 Ver.01 ===== */
 
-/* 하단 5탭 (슬라이드 7-7~11) */
-:root { --tabbar: 60px; }
-.tabbar {
-  flex: none;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  height: var(--tabbar);
-  border-top: 1px solid var(--line);
-  background: var(--bg);
-  position: relative;
-  z-index: 5;
-}
-.tabbar button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  min-width: 0;
-  padding: 0 2px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-.tabbar button svg { width: 24px; height: 24px; display: block; }
-.tabbar button.on { color: #fff; }
-#app.has-tabbar .sheet-bg,
-#app.has-tabbar .modal-bg,
-#app.has-tabbar .nav-bg { bottom: var(--tabbar); }
-#app.has-tabbar .toast { bottom: calc(var(--tabbar) + 16px); }
-@media (max-width: 900px), (hover: none) and (pointer: coarse) {
-  #app { padding-bottom: 0; }
-  .tabbar { height: calc(var(--tabbar) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
-}
-
 /* 공통 헤더의 ← 버튼 */
 .bar > button[data-back],
 .bar > button[data-open-skip],
@@ -3439,3 +3402,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 @media (prefers-reduced-motion: reduce) {
   .spread-card { transition: none; }
 }
+
+/* 드로어: 마이페이지 묶음 박스와 같은 구성 */
+.nav-box { margin-top: 12px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 14px; }
+.nav-box .nav-item { padding: 12px 0; font-size: 15px; font-weight: 600; }
+.nav-box .nav-item:last-child { border-bottom: 0; }
