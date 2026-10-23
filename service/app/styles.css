@@ -2793,6 +2793,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .wallet-addr button .ico { width: 18px; height: 18px; }
 .wallet-logo { width: 24px; height: 24px; flex: none; border-radius: 50%; display: grid; place-items: center; background: #5a46d6; color: #fff; font-size: 12px; font-weight: 800; }
 .wallet-logo.small { width: 18px; height: 18px; font-size: 10px; margin-right: 6px; vertical-align: -3px; display: inline-grid; }
+.wallet-logo.small svg { width: 12px; height: 12px; }
 .wallet-sum { margin-top: 14px; }
 .wallet-coin { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; font-weight: 700; color: #222; }
 .coin-mark { width: 18px; height: 18px; border-radius: 50%; display: inline-grid; place-items: center; background: #e3243b; color: #fff; font-size: 10px; font-weight: 800; vertical-align: -3px; }
@@ -3368,3 +3369,163 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .rate-note { margin: 10px 0 0; color: #6f6f76; font-size: 10px; line-height: 1.5; text-align: center; }
 .sheet-line strong .price.short { color: #ff5a6a; }
 .light ~ .toast, .light-bar ~ .toast { background: #222; color: #fff; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+
+/* ---- 지갑 (디자인 2025-08): 지갑 슬라이드 · 지갑 관리 · 거래 내역 ---- */
+.wallet-manage-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0 4px 8px; color: #333; font-size: 14px; font-weight: 600; }
+.wallet-avatar { width: 30px; height: 30px; display: inline-grid; }
+.wallet-avatar svg { width: 100%; height: 100%; }
+.wallet-hero { position: relative; background: transparent; padding: 8px 12px 0; }
+.wallet-hero::before { content: ""; position: absolute; inset: 0 0 56px; background: #d8262f; border-radius: 0 0 22px 22px; }
+.wallet-top { position: relative; justify-content: flex-start; padding: 2px 6px 10px; font-size: 13px; }
+.wallet-rail { position: relative; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 24px; touch-action: pan-x pan-y; }
+.wallet-rail::-webkit-scrollbar { display: none; }
+.wallet-rail .wallet-card { flex: 0 0 100%; margin-bottom: 0; scroll-snap-align: start; border-radius: 18px; }
+.wallet-rail.many .wallet-card { flex-basis: calc(100% - 14px); }
+.wallet-addr { gap: 8px; }
+.wallet-short { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; color: #111; }
+.wallet-star { width: 18px; height: 18px; flex: none; display: inline-grid; }
+.wallet-star svg { width: 100%; height: 100%; }
+.wallet-logo { background: #8b7cf6; }
+.wallet-logo svg { width: 16px; height: 16px; }
+.wallet-logo.big { width: 40px; height: 40px; }
+.wallet-logo.big svg { width: 26px; height: 26px; }
+.wallet-toggle { background: #ececf0; border-color: transparent; }
+.wallet-toggle button { color: #777; }
+.wallet-toggle button.on { background: #222; color: #fff; }
+.wallet-dots { display: flex; justify-content: center; gap: 6px; padding: 4px 0 0; }
+.wallet-dots button { width: 6px; height: 6px; border-radius: 999px; background: #c9c9cf; transition: width 0.2s, background 0.2s; }
+.wallet-dots button.on { width: 18px; background: #d8262f; }
+.wallet-section { padding-top: 28px; }
+.wallet-dots + .wallet-section { padding-top: 20px; }
+.wallet-head button { display: inline-flex; align-items: center; gap: 2px; color: #777; font-size: 13px; font-weight: 600; }
+.wallet-head button svg { width: 14px; height: 14px; }
+.nft-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.nft-box b { font-size: 12px; padding: 5px 10px; }
+.wallet-empty { display: grid; justify-items: center; gap: 6px; padding: 44px 20px; border-radius: 14px; background: #fff; text-align: center; }
+.wallet-empty.tall { padding: 60px 20px; }
+.wallet-empty strong { font-size: 15px; font-weight: 800; color: #111; }
+.wallet-empty span { font-size: 13px; color: #888; }
+.wallet-empty strong + span { margin-top: 2px; }
+.token-card p { display: flex; align-items: center; gap: 4px; }
+.token-card p b { font-size: 16px; }
+.token-mark { width: 20px; height: 20px; display: inline-grid; margin-right: 2px; }
+.token-mark svg { width: 100%; height: 100%; }
+.ledger-badge.verified { background: #2f6fe0; }
+.ledger-badge.pending { background: #f5c400; color: #222; }
+.ledger-badge.expired { background: #6b6b78; }
+.ledger-badge.failed { background: #f36b5b; }
+.ledger-badge.ok { background: #2fb36a; }
+.ledger-badge.done { background: #666; }
+
+/* 지갑 관리 */
+.center-bar { position: relative; }
+.center-bar h1 { text-align: center; font-size: 17px; }
+.bar-spacer { width: 36px; height: 36px; flex: none; }
+.manage { padding: 4px 16px 24px; }
+.manage-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0 14px; color: #666; font-size: 12px; }
+.manage-clock { display: inline-flex; align-items: center; gap: 8px; }
+.light .manage-clock time { color: #666; }
+.manage-clock button { width: 20px; height: 20px; display: grid; place-items: center; color: #444; }
+.manage-clock .ico { width: 14px; height: 14px; }
+.manage-h { margin: 14px 0 10px; font-size: 15px; font-weight: 800; color: #111; }
+.manage-h + .manage-hint { margin-top: -6px; }
+.manage-hint { margin: 0 0 12px; color: #888; font-size: 12px; }
+.manage-list { display: grid; gap: 10px; }
+.manage-row { display: grid; grid-template-columns: 22px 40px 1fr auto 20px; align-items: center; gap: 10px; padding: 14px 10px 14px 12px; border-radius: 14px; background: #f1f1f4; color: #111; user-select: none; -webkit-user-select: none; }
+.manage-row.main { background: #efeefc; }
+.manage-row.off { opacity: 0.6; }
+.manage-row.dragging { pointer-events: none; opacity: 0.92; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18); transform: scale(1.01); }
+.drag-handle { width: 22px; height: 22px; display: inline-grid; color: #9a9aa3; cursor: grab; touch-action: none; }
+.drag-handle svg { width: 100%; height: 100%; }
+.manage-body { display: grid; gap: 2px; min-width: 0; }
+.manage-body strong { font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.manage-body small { font-size: 12px; color: #777; }
+.manage-amount { display: grid; justify-items: end; gap: 2px; text-align: right; }
+.manage-amount strong { font-size: 16px; font-weight: 800; }
+.manage-amount small { font-size: 12px; color: #777; }
+.manage-amount .off-tag { color: #d8262f; font-weight: 700; }
+.manage-more { width: 20px; height: 28px; display: grid; place-items: center; color: #555; }
+.manage-more svg { width: 18px; height: 18px; }
+.manage ~ .buy { padding: 10px 16px 20px; }
+#app .manage ~ .buy .primary { background: #c0343c; }
+
+/* 지갑 설정 시트 · 이름 변경 */
+.light-sheet { background: #fff; color: #111; padding: 10px 20px 28px; }
+.light-sheet .sheet-grab { background: #d6d6dc; }
+.light-sheet h2 { color: #111; font-size: 20px; font-weight: 700; margin: 10px 0 8px; }
+.wsheet-item { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 2px; color: #222; font-size: 17px; text-align: left; }
+.wsheet-item svg { width: 24px; height: 24px; flex: none; }
+.wsheet-item.danger { color: #d8262f; }
+.light-modal { background: #fff; color: #111; }
+.light-modal h2 { color: #111; }
+.light-modal .rename-input { width: 100%; height: 48px; margin: 4px 0 8px; padding: 0 12px; border: 1px solid #d8d8dc; border-radius: 10px; background: #fff; color: #111; font: inherit; font-size: 16px; color-scheme: light; }
+.light-modal .ghost { background: #f1f1f4; color: #333; border: 0; }
+
+/* 거래 내역 */
+.hist { padding: 12px 16px 24px; }
+.hist-pick { position: relative; z-index: 3; }
+.hist-pick-btn { display: grid; grid-template-columns: 40px 1fr 22px; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 14px; background: #fff; color: #111; text-align: left; }
+.hist-pick-btn > svg { width: 22px; height: 22px; color: #333; transition: transform 0.2s; }
+.hist-pick.open .hist-pick-btn > svg { transform: rotate(180deg); }
+.hist-pick-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); display: grid; gap: 2px; padding: 8px; border-radius: 14px; background: #fff; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18); }
+.hist-pick-item { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 12px; width: 100%; padding: 12px 10px; border-radius: 12px; color: #111; text-align: left; }
+.hist-pick-item.on { background: #f1f1f4; }
+.hist-tabs { padding: 14px 0 6px; background: transparent; }
+.hist-period { margin: 14px 0 10px; font-size: 16px; font-weight: 800; color: #111; }
+.hist-day { margin-bottom: 10px; border-radius: 14px; background: #fff; overflow: hidden; }
+.hist-day-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 16px 16px; color: #111; font-size: 15px; font-weight: 600; text-align: left; }
+.hist-day-btn svg { width: 22px; height: 22px; color: #333; transition: transform 0.2s; }
+.hist-day.open .hist-day-btn svg { transform: rotate(180deg); }
+.hist-day .ledger { padding: 0 4px 6px; }
+.hist-day .ledger-row { border-radius: 0; border-bottom: 0; padding: 10px 12px; }
+
+/* 홈 NEW 타일: 이미지 아래 세 단(아티스트 · 제목 / 가격 + 구성 / ≈ ₩) */
+.tile.compact .tile-shot { margin-bottom: 10px; }
+.tile-name.one { height: auto; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; line-height: 18px; -webkit-line-clamp: unset; }
+.tile-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 6px; min-width: 0; }
+.tile-row strong { font-size: 16px; line-height: 20px; font-weight: 700; white-space: nowrap; }
+.tile-sub { display: block; margin-top: 2px; font-size: 10px; line-height: 14px; }
+.tile.compact .tile-who { margin-bottom: 6px; }
+
+/* 개봉 안내 모션: 손가락이 포장 위를 가로 → 세로 → 대각선으로 번갈아 긋고, 지나간 자리에 찢김 선이 남는다 */
+.tear-hint { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; pointer-events: none; }
+.tear-hint-arm { position: relative; width: 74%; height: 48px; animation: tear-hint-arm 9s steps(1, end) infinite; }
+.tear-hint-line {
+  position: absolute; left: 0; right: 0; top: 50%; height: 0;
+  border-top: 2px dashed rgba(255, 255, 255, 0.92);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.75));
+  transform-origin: left center;
+  animation: tear-hint-line 3s ease-in-out infinite;
+}
+.tear-hint-finger {
+  position: absolute; top: 50%; left: 0; width: 36px; height: 36px;
+  color: #fff; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65));
+  animation: tear-hint-finger 3s ease-in-out infinite;
+}
+.tear-hint-finger svg { width: 100%; height: 100%; display: block; animation: tear-hint-finger-up 9s steps(1, end) infinite; }
+@keyframes tear-hint-arm { 0% { transform: rotate(0deg); } 33.33% { transform: rotate(90deg); } 66.66% { transform: rotate(-38deg); } 100% { transform: rotate(-38deg); } }
+@keyframes tear-hint-finger-up { 0% { transform: rotate(0deg); } 33.33% { transform: rotate(-90deg); } 66.66% { transform: rotate(38deg); } 100% { transform: rotate(38deg); } }
+@keyframes tear-hint-line {
+  0% { transform: scaleX(0); opacity: 0; }
+  12% { opacity: 1; }
+  68% { transform: scaleX(1); opacity: 1; }
+  88% { opacity: 0; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+@keyframes tear-hint-finger {
+  0% { left: 0; transform: translate(-50%, -30%) scale(0.85); opacity: 0; }
+  12% { transform: translate(-50%, -30%) scale(1); opacity: 1; }
+  68% { left: 100%; transform: translate(-50%, -30%) scale(1); opacity: 1; }
+  82% { left: 100%; transform: translate(-50%, -30%) scale(0.95); opacity: 0; }
+  100% { left: 100%; opacity: 0; }
+}
+.open-stage.is-touching .tear-hint,
+.open-stage.is-opening .tear-hint,
+.open-stage.is-ready .tear-hint,
+.open-stack.is-scatter .tear-hint,
+.open-stack.is-shell .tear-hint { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .tear-hint-arm, .tear-hint-line, .tear-hint-finger, .tear-hint-finger svg { animation: none; }
+  .tear-hint-line { transform: scaleX(1); opacity: 0.8; }
+  .tear-hint-finger { left: 60%; transform: translate(-50%, -30%); opacity: 1; }
+}
