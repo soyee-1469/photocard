@@ -342,7 +342,9 @@ const state = {
 
 const ORDERS_KEY = "photocard-orders-v1";
 const ADDRESS_KEY = "photocard-addresses-v1";
-const WALLET_KEY = "photocard-wallet-v1";
+const WALLET_KEY = "photocard-wallet-v2";
+// mock 초기 TP. 저장된 지갑이 없을 때만 쓴다.
+const TP_SEED = 5000;
 const ONBOARD_KEY = "photocard-onboard-v1";
 
 // TOTT → TP mock 환율. 실제 연동 전까지 상수 하나로 둔다.
@@ -356,7 +358,10 @@ const WALLETS = [
 function loadWallet() {
   try {
     const saved = JSON.parse(localStorage.getItem(WALLET_KEY) || "null");
-    if (!saved) return;
+    if (!saved) {
+      state.tp = TP_SEED;
+      return;
+    }
     if (Number.isFinite(Number(saved.balance))) state.balance = Number(saved.balance);
     state.tp = Number(saved.tp) || 0;
     state.exchanges = Array.isArray(saved.exchanges) ? saved.exchanges : [];
@@ -696,8 +701,9 @@ function lineup(count) {
   return `${count}종 중 랜덤 1장`;
 }
 
+// 포토카드 결제 단위는 TP다. TOTT는 포인트 교환에서 TP로 바꿔 쓴다.
 function tott(amount) {
-  return `${amount}<span class="tott">TOTT</span>`;
+  return `${amount}<span class="tott">TP</span>`;
 }
 
 function setTitle(item) {
@@ -2152,9 +2158,9 @@ function detail(item) {
       </div>`;
     })
     .join("");
-  const canOne = state.balance >= item.price;
+  const canOne = state.tp >= item.price;
   const stockForFive = canDrawFive(item);
-  const canFive = stockForFive && state.balance >= item.price * 5;
+  const canFive = stockForFive && state.tp >= item.price * 5;
   const word = saleWord(item);
   const fiveNote = !word && !stockForFive ? `<p class="five-note">현재 연속 뽑기 불가</p>` : "";
   const buy = word
@@ -2187,7 +2193,7 @@ function detail(item) {
           <p class="lead">${lineup(item.cards.length)}</p>
           <p class="lead">${tott(item.price)}</p>
         </div>
-        <p class="pay-note">TOTT 결제 · TP 결제는 준비 중이에요</p>
+        <p class="pay-note">TP로 결제해요 · TOTT는 포인트 교환에서 TP로 바꿔요</p>
         <div class="perks">
           <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1.5"></rect></svg>${esc(perkLabels(item)[0])}</span>
           <span>${icon("track")}${esc(perkLabels(item)[1])}</span>
@@ -2586,7 +2592,7 @@ function armResultCarousel() {
 }
 
 function balanceLabel() {
-  return state.walletConnected ? tott(state.balance) : "미연결";
+  return state.walletConnected ? tott(state.tp) : "미연결";
 }
 
 function sheet() {
@@ -2597,13 +2603,13 @@ function sheet() {
   const rows = count === 1
     ? [
         ["현재가격", tott(cost)],
-        ["보유", tott(state.balance)],
-        ["차감 후 남은 잔액", tott(state.balance - cost)],
+        ["보유", tott(state.tp)],
+        ["차감 후 남은 잔액", tott(state.tp - cost)],
       ]
     : [
         ["5장 뽑기", tott(cost)],
-        ["보유", tott(state.balance)],
-        ["결제 후", tott(state.balance - cost)],
+        ["보유", tott(state.tp)],
+        ["결제 후", tott(state.tp - cost)],
       ];
   if (!state.walletConnected) {
     return `
@@ -2611,7 +2617,7 @@ function sheet() {
         <div class="sheet">
           <span class="sheet-grab"></span>
           <h2 class="sheet-need">지갑 연결이 필요해요</h2>
-          <p class="sheet-copy">포토카드는 TOTT로 결제해요.<br>지갑을 연결하면 바로 결제를 계속할 수 있어요.</p>
+          <p class="sheet-copy">포토카드는 TP로 결제해요.<br>지갑을 연결하면 바로 결제를 계속할 수 있어요.</p>
           <p class="sheet-copy sub">연결 후 현재 결제 화면으로 돌아옵니다.</p>
           <button class="primary" type="button" data-wallet-connect>지갑 연결하기</button>
           <button class="ghost" type="button" data-sheet-close>닫기</button>
@@ -2676,7 +2682,7 @@ function walletModal() {
     <div class="modal-bg">
       <div class="modal wallet-modal">
         <h2>지갑 연결</h2>
-        <p>TOTT로 결제하려면<br>지갑을 먼저 연결해 주세요.</p>
+        <p>TP로 결제하려면<br>지갑을 먼저 연결해 주세요.</p>
         <button type="button" class="primary" data-wallet-connect>지갑 연결하기</button>
         <button type="button" class="ghost" data-wallet-close>닫기</button>
       </div>
@@ -2742,7 +2748,7 @@ function draw(item, count) {
       member: card.member || "",
     })),
   });
-  state.balance -= item.price * count;
+  state.tp -= item.price * count;
   persistWallet();
   state.reveal = picked;
   state.revealIndex = 0;
@@ -3110,6 +3116,7 @@ function applyScene(id) {
   state.reveal = [];
   state.revealIndex = 0;
   state.balance = 500;
+  state.tp = TP_SEED;
   state.walletConnected = false;
   state.walletModal = false;
   state.cartModal = false;
@@ -3206,7 +3213,7 @@ const NOTES = {
   "admin-notice": `<h2>공지관리</h2><p>앱 공지를 등록해요.</p>`,
   home: `<h2>홈</h2><p>가수 프로필과 노출된 상품이 나와요. 카드 앞면은 여기 없어요.</p>`,
   detail: `<h2>상세</h2><p>이 팩을 바로 뽑는 화면이에요.</p>`,
-  pay: `<h2>1장 결제</h2><p>같은 팩 1장을 TOTT로 결제해요. 잔액이 부족하면 안 돼요.</p>`,
+  pay: `<h2>1장 결제</h2><p>같은 팩 1장을 TP로 결제해요. 잔액이 부족하면 안 돼요.</p>`,
   pay5: `<h2>5장 결제</h2><p>같은 팩 5장을 한 번에 결제해요. 재고가 5장 미만이면 막혀요.</p>`,
   result: `<h2>결과</h2><p>포장을 연 뒤에 카드 앞면이 나와요.</p>`,
   five: `<h2>5장 연속</h2><p>같은 팩 5장을 한 장씩 이어서 열어요.</p>`,
@@ -4316,8 +4323,8 @@ const GUIDE_PAGES = [
   },
   {
     image: "tears/base.png",
-    title: "TOTT로 결제하기",
-    body: "지갑을 연결하고 TOTT로 결제해요. 포인트 교환에서 TOTT를 TP로 바꿀 수 있어요.",
+    title: "TP로 결제하기",
+    body: "포인트 교환에서 TOTT를 TP로 바꾼 뒤, 지갑을 연결하고 TP로 결제해요.",
   },
   {
     image: "pack_closed.png",
@@ -4843,8 +4850,8 @@ app.addEventListener("click", (event) => {
     if (saleWord(buying)) return;
     if (count === 5 && !canDrawFive(buying)) return;
     if (!state.walletConnected) return;
-    if (state.balance < buying.price * count) {
-      toast("TOTT가 부족해요.");
+    if (state.tp < buying.price * count) {
+      toast("TP가 부족해요. 포인트 교환에서 TOTT를 TP로 바꿔 주세요.");
       render();
       return;
     }

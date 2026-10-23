@@ -492,7 +492,7 @@ function packRows() {
         <td>${escapeAttr(item.eventName || "—")}</td>
         <td>${item.cards.length}종</td>
         <td>${stockLabel(item)}</td>
-        <td>${item.price} TOTT</td>
+        <td>${item.price} TP</td>
         <td>${saleLabel(item.status)}</td>
         <td>${item.home ? "ON" : "OFF"}</td>
         <td>${escapeAttr(item.created || "—")}</td>
@@ -656,7 +656,7 @@ function renderPackInfo(item) {
         <div class="app-offer">
           <p class="app-lineup">${item.cards.length}종 중 랜덤 1장<span>포토카드 구성 수</span></p>
           <label>가격
-            <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TOTT</em></span>
+            <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TP</em></span>
             <span class="app-where">상세 오른쪽, 목록 가격</span>
           </label>
         </div>
@@ -920,7 +920,7 @@ function renderPackCreate() {
     </div>
     <div class="price-save">
       <label>5. 가격
-        <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TOTT</em></span>
+        <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TP</em></span>
       </label>
       <div class="actions">${next}</div>
     </div>`;
@@ -1068,7 +1068,7 @@ function purchaseDetail(order) {
       <td>${escapeAttr(card.member || "없음")}</td>
       <td>${card.count}</td>
     </tr>`).join("");
-  const amount = Number.isFinite(order.price) ? `${order.price}TOTT` : "—";
+  const amount = Number.isFinite(order.price) ? `${order.price}TP` : "—";
   return `
     <section class="sale-detail">
       <h3>${escapeAttr(order.id)} · ${escapeAttr(order.productName || order.album || "상품")}</h3>
@@ -1121,7 +1121,7 @@ function orderDate(value) {
 }
 
 function orderAmount(order) {
-  if (order.kind === "purchase") return Number.isFinite(order.price) ? `${order.price} TOTT` : "—";
+  if (order.kind === "purchase") return Number.isFinite(order.price) ? `${order.price} TP` : "—";
   return order.feeText || "미정";
 }
 
@@ -1463,7 +1463,7 @@ function renderOrders() {
     ? "보내기 전 주문을 여러 건 골라 준비중으로 바꾸거나 송장을 넣어요."
     : screen === "track"
       ? "보낸 뒤 상태만 봐요. 배송지연과 반송은 여기서 표시해요."
-      : "구매는 뽑기 결제(TOTT)이고, 배송은 실물 요청이에요. 배송비는 정책에 금액이 있을 때만 나오고, 없으면 미정이에요.";
+      : "구매는 뽑기 결제(TP)이고, 배송은 실물 요청이에요. 배송비는 정책에 금액이 있을 때만 나오고, 없으면 미정이에요.";
   document.getElementById("main").innerHTML = `
     <div class="form-head">
       <h2>${screen === "ship" ? "배송처리" : screen === "track" ? "배송현황" : "주문내역"}</h2>
@@ -1902,7 +1902,7 @@ function renderCardList() {
   const sale = pack ? `
     <div class="grid fields">
       <label>뽑기 가격
-        <span class="app-price"><input data-field="price" type="number" min="1" value="${pack.price}" /><em>TOTT</em></span>
+        <span class="app-price"><input data-field="price" type="number" min="1" value="${pack.price}" /><em>TP</em></span>
         <span class="field-help">이 행사를 한 장 뽑는 값이에요. 안의 카드는 같은 값으로 나와요.</span>
       </label>
       <label>노출
