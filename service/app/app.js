@@ -2252,6 +2252,14 @@ const DECK_FAN = [
   { x: 55, y: 5, r: 9 },
   { x: 105, y: 16, r: 18 },
 ];
+// 5장 바로 오픈하기(슬라이드 16): 다섯 장을 2-1-2로 펼친다.
+const SPREAD_GRID = [
+  { x: -82, y: -158 },
+  { x: 82, y: -158 },
+  { x: 0, y: 0 },
+  { x: -82, y: 158 },
+  { x: 82, y: 158 },
+];
 const OPEN_BASE = "tears/base.jpg?v=4";
 const DECK_PACK = "tears/base.png?v=1";
 const DECK_BACK = "tears/back.png?v=1";
@@ -2910,7 +2918,7 @@ function armDeck() {
   playShuffle();
   // 중간 연출(슬라이드 16): 나머지 넉 장이 X자 네 방향으로 퍼지고, 고른 포장이 가운데서 커지며 돈다.
   const corners = [[-104, -176], [104, -176], [-104, 176], [104, 176]];
-  const choose = (pick) => {
+  const choose = (pick, direct = false) => {
     if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
     deck.classList.add("is-picked");
     pick.classList.add("is-choice");
@@ -2936,7 +2944,9 @@ function armDeck() {
       later(shine, 700);
     }
     later(() => {
-      if (stage.isConnected) showPack();
+      if (!stage.isConnected) return;
+      if (direct) showSpread();
+      else showPack();
     }, reduced ? 240 : 1500);
   };
   stage.addEventListener("click", (event) => {
@@ -2947,12 +2957,13 @@ function armDeck() {
       playShuffle();
       return;
     }
-    // 바로 오픈하기: 고르지 않고 무작위 한 장으로 같은 연출을 거쳐 개봉한다(Q11 기본값).
+    // 바로 오픈하기: 무작위 한 장을 고른 뒤 찢기 없이 바로 공개한다.
+    // 1장이면 결과로, 5장이면 2-1-2 펼침 화면(슬라이드 16)으로 간다.
     const direct = event.target.closest("[data-deck-direct]");
     if (direct) {
       event.stopPropagation();
       if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
-      choose(cards[Math.floor(Math.random() * cards.length)]);
+      choose(cards[Math.floor(Math.random() * cards.length)], true);
       return;
     }
     if (event.target.closest("[data-open-skip]")) return;
@@ -2961,6 +2972,62 @@ function armDeck() {
     event.stopPropagation();
     choose(pick);
   });
+}
+
+// 찢기 없이 공개: 1장은 결과, 여러 장은 2-1-2 펼침 화면.
+function showSpread() {
+  state.sheet = null;
+  state.revealIndex = 0;
+  if (state.reveal.length < 2) {
+    finishOpen();
+    return;
+  }
+  state.openPhase = "spread";
+  state.openCut = "idle";
+  state.motionArmed = false;
+  state.screen = "open";
+  state.tab = "home";
+  render();
+}
+
+function cardSpread() {
+  const count = state.reveal.length;
+  const cards = state.reveal.slice(0, SPREAD_GRID.length).map((card, index) => {
+    const spot = SPREAD_GRID[index];
+    return `
+      <div class="spread-card" style="--i:${index};--sx:${spot.x}px;--sy:${spot.y}px">
+        <div class="spread-spin">
+          <img class="spread-face back" src="${DECK_PACK}" alt="" draggable="false" />
+          <span class="spread-face front"><img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" /><span class="prism" aria-hidden="true"></span></span>
+        </div>
+        <small>${esc(card.no)}</small>
+      </div>`;
+  }).join("");
+  return `
+    ${openBar(`${count}장 뽑기`)}
+    <div class="spread-stage" data-spread>
+      <p class="deck-hint">뽑은 카드 ${count}장</p>
+      <div class="spread">${cards}</div>
+      <button class="primary open-ok spread-ok" type="button" data-open-ok>OK</button>
+    </div>
+  `;
+}
+
+function armSpread() {
+  const stage = document.querySelector("[data-spread]");
+  if (!stage || stage.dataset.bound) return;
+  stage.dataset.bound = "1";
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cards = [...stage.querySelectorAll(".spread-card")];
+  const flips = cards.length;
+  if (reduced) {
+    stage.classList.add("is-done");
+    return;
+  }
+  requestAnimationFrame(() => stage.classList.add("is-live"));
+  window.setTimeout(() => {
+    if (stage.isConnected) stage.classList.add("is-done");
+  }, 700 + flips * 320 + 500);
 }
 
 function showPack() {
@@ -4321,28 +4388,83 @@ function armClock() {
 
 // ---- 이용 가이드 (슬라이드 25) ----
 
+// 이용 가이드 4장. 그림 대신 실제 화면 요소(타일·결제 시트·포장·보유 카드 격자)를 CSS로 움직인다.
 const GUIDE_PAGES = [
   {
-    image: "/assets/covers/jump.jpg",
+    demo: "pick",
     title: "상품을 고르고 뽑기",
     body: "홈에서 아티스트와 상품을 고른 뒤 1장 뽑기 또는 5장 연속 뽑기를 눌러요.",
   },
   {
-    image: "tears/base.png",
+    demo: "pay",
     title: "TP로 결제하기",
     body: "포인트 교환에서 TOTT를 TP로 바꾼 뒤, 지갑을 연결하고 TP로 결제해요.",
   },
   {
-    image: "pack_closed.png",
+    demo: "open",
     title: "포장을 밀어 열기",
     body: "포장을 손가락으로 밀어 열고, 나온 카드를 드래그해 앞뒤를 확인해요.",
   },
   {
-    image: "/assets/covers/crazy.jpg",
+    demo: "album",
     title: "보유 카드에 보관",
     body: "뽑은 카드는 보유 카드에서 언제든 볼 수 있어요. 같은 카드는 장수로 표시돼요.",
   },
 ];
+
+function fingerIcon() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8h8.5a1.5 1.5 0 0 1 0 3h-7.5"></path><path d="M13.5 11h2a1.5 1.5 0 0 1 0 3h-2.5"></path><path d="M14.5 14a1.5 1.5 0 0 1 0 3h-1.5"></path><path d="M13.5 17a1.5 1.5 0 1 1 0 3h-4.5a6 6 0 0 1 -6 -6v-2v.208a6 6 0 0 1 2.7 -5.012l.3 -.196q .718 -.468 5.728 -3.286a1.5 1.5 0 0 1 2.022 .536c.44 .734 .325 1.674 -.28 2.28l-1.47 1.47"></path></svg>`;
+}
+
+function demoScene(kind) {
+  const finger = `<span class="demo-finger" aria-hidden="true">${fingerIcon()}</span>`;
+  if (kind === "pick") {
+    return `
+      <div class="demo demo-pick" aria-hidden="true">
+        <div class="demo-tiles">
+          <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>25 TP</small></span>
+          <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>25 TP</small></span>
+        </div>
+        <span class="demo-btn">1장 뽑기</span>
+        ${finger}
+      </div>`;
+  }
+  if (kind === "pay") {
+    return `
+      <div class="demo demo-pay" aria-hidden="true">
+        <img class="demo-bg" src="/assets/covers/jump.jpg" alt="" />
+        <div class="demo-sheet">
+          <i class="demo-grab"></i>
+          <div><span>현재가격</span><b>25 TP</b></div>
+          <div><span>보유</span><b>5,000 TP</b></div>
+          <div><span>차감 후 남은 잔액</span><b>4,975 TP</b></div>
+          <span class="demo-btn">결제하기</span>
+        </div>
+        ${finger}
+      </div>`;
+  }
+  if (kind === "open") {
+    const overs = [1, 2, 3, 4].map((index) => `<img class="demo-over o${index}" src="tears/method-1/over-${index}.png?v=1" alt="" />`).join("");
+    return `
+      <div class="demo demo-open" aria-hidden="true">
+        <div class="demo-pack">
+          <img class="demo-base" src="${OPEN_BASE}" alt="" />
+          ${overs}
+          <img class="demo-shell" src="tears/over-5.png?v=3" alt="" />
+        </div>
+        <span class="demo-card"><img src="${photo("67.jpg")}" alt="" /><span class="prism"></span></span>
+        ${finger}
+      </div>`;
+  }
+  const fronts = ["67.jpg", "69.jpg", "71.jpg", "01.jpg", "10.jpg", "20.jpg"];
+  return `
+    <div class="demo demo-album" aria-hidden="true">
+      <div class="demo-chips"><b>전체</b><span>BLACKPINK</span><span>LE SSERAFIM</span></div>
+      <div class="demo-grid">
+        ${fronts.map((file, index) => `<span style="--d:${index * 0.3}s"><img src="${photo(file)}" alt="" />${index === 0 ? `<i>2장</i>` : ""}</span>`).join("")}
+      </div>
+    </div>`;
+}
 
 function guidePages() {
   return `
@@ -4350,7 +4472,7 @@ function guidePages() {
       ${GUIDE_PAGES.map((page, index) => `
         <section class="guide-page" data-guide-page="${index}">
           <span class="guide-step">${index + 1} / ${GUIDE_PAGES.length}</span>
-          <img src="${page.image}" alt="" draggable="false" />
+          ${demoScene(page.demo)}
           <h2>${esc(page.title)}</h2>
           <p>${esc(page.body)}</p>
         </section>`).join("")}
@@ -4555,6 +4677,7 @@ function render() {
   else if (state.screen === "card") view = ownedDetail();
   else if (state.screen === "open" && state.openPhase === "deck") view = cardDeck();
   else if (state.screen === "open" && state.openPhase === "pack") view = sealedPack();
+  else if (state.screen === "open" && state.openPhase === "spread") view = cardSpread();
   else if (state.screen === "open" && state.openPhase === "motion") view = openMotion();
   else if (state.screen === "result" || state.screen === "open") view = result();
   else if (state.screen === "wished") view = wished();
@@ -4581,6 +4704,7 @@ function render() {
   armMotion();
   armDeck();
   armOpenCut();
+  armSpread();
   armResultCarousel();
   armClock();
   armGuide();

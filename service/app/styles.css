@@ -3017,12 +3017,230 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   text-align: center;
 }
 .guide-step { color: var(--muted); font-size: 12px; font-weight: 700; margin-bottom: 14px; }
-.guide-page img {
-  width: 160px;
-  height: 220px;
-  object-fit: contain;
-  border-radius: 14px;
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.6));
+/* 가이드 장면: 실제 화면 요소를 작은 틀 안에서 움직인다 */
+.demo {
+  position: relative;
+  width: 224px;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #121214;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+.demo img { display: block; }
+.demo-btn {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--pink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.demo-finger {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transform-origin: 10% 10%;
+}
+.demo-finger svg { width: 100%; height: 100%; display: block; }
+
+/* 1. 상품 고르기 */
+.demo-tiles { position: absolute; left: 16px; right: 16px; top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.demo-tile { display: grid; gap: 3px; border-radius: 10px; transition: none; }
+.demo-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
+.demo-tile b { font-size: 11px; }
+.demo-tile small { color: var(--muted); font-size: 10px; }
+.demo-pick .demo-finger { animation: demo-pick-finger 4.5s ease-in-out infinite; }
+.demo-pick .t1 img { animation: demo-pick-tile 4.5s ease-in-out infinite; }
+.demo-pick .demo-btn { animation: demo-pick-btn 4.5s ease-in-out infinite; }
+@keyframes demo-pick-finger {
+  0% { transform: translate(170px, 180px); opacity: 0; }
+  12% { transform: translate(52px, 62px) scale(1); opacity: 1; }
+  20% { transform: translate(52px, 62px) scale(0.82); }
+  28% { transform: translate(52px, 62px) scale(1); }
+  50% { transform: translate(108px, 206px) scale(1); }
+  58% { transform: translate(108px, 206px) scale(0.82); }
+  66% { transform: translate(108px, 206px) scale(1); }
+  82% { transform: translate(108px, 206px) scale(1); opacity: 1; }
+  100% { transform: translate(170px, 250px); opacity: 0; }
+}
+@keyframes demo-pick-tile {
+  0%, 18% { transform: none; box-shadow: none; }
+  24%, 48% { transform: scale(0.95); box-shadow: 0 0 0 2px var(--pink); }
+  54%, 100% { transform: none; box-shadow: none; }
+}
+@keyframes demo-pick-btn {
+  0%, 56% { transform: none; filter: none; }
+  61% { transform: scale(0.96); filter: brightness(1.35); }
+  70%, 100% { transform: none; filter: none; }
+}
+
+/* 2. TP 결제 시트 */
+.demo-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.35; }
+.demo-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 14px 12px;
+  border-radius: 14px 14px 0 0;
+  background: var(--surface);
+  display: grid;
+  gap: 6px;
+}
+.demo-grab { display: block; width: 28px; height: 3px; margin: 0 auto 4px; border-radius: 99px; background: #3a3a3e; }
+.demo-sheet > div { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.demo-sheet > div b { color: #fff; font-size: 12px; }
+.demo-sheet .demo-btn { position: static; margin-top: 6px; height: 34px; }
+.demo-pay .demo-sheet { animation: demo-pay-sheet 4.5s ease-in-out infinite; }
+.demo-pay .demo-finger { animation: demo-pay-finger 4.5s ease-in-out infinite; }
+.demo-pay .demo-btn { animation: demo-pay-btn 4.5s ease-in-out infinite; }
+@keyframes demo-pay-sheet {
+  0% { transform: translateY(105%); }
+  14%, 86% { transform: translateY(0); }
+  100% { transform: translateY(105%); }
+}
+@keyframes demo-pay-finger {
+  0%, 36% { transform: translate(170px, 250px); opacity: 0; }
+  48% { transform: translate(112px, 204px) scale(1); opacity: 1; }
+  54% { transform: translate(112px, 204px) scale(0.82); }
+  60% { transform: translate(112px, 204px) scale(1); }
+  72% { transform: translate(112px, 204px) scale(1); opacity: 1; }
+  82%, 100% { transform: translate(180px, 250px); opacity: 0; }
+}
+@keyframes demo-pay-btn {
+  0%, 52% { transform: none; filter: none; }
+  57% { transform: scale(0.96); filter: brightness(1.35); }
+  66%, 100% { transform: none; filter: none; }
+}
+
+/* 3. 포장 찢기 → 카드 */
+.demo-pack {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  width: 118px;
+  aspect-ratio: 659 / 1024;
+  transform: translateX(-50%);
+}
+.demo-pack img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.demo-over, .demo-shell { opacity: 0; }
+.demo-open .demo-pack { animation: demo-open-pack 5s ease-in-out infinite; }
+.demo-open .demo-base { animation: demo-open-base 5s ease-in-out infinite; }
+.demo-open .o1 { animation: demo-open-o1 5s linear infinite; }
+.demo-open .o2 { animation: demo-open-o2 5s linear infinite; }
+.demo-open .o3 { animation: demo-open-o3 5s linear infinite; }
+.demo-open .o4 { animation: demo-open-o4 5s linear infinite; }
+.demo-open .demo-shell { animation: demo-open-shell 5s linear infinite; }
+.demo-open .demo-finger { animation: demo-open-finger 5s ease-in-out infinite; }
+.demo-card {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  width: 84px;
+  aspect-ratio: 55 / 85;
+  border-radius: 8px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateX(-50%) translateY(50px) scale(0.6);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.6);
+}
+.demo-card img { width: 100%; height: 100%; object-fit: cover; }
+.demo-card .prism { border-radius: 8px; }
+.demo-open .demo-card { animation: demo-open-card 5s ease-in-out infinite; }
+.demo-open .demo-card .prism::before { animation: demo-open-shine 5s ease-out infinite; }
+@keyframes demo-open-finger {
+  0%, 6% { transform: translate(36px, 30px); opacity: 0; }
+  12% { transform: translate(36px, 30px); opacity: 1; }
+  40% { transform: translate(168px, 30px); opacity: 1; }
+  48%, 100% { transform: translate(190px, 30px); opacity: 0; }
+}
+@keyframes demo-open-o1 { 0%, 15% { opacity: 0; } 16%, 22% { opacity: 1; } 23%, 100% { opacity: 0; } }
+@keyframes demo-open-o2 { 0%, 22% { opacity: 0; } 23%, 29% { opacity: 1; } 30%, 100% { opacity: 0; } }
+@keyframes demo-open-o3 { 0%, 29% { opacity: 0; } 30%, 36% { opacity: 1; } 37%, 100% { opacity: 0; } }
+@keyframes demo-open-o4 { 0%, 36% { opacity: 0; } 37%, 44% { opacity: 1; } 45%, 100% { opacity: 0; } }
+@keyframes demo-open-base { 0%, 44% { opacity: 1; } 45%, 100% { opacity: 0; } }
+@keyframes demo-open-shell { 0%, 44% { opacity: 0; } 45%, 92% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes demo-open-pack {
+  0%, 46% { transform: translateX(-50%) scale(1); filter: none; }
+  60%, 92% { transform: translateX(-50%) translateY(14px) scale(0.92); filter: brightness(0.55); }
+  100% { transform: translateX(-50%) scale(1); filter: none; }
+}
+@keyframes demo-open-card {
+  0%, 46% { opacity: 0; transform: translateX(-50%) translateY(50px) scale(0.6) rotateY(0deg); }
+  52% { opacity: 1; }
+  68% { opacity: 1; transform: translateX(-50%) translateY(-6px) scale(1) rotateY(360deg); }
+  92% { opacity: 1; transform: translateX(-50%) translateY(-6px) scale(1) rotateY(360deg); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(1) rotateY(360deg); }
+}
+@keyframes demo-open-shine {
+  0%, 68% { transform: translateX(-240%) skewX(-16deg); }
+  78% { transform: translateX(340%) skewX(-16deg); }
+  100% { transform: translateX(340%) skewX(-16deg); }
+}
+
+/* 4. 보유 카드 격자 */
+.demo-chips { display: flex; gap: 6px; padding: 14px 14px 10px; }
+.demo-chips > * { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 10px; }
+.demo-chips b { background: #fff; color: #111; border-color: #fff; }
+.demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 14px; }
+.demo-grid span {
+  position: relative;
+  display: block;
+  aspect-ratio: 55 / 85;
+  border-radius: 6px;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.6);
+  animation: demo-album-pop 5s ease-out infinite;
+  animation-delay: var(--d, 0s);
+}
+.demo-grid img { width: 100%; height: 100%; object-fit: cover; }
+.demo-grid i {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(11, 11, 13, 0.85);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0;
+  animation: demo-album-badge 5s ease-out infinite;
+}
+@keyframes demo-album-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  10%, 80% { opacity: 1; transform: none; }
+  90%, 100% { opacity: 0; transform: scale(0.6); }
+}
+@keyframes demo-album-badge {
+  0%, 38% { opacity: 0; transform: scale(0.5); }
+  44%, 80% { opacity: 1; transform: none; }
+  90%, 100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo *, .demo .prism::before { animation: none !important; }
+  .demo-finger { display: none; }
+  .demo-sheet { transform: none; }
+  .demo-open .demo-base { opacity: 0; }
+  .demo-open .demo-shell { opacity: 1; }
+  .demo-open .demo-pack { transform: translateX(-50%) translateY(14px) scale(0.92); filter: brightness(0.55); }
+  .demo-card { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+  .demo-grid span, .demo-grid i { opacity: 1; transform: none; }
 }
 .guide-page h2 { margin: 24px 0 0; font-size: 20px; font-weight: 800; }
 .guide-page p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
@@ -3145,3 +3363,79 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .splash-arrow:disabled { opacity: 0.25; }
 .splash-dots button { width: 6px; height: 6px; padding: 0; border-radius: 50%; background: #3a3a3e; }
 .splash-dots button.on { width: 16px; border-radius: 3px; background: #fff; }
+
+/* 5장 바로 오픈하기: 2-1-2 펼침 (슬라이드 16) */
+.spread-stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #000;
+  overflow: hidden;
+}
+.spread { position: absolute; left: 0; right: 0; top: 18%; bottom: 12%; }
+.spread-card {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 104px;
+  aspect-ratio: 55 / 85;
+  perspective: 800px;
+  transform: translate(-50%, -50%) translate(0, 0) scale(0.4);
+  opacity: 0;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.4s ease;
+  transition-delay: calc(var(--i) * 0.08s);
+}
+.spread-stage.is-live .spread-card,
+.spread-stage.is-done .spread-card {
+  opacity: 1;
+  transform: translate(-50%, -50%) translate(var(--sx), var(--sy)) scale(1);
+}
+.spread-spin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+}
+.spread-stage.is-live .spread-spin {
+  animation: spread-flip 0.7s cubic-bezier(0.3, 0.1, 0.2, 1) forwards;
+  animation-delay: calc(0.7s + var(--i) * 0.32s);
+}
+.spread-stage.is-done .spread-spin { animation: none; transform: rotateY(0deg); }
+.spread-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.6);
+}
+.spread-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.spread-face.back { transform: rotateY(180deg); background: #000; }
+.spread-face.back img { object-fit: contain; }
+.spread-face .prism { border-radius: 10px; }
+.spread-stage.is-live .spread-face .prism::before {
+  animation: prism-pass 0.5s ease-out forwards;
+  animation-delay: calc(1.2s + var(--i) * 0.32s);
+}
+.spread-card small {
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+@keyframes spread-flip {
+  from { transform: rotateY(180deg); }
+  to { transform: rotateY(0deg); }
+}
+.spread-ok { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.spread-stage.is-done .spread-ok { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .spread-card { transition: none; }
+}
