@@ -735,18 +735,15 @@ function renderPackCopy(item) {
       ${fact("state", "상품 상태", "미사용 공식 MD")}
     </div>
     <div class="grid cols-3">
-      ${["실물 카드", "보관 가능", "배송 가능"].map((placeholder, index) => `
+      ${["실물 카드", "보관 가능"].map((placeholder, index) => `
         <label>혜택 ${index + 1}
           <input data-perk="${index}" value="${escapeAttr(item.perks[index] || "")}" placeholder="${escapeAttr(placeholder)}" />
         </label>`).join("")}
     </div>
-    ${guide("random", "랜덤 상품 안내", ["상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.", "한 줄에 하나씩 적어요."])}
-    ${guide("storage", "보관 안내", ["뽑은 포토카드는 바로 배송되지 않고 마이 앨범에 보관돼요."])}
-    ${guide("shipping", "배송 안내", ["국내·해외 배송을 지원해요.", "배송비는 배송 요청 시 안내돼요."])}
-    ${guide("condition", "상품 상태 안내", ["제작·포장 과정에서 미세한 차이가 있을 수 있어요."])}
-    ${guide("refund", "교환·환불 안내", ["랜덤 상품은 단순 변심 변경이 어려울 수 있어요."])}
+    ${guide("random", "랜덤 상품 안내", ["상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.", "동일한 카드가 다시 나올 수 있어요."])}
+    ${guide("photocard", "포토카드 안내", ["뽑은 포토카드는 보유카드에서 확인이 가능해요.", "배송 기능은 추후 업데이트 될 예정이에요.(국내, 해외)", "한 줄에 하나씩 적어요."])}
     <div class="grid cols-3">
-      ${["뽑은 카드는 마이앨범에 보관돼요.", "배송은 별도로 신청해요.", "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요."].map((placeholder, index) => `
+      ${["뽑은 카드는 보유 카드에 보관됩니다.", "동일 카드가 중복으로 뽑힐 수 있습니다."].map((placeholder, index) => `
         <label>결제 안내 ${index + 1}
           <input data-sheet-note="${index}" value="${escapeAttr(item.sheetNotes[index] || "")}" placeholder="${escapeAttr(placeholder)}" />
         </label>`).join("")}
