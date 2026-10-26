@@ -276,6 +276,8 @@ const state = {
   sheet: null,
   focusStatus: null,
   albumArtist: "all",
+  albumSearch: false,
+  albumQuery: "",
   bannerIndex: 0,
   bannerSuppress: false,
   midIndex: 0,
@@ -311,7 +313,7 @@ const state = {
   shipmentId: "",
   searchOpen: false,
   menuOpen: false,
-  menuGroups: { mypage: false, artist: false },
+  menuGroups: { mypage: false, artist: false, support: false },
   query: "",
   catalogQuery: "",
   catalogSearch: false,
@@ -346,7 +348,6 @@ const state = {
   exDate: "",
   // 첫 진입: splash → push → marketing → consent → guide → done
   boot: "done",
-  guideFrom: "home",
   guideSeen: false,
   guidePage: 0,
 };
@@ -1363,7 +1364,8 @@ function home() {
       <button type="button" data-search-close>취소</button>
     </header>`
     : `
-    <header class="bar">
+    <header class="bar home-bar">
+      <button type="button" class="icon-btn home-btn" data-nav="home" aria-label="홈">${TAB_ICONS.home}</button>
       <h1>포토카드</h1>
       <span class="bar-tools">${searchButton()}${menuButton()}</span>
     </header>`;
@@ -1552,11 +1554,22 @@ function boxedFigure(card) {
 }
 
 // 보유 카드(슬라이드 22·23). 배송 상태 드롭다운과 배송바구니 링크는 Ver.02라 숨긴다.
+// 보유 카드 내 검색(슬라이드 21): 가수·앨범·멤버·카드 번호와 상품 검색어(별명 포함)로 찾는다.
+function cardHaystack(card) {
+  const item = productForCard(card);
+  return [card.artist, card.album, card.member, card.no, item ? productHaystack(item) : ""]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
 function album() {
   const source = state.owned;
   const artists = [...new Set(source.map((card) => card.artist))];
   const selected = artists.includes(state.albumArtist) ? state.albumArtist : "all";
-  const shown = selected === "all" ? source : source.filter((card) => card.artist === selected);
+  const query = state.albumQuery.trim().toLowerCase();
+  const byArtist = selected === "all" ? source : source.filter((card) => card.artist === selected);
+  const shown = query ? byArtist.filter((card) => cardHaystack(card).includes(query)) : byArtist;
   const cards = groupCards(shown.map((card) => ({ ...card, status: "stored" })));
   const chips = ["all", ...artists]
     .map((artist) => {
@@ -1568,13 +1581,21 @@ function album() {
   const figures = cards.map(cardFigure);
   const body = figures.length
     ? `<div class="owned gallery">${figures.join("")}</div>`
-    : `<p class="empty album-empty">보유 카드가 없습니다.<br>포토카드를 구매해보세요.</p>`;
-  return `
+    : `<p class="empty album-empty">${query ? "찾는 카드가 없어요." : "보유 카드가 없습니다.<br>포토카드를 구매해보세요."}</p>`;
+  const header = state.albumSearch
+    ? `
+    <header class="bar">
+      <input class="search-input" data-field="albumQuery" value="${esc(state.albumQuery)}" placeholder="가수, 앨범, 멤버, 카드 번호" />
+      <button type="button" data-album-search-close>취소</button>
+    </header>`
+    : `
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
       <h1>보유 카드</h1>
-      ${menuButton()}
-    </header>
+      <span class="bar-tools"><button type="button" class="icon-btn" data-album-search aria-label="보유 카드 검색">${searchIcon()}</button>${menuButton()}</span>
+    </header>`;
+  return `
+    ${header}
     <div class="album-filters">
       <div class="artist-tabs snap">${chips}</div>
     </div>
@@ -1669,7 +1690,7 @@ function tracking() {
     : `<p class="empty">이 단계 배송이 없어요.</p>`;
   return `
     <header class="bar">
-      <button data-back="mypage" aria-label="마이페이지">←</button>
+      <button data-back="home" aria-label="홈">←</button>
       <h1>배송내역</h1>
       ${menuButton()}
     </header>
@@ -2080,7 +2101,7 @@ function ship() {
   if (!cart.length || !state.region) {
     return `
       <header class="bar">
-        <button data-back="mypage" aria-label="마이페이지">←</button>
+        <button data-back="home" aria-label="홈">←</button>
         <h1>배송바구니</h1>
         <span class="bar-tools">${menuButton()}</span>
       </header>
@@ -2162,33 +2183,34 @@ const TAB_ICONS = {
   mypage: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>`,
 };
 
-// 햄버거 드로어. 메뉴는 마이페이지(슬라이드 24)와 같고, 맨 위에 홈·보유 카드 진입만 둔다.
-// 포인트 교환은 토마톡 지갑에서 하므로 여기에는 없다.
+// 햄버거 드로어 = 마이페이지(슬라이드 19): 보유 카드 · 구매 내역 · 찜 목록 · 고객센터(드롭다운: 공지사항 · 이용자 가이드 · FAQ · 이용약관) · 이벤트.
+// 맨 위 홈, 아래 지갑·환경설정은 기획 메뉴 밖이지만 진입점이 필요해 둔다. 포인트 교환은 토마톡 지갑에서 한다. SNS는 기획서에 "고민"으로만 있어 뺐다.
 function drawer() {
   if (!state.menuOpen) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
-  const soon = (label) => `<button type="button" class="nav-item nav-sub-item" data-soon="${esc(label)}">${esc(label)}</button>`;
+  const open = Boolean(state.menuGroups.support);
   return `
     <div class="nav-bg">
       <aside class="nav-panel">
         <div class="nav-head">
-          <strong>메뉴</strong>
+          <strong>마이페이지</strong>
           <button type="button" data-drawer-close aria-label="닫기">닫기</button>
         </div>
         ${item("home", "홈")}
         ${item("album", "보유 카드")}
         ${item("purchases", "구매 내역")}
         ${item("wished", "찜 목록")}
-        ${item("notice", "공지사항")}
-        ${soon("이벤트")}
+        <button type="button" class="nav-group" data-menu-group="support" aria-expanded="${open}">고객센터<i class="nav-chevron" aria-hidden="true"></i></button>
+        ${open ? `
+        <div class="nav-sub">
+          ${item("notice", "공지사항")}
+          ${item("guide", "이용자 가이드")}
+          ${item("faq", "FAQ")}
+          ${item("terms", "이용약관")}
+        </div>` : ""}
+        ${item("events", "이벤트")}
         ${item("wallet", "지갑 · 토마톡")}
-        <div class="nav-box">
-          ${soon("1:1 문의")}
-          <button type="button" class="nav-item nav-sub-item" data-nav="guide">이용자 가이드</button>
-          ${soon("FAQ")}
-          ${soon("이용약관")}
-          ${soon("SNS")}
-        </div>
+        ${item("settings", "환경설정")}
       </aside>
       <button type="button" class="nav-dim" data-drawer-close aria-label="메뉴 닫기"></button>
     </div>
@@ -2230,30 +2252,52 @@ function notices() {
   `;
 }
 
-// 마이페이지(슬라이드 24). 배송바구니·배송내역 진입은 Ver.02라 뺀다.
-function mypage() {
-  const card = (label, attrs) => `<button type="button" class="menu-card" ${attrs}><span>${label}</span><i aria-hidden="true">›</i></button>`;
-  const line = (label, attrs) => `<button type="button" class="menu-line" ${attrs}>${label}</button>`;
+// 고객센터 하위 화면(슬라이드 25~27). FAQ·이용약관·이벤트는 기획서에도 내용이 비어 있어 빈 상태로 둔다.
+const SUPPORT_PAGES = {
+  faq: { title: "FAQ", heading: "FAQ 목록", empty: "등록된 FAQ가 아직 없어요." },
+  terms: { title: "이용약관", heading: "이용약관", empty: "이용약관 내용이 준비되면 여기에 보여요." },
+  events: { title: "이벤트", heading: "진행 중인 이벤트", empty: "진행 중인 이벤트가 없어요." },
+};
+
+function supportPage(kind) {
+  const page = SUPPORT_PAGES[kind];
   return `
     <header class="bar">
       <button data-back="home" aria-label="홈">←</button>
-      <h1>마이페이지</h1>
+      <h1>${esc(page.title)}</h1>
       ${menuButton()}
     </header>
     <div class="scroll">
-      <div class="menu-cards">
-        ${card("구매 내역", `data-nav="purchases"`)}
-        ${card("찜 목록", `data-nav="wished"`)}
-        ${card("공지사항", `data-nav="notice"`)}
-        ${card("이벤트", `data-soon="이벤트"`)}
-      </div>
-      <div class="menu-box">
-        ${line("1:1 문의", `data-soon="1:1 문의"`)}
-        ${line("이용자 가이드", `data-nav="guide"`)}
-        ${line("FAQ", `data-soon="FAQ"`)}
-        ${line("이용약관", `data-soon="이용약관"`)}
-        ${line("SNS", `data-soon="SNS"`)}
-      </div>
+      <section class="support-page">
+        <h2>${esc(page.heading)}</h2>
+        <p class="empty">${esc(page.empty)}</p>
+      </section>
+    </div>
+  `;
+}
+
+// 환경설정(기획 2장 Ver.01 항목). 6장 안내 문구의 '내 기본정보 설정'이 여기다: 첫 진입 팝업에서 고른 PUSH·마케팅 동의를 바꾼다.
+function settings() {
+  const saved = loadOnboard();
+  const row = (key, label, note, on) => `
+    <div class="set-row">
+      <span><b>${label}</b><small>${note}</small></span>
+      <button type="button" class="switch${on ? " on" : ""}" role="switch" aria-checked="${on}" data-consent="${key}" aria-label="${label}"><i></i></button>
+    </div>`;
+  const when = saved.decidedAt ? consentWhen(saved.decidedAt) : "—";
+  return `
+    <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>환경설정</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <section class="set-box">
+        <h2>내 기본정보 설정</h2>
+        ${row("push", "PUSH 알림", "새 상품과 뽑기 소식을 받아요.", Boolean(saved.push))}
+        ${row("marketing", "마케팅 수신 동의", "이벤트와 혜택 안내를 받아요.", Boolean(saved.marketing))}
+        <p class="set-note">전송자 TOMATOK · 처리 일시 ${esc(when)}</p>
+      </section>
     </div>
   `;
 }
@@ -2310,6 +2354,7 @@ function wished() {
         <span>
           ${artistMark(item)}
           <p class="name">${esc(productName(item))}</p>
+          <p class="wish-price">${priceBlock(item.price)}</p>
         </span>
       </button>`;
     }).join("")
@@ -2666,8 +2711,8 @@ function sealedPack() {
         <div class="fly-spin">${frontFace}<span class="prism" aria-hidden="true"></span>${backFace}</div>
       </div>
       <video class="open-burst" data-open-burst src="fx/splash.mp4?v=1" muted playsinline preload="auto"></video>
-      <p class="open-guide">카드를 원하는 방향으로 찢어서 오픈하세요</p>
-      <p class="open-turn"><span class="open-turn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="12" rx="1.4"></rect><path d="M4 19h16"></path><path d="M7 16.5 4 19l3 2.5"></path><path d="M17 16.5 20 19l-3 2.5"></path></svg></span>드래그해서 앞뒤를 돌려보세요</p>
+      <p class="open-guide">손가락으로 밀어 열어보세요.</p>
+      <p class="open-turn"><span class="open-turn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="12" rx="1.4"></rect><path d="M4 19h16"></path><path d="M7 16.5 4 19l3 2.5"></path><path d="M17 16.5 20 19l-3 2.5"></path></svg></span>드래그하여 앞뒤로 돌려보세요.</p>
       <button class="primary open-ok" type="button" data-open-ok>OK</button>
     </div>
   `;
@@ -3361,7 +3406,7 @@ function applyScene(id) {
   state.profile = "";
   state.profileFrom = "";
   state.menuOpen = false;
-  state.menuGroups = { mypage: false, artist: false };
+  state.menuGroups = { mypage: false, artist: false, support: false };
   state.pickMode = false;
   state.picked = [];
   state.shipQty = 1;
@@ -3409,8 +3454,8 @@ function applyScene(id) {
     state.tab = "album";
     state.screen = "album";
   } else if (id === "mypage") {
-    state.tab = "mypage";
-    state.screen = "mypage";
+    // 마이페이지 = 우측 상단 메뉴(슬라이드 19)
+    state.menuOpen = true;
   } else if (id === "ship") {
     state.tab = "mypage";
     state.screen = "ship";
@@ -3458,7 +3503,7 @@ function currentScene() {
   if (state.screen === "open" || state.screen === "result") return state.reveal.length > 1 ? "five" : "result";
   if (state.tab === "track" || state.screen === "track") return TRACK.includes(state.focusTrack) ? state.focusTrack : "track";
   if (state.tab === "ship" || state.screen === "ship") return "ship";
-  if (state.screen === "mypage" || state.screen === "wished") return "mypage";
+  if (state.menuOpen || state.screen === "wished") return "mypage";
   if (state.screen === "album" || state.tab === "album") return state.focusStatus === "stored" ? "stored" : "album";
   if (state.screen === "artist" || state.screen === "artists") return "artist";
   return "home";
@@ -3478,7 +3523,7 @@ const NOTES = {
   pay5: `<h2>5장 결제</h2><p>같은 팩 5장을 한 번에 결제해요. 재고가 5장 미만이면 막혀요.</p>`,
   result: `<h2>결과</h2><p>포장을 연 뒤에 카드 앞면이 나와요.</p>`,
   five: `<h2>5장 연속</h2><p>같은 팩 5장을 한 장씩 이어서 열어요.</p>`,
-  mypage: `<h2>마이페이지</h2><p>찜, 배송, 배송 현황으로 가는 메뉴예요.</p>`,
+  mypage: `<h2>마이페이지</h2><p>우측 상단 메뉴예요. 보유 카드, 구매 내역, 찜 목록, 고객센터, 이벤트로 가요.</p>`,
   album: `<h2>보유 카드</h2><p>가진 카드예요. 같은 카드는 장수로 묶여요.</p>`,
   card: `<h2>보유 카드</h2><p>카드 한 장의 앞뒷면과 상태예요.</p>`,
   stored: `<h2>보관 중</h2><p>뽑고 아직 배송 전인 카드예요.</p>`,
@@ -4961,6 +5006,9 @@ function armClock() {
 // ---- 이용 가이드 (슬라이드 25) ----
 
 // 이용 가이드 4장. 그림 대신 실제 화면 요소(타일·결제 시트·포장·보유 카드 격자)를 CSS로 움직인다.
+// 가이드 시청 보상(슬라이드 24 "필수! 시청 이후 보상"). 기획서에 금액이 없어 임시로 1,000 TP. 첫 완주 한 번만 준다.
+const GUIDE_REWARD_TP = 1000;
+
 const GUIDE_PAGES = [
   {
     demo: "pick",
@@ -5062,14 +5110,17 @@ function guide(firstRun) {
     : (last
       ? `<button class="primary" type="button" data-guide-close>확인</button>`
       : `<button class="primary" type="button" data-guide-next>다음</button>`);
-  const note = firstRun && !state.guideSeen
-    ? `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.</p>`
+  const rewardLeft = !loadOnboard().guideRewardAt;
+  const note = firstRun
+    ? (state.guideSeen
+      ? (rewardLeft ? `<p class="guide-note">시청 완료! 시작하기를 누르면 ${tpText(GUIDE_REWARD_TP)} TP 보상을 받아요.</p>` : "")
+      : `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.${rewardLeft ? ` 끝까지 보면 ${tpText(GUIDE_REWARD_TP)} TP를 드려요.` : ""}</p>`)
     : "";
   const header = firstRun
     ? `<header class="bar"><h1>포토카드 이용 가이드</h1></header>`
     : `
       <header class="bar">
-        <button data-back="${esc(state.guideFrom)}" aria-label="뒤로">←</button>
+        <button data-back="home" aria-label="홈">←</button>
         <h1>포토카드 이용 가이드</h1>
         ${menuButton()}
       </header>`;
@@ -5118,8 +5169,6 @@ function nextGuidePage() {
 }
 
 // ---- 첫 진입 (슬라이드 3~6) ----
-
-const SPLASH_IMAGES = ["/assets/covers/jump.jpg", "/assets/covers/crazy.jpg", "/assets/covers/ive-empathy.jpg"];
 
 // 스플래시: 검은 우주 배경 위에 무지개 궤도, 골드 엠블럼, 미스터리 포장, 떠다니는 포토카드(2026-10-23 시안).
 function splash() {
@@ -5199,6 +5248,22 @@ function bootModal() {
       secondary: `<button type="button" class="boot-link" data-marketing="no">허용 안 함</button>`,
     });
   }
+  if (state.boot === "reward") {
+    return bootSheet({
+      kicker: "이용자 가이드 보상",
+      iconName: "coins",
+      badge: "check",
+      title: `가이드 시청 완료!<br>${tpText(GUIDE_REWARD_TP)} TP를 드렸어요.`,
+      body: "지급된 TP는 지갑에서 확인하고<br>포토카드 뽑기에 바로 쓸 수 있어요.",
+      extra: `
+        <dl class="boot-facts boot-consent">
+          <div><dt>보상</dt><dd>+ ${tpText(GUIDE_REWARD_TP)} TP</dd></div>
+          <div><dt>보유 TP</dt><dd>${tpText(state.tp)} TP</dd></div>
+        </dl>`,
+      primary: `<button type="button" class="primary" data-boot-next="done">확인</button>`,
+      secondary: "",
+    });
+  }
   if (state.boot === "consent") {
     const agreed = Boolean(saved.marketing);
     return bootSheet({
@@ -5206,7 +5271,7 @@ function bootModal() {
       iconName: "bell",
       badge: agreed ? "check" : "x",
       title: agreed ? "마케팅 Push 수신이 완료됐어요." : "마케팅 Push 거부 처리가 완료됐어요.",
-      body: "Push 알림 동의 상태는 하단 메뉴<br>마이 페이지 &gt; 내 기본정보 설정에서<br>변경 하실 수 있습니다.",
+      body: "Push 알림 동의 상태는 우측 상단 메뉴<br>마이 페이지 &gt; 환경설정 &gt; 내 기본정보 설정에서<br>변경 하실 수 있습니다.",
       extra: `
         <dl class="boot-facts boot-consent">
           <div><dt>전송자</dt><dd>TOMATOK</dd></div>
@@ -5222,36 +5287,8 @@ function bootModal() {
 
 function bootView() {
   if (state.boot === "guide") return guide(true);
+  if (state.boot === "reward") return home() + bootModal();
   return splash() + bootModal();
-}
-
-function armSplash() {
-  const rail = document.querySelector("[data-splash-rail]");
-  if (!rail || rail.dataset.bound) return;
-  rail.dataset.bound = "1";
-  const dots = [...document.querySelectorAll("[data-splash-dots] button")];
-  const prev = document.querySelector("[data-splash-move='-1']");
-  const next = document.querySelector("[data-splash-move='1']");
-  const paint = () => {
-    const index = splashIndex(rail);
-    dots.forEach((dot, i) => dot.classList.toggle("on", i === index));
-    if (prev) prev.disabled = index <= 0;
-    if (next) next.disabled = index >= SPLASH_IMAGES.length - 1;
-  };
-  rail.addEventListener("scroll", paint, { passive: true });
-  paint();
-}
-
-function splashIndex(rail) {
-  return Math.max(0, Math.min(SPLASH_IMAGES.length - 1, Math.round(rail.scrollLeft / (rail.clientWidth || 1))));
-}
-
-// 스플래시 화살표·점: 마우스로도 넘길 수 있게 레일을 한 장씩 스크롤한다.
-function moveSplash(target) {
-  const rail = document.querySelector("[data-splash-rail]");
-  if (!rail) return;
-  const index = Math.max(0, Math.min(SPLASH_IMAGES.length - 1, target));
-  rail.scrollTo({ left: rail.clientWidth * index, behavior: "smooth" });
 }
 
 function render() {
@@ -5278,7 +5315,8 @@ function render() {
   else if (state.screen === "artists") view = artistsPage();
   else if (state.screen === "artist") view = artistPage();
   else if (state.screen === "notice") view = notices();
-  else if (state.tab === "mypage" || state.screen === "mypage") view = mypage();
+  else if (state.screen === "settings") view = settings();
+  else if (SUPPORT_PAGES[state.screen]) view = supportPage(state.screen);
   app.innerHTML = view + drawer() + sheet() + walletSheet() + walletModal() + walletRenameModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
   blurFronts();
   protectFronts();
@@ -5295,7 +5333,6 @@ function render() {
   armWalletDrag();
   armClock();
   armGuide();
-  armSplash();
 }
 
 app.addEventListener("click", (event) => {
@@ -5343,6 +5380,9 @@ app.addEventListener("click", (event) => {
   const navArtist = event.target.closest("[data-nav-artist]");
   const searchOpenBtn = event.target.closest("[data-search]");
   const searchClose = event.target.closest("[data-search-close]");
+  const albumSearchOpen = event.target.closest("[data-album-search]");
+  const albumSearchClose = event.target.closest("[data-album-search-close]");
+  const consentHit = event.target.closest("[data-consent]");
   const wish = event.target.closest("[data-wish]");
   const share = event.target.closest("[data-share]");
   const menu = event.target.closest("[data-menu]");
@@ -5447,13 +5487,6 @@ app.addEventListener("click", (event) => {
   } else if (soon) {
     state.menuOpen = false;
     toast(`${soon.dataset.soon} 기능은 준비 중이에요.`);
-  } else if (event.target.closest("[data-splash-move]")) {
-    const rail = document.querySelector("[data-splash-rail]");
-    if (rail) moveSplash(splashIndex(rail) + Number(event.target.closest("[data-splash-move]").dataset.splashMove));
-    return;
-  } else if (event.target.closest("[data-splash-to]")) {
-    moveSplash(Number(event.target.closest("[data-splash-to]").dataset.splashTo));
-    return;
   } else if (bootNext) {
     state.boot = bootNext.dataset.bootNext;
     if (state.boot === "guide") {
@@ -5471,14 +5504,19 @@ app.addEventListener("click", (event) => {
     return;
   } else if (guideStart) {
     if (!state.guideSeen) return;
-    saveOnboard({ done: true, guideSeenAt: new Date().toISOString() });
-    state.boot = "done";
+    const now = new Date().toISOString();
+    const reward = !loadOnboard().guideRewardAt;
+    saveOnboard(reward ? { done: true, guideSeenAt: now, guideRewardAt: now } : { done: true, guideSeenAt: now });
+    if (reward) {
+      state.tp += GUIDE_REWARD_TP;
+      persistWallet();
+    }
+    state.boot = reward ? "reward" : "done";
     state.screen = "home";
     state.tab = "home";
   } else if (guideClose) {
-    const to = state.guideFrom;
-    state.screen = to === "mypage" ? "mypage" : "home";
-    state.tab = to === "mypage" ? "mypage" : "home";
+    state.screen = "home";
+    state.tab = "home";
   } else if (goExchange) {
     // 결제 시트 → 지갑 교환 페이지 → 교환 뒤 시트로 복귀
     state.walletReturn = { productId: state.productId, sheet: state.sheet };
@@ -5520,7 +5558,7 @@ app.addEventListener("click", (event) => {
     state.menuOpen = true;
   } else if (drawerClose) {
     state.menuOpen = false;
-    state.menuGroups = { mypage: false, artist: false };
+    state.menuGroups = { mypage: false, artist: false, support: false };
   } else if (menuGroupHit) {
     const id = menuGroupHit.dataset.menuGroup;
     state.menuGroups[id] = !state.menuGroups[id];
@@ -5531,11 +5569,14 @@ app.addEventListener("click", (event) => {
     }
     const name = nav.dataset.nav;
     state.menuOpen = false;
+    state.menuGroups = { mypage: false, artist: false, support: false };
     state.sheet = null;
     state.shipmentId = "";
     state.pickMode = false;
     state.picked = [];
     state.albumArtist = "all";
+    state.albumSearch = false;
+    state.albumQuery = "";
     closeAdmin();
     if (name === "admin") {
       state.screen = "admin";
@@ -5573,10 +5614,9 @@ app.addEventListener("click", (event) => {
         state.historyOpen = null;
       }
     } else if (name === "guide") {
-      state.guideFrom = "home";
       state.guidePage = 0;
       state.guideSeen = false;
-      state.tab = state.guideFrom;
+      state.tab = "home";
       state.screen = "guide";
     } else if (name === "purchases") {
       state.tab = "mypage";
@@ -5585,9 +5625,6 @@ app.addEventListener("click", (event) => {
       state.tab = "album";
       state.screen = "album";
       state.focusStatus = null;
-    } else if (name === "mypage") {
-      state.tab = "mypage";
-      state.screen = "mypage";
     } else if (name === "wished") {
       state.tab = "mypage";
       state.screen = "wished";
@@ -5603,6 +5640,9 @@ app.addEventListener("click", (event) => {
     } else if (name === "notice") {
       state.tab = "home";
       state.screen = "notice";
+    } else if (name === "settings" || SUPPORT_PAGES[name]) {
+      state.tab = "home";
+      state.screen = name;
     } else if (name === "artists") {
       resetCatalog();
       state.profile = "";
@@ -5649,7 +5689,7 @@ app.addEventListener("click", (event) => {
     } else if (to === "artist" && state.profile) {
       state.screen = "artist";
       state.tab = "home";
-    } else if (to === "album" || to === "ship" || to === "track" || to === "mypage") {
+    } else if (to === "album" || to === "ship" || to === "track") {
       state.screen = to;
       state.tab = to === "album" ? "album" : "mypage";
     } else if (to === "wallet") {
@@ -5917,6 +5957,17 @@ app.addEventListener("click", (event) => {
   } else if (searchClose) {
     state.searchOpen = false;
     state.query = "";
+  } else if (albumSearchOpen) {
+    state.albumSearch = true;
+  } else if (albumSearchClose) {
+    state.albumSearch = false;
+    state.albumQuery = "";
+  } else if (consentHit) {
+    // 환경설정 > 내 기본정보 설정: PUSH·마케팅 동의를 켜고 끈다.
+    const key = consentHit.dataset.consent;
+    const next = !loadOnboard()[key];
+    saveOnboard({ [key]: next, decidedAt: new Date().toISOString() });
+    toast(key === "push" ? (next ? "PUSH 알림을 받아요." : "PUSH 알림을 받지 않아요.") : (next ? "마케팅 수신에 동의했어요." : "마케팅 수신을 거부했어요."));
   } else if (wish) {
     const id = wish.dataset.wish;
     state.wished = state.wished.includes(id) ? state.wished.filter((item) => item !== id) : [...state.wished, id];
@@ -5995,7 +6046,7 @@ app.addEventListener("input", (event) => {
     return;
   }
   if (field === "exDate") return; // change 이벤트에서 다시 그린다.
-  if (field === "query" || field === "catalogQuery") {
+  if (field === "query" || field === "catalogQuery" || field === "albumQuery") {
     const caret = event.target.selectionStart;
     render();
     const input = app.querySelector(`[data-field=${field}]`);
