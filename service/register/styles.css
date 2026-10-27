@@ -1046,3 +1046,125 @@ button.save:disabled { opacity: 0.4; }
   .grid, .grid.cols-3, .grid.fields, .stats, .app-event, .stack { grid-template-columns: 1fr; }
   .app-artist, .app-off { grid-template-columns: 1fr; }
 }
+
+
+/* ===== 주문관리 개편 (2026-10-27): 한 화면 · 단계 표 · 선택 작업줄 · 상세 상단 다음 작업 ===== */
+.layout.is-orders { grid-template-columns: 240px minmax(0, 1fr) 400px; }
+.order-side { display: grid; gap: 12px; }
+.order-side .hint { line-height: 1.5; }
+.ohead { align-items: center; }
+.oseg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface); }
+.oseg button { height: 34px; padding: 0 14px; border-radius: 999px; color: var(--muted); font-size: 14px; font-weight: 600; }
+.oseg button b { margin-left: 4px; font-weight: 700; }
+.oseg button.on { background: #fff; color: #111; }
+.upload-btn { position: relative; overflow: hidden; cursor: pointer; }
+.upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.osteps { display: flex; align-items: center; gap: 6px; }
+.ostep { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; height: 56px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px; background: transparent; color: var(--muted); text-align: left; }
+.ostep span { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ostep b { font-size: 20px; color: var(--text); }
+.ostep.on { border-color: #fff; background: var(--surface); color: var(--text); }
+.ostep.is-exc { flex: 0 0 auto; margin-left: 8px; border-style: dashed; }
+.ostep.is-exc b { color: var(--danger); }
+.ostep-arrow { flex: none; width: 10px; height: 10px; border-top: 1.5px solid var(--line); border-right: 1.5px solid var(--line); transform: rotate(45deg); }
+.ostep-arrow:nth-last-child(2) { display: none; } /* 예외 칸 앞의 화살표는 뺀다 */
+
+.osel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: #1f1f23; }
+.osel strong { margin-right: 6px; font-size: 14px; }
+.osel .text-btn:disabled, .osel .save:disabled { opacity: 0.4; }
+
+.order-table.is-ship, .order-table.is-purchase { table-layout: auto; }
+.order-table th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.order-table td { font-size: 13px; }
+.order-table td.id { font-weight: 700; }
+.order-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.order-table td.ship small { display: block; color: var(--muted); font-size: 11px; }
+.order-table td .dim { color: var(--line); }
+.order-table tbody tr.is-exc td.id::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--danger); vertical-align: middle; }
+.order-table.is-ship th:nth-child(1), .order-table.is-ship td:nth-child(1) { width: 32px; }
+.order-table.is-ship td:nth-child(2) { width: 1%; white-space: nowrap; }
+
+.obadge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; background: #2a2a2e; color: var(--text); }
+.obadge + .obadge { margin-left: 4px; }
+.obadge.new { background: rgba(239, 68, 68, 0.18); color: #ff8b8b; }
+.obadge.prep { background: rgba(255, 196, 0, 0.16); color: #ffd36a; }
+.obadge.ship { background: rgba(47, 111, 224, 0.2); color: #8fb4ff; }
+.obadge.done { background: rgba(47, 179, 106, 0.18); color: #8fe0ad; }
+.obadge.warn { background: rgba(255, 139, 139, 0.16); color: var(--danger); }
+
+.odetail-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.odetail-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
+.ostepper { display: flex; list-style: none; margin: 14px 0 0; padding: 0; }
+.ostepper li { flex: 1; position: relative; display: grid; justify-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+.ostepper li i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.ostepper li::before { content: ""; position: absolute; top: 4px; left: -50%; width: 100%; height: 2px; background: var(--line); }
+.ostepper li:first-child::before { display: none; }
+.ostepper li.past i, .ostepper li.past::before, .ostepper li.now::before { background: #fff; }
+.ostepper li.now i { background: var(--pink); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); }
+.ostepper li.now span, .ostepper li.past span { color: var(--text); }
+
+.oaction { display: grid; gap: 12px; margin-top: 16px; padding: 14px; border-radius: 12px; background: var(--surface); }
+.oaction p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.oaction.done { background: transparent; border: 1px dashed var(--line); }
+.oship-fields { display: grid; gap: 10px; }
+.oship-fields label { margin: 0; }
+.is-hidden { display: none !important; }
+.save.wide { width: 100%; }
+.ochips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ochips .text-btn.on { border-color: var(--danger); color: var(--danger); }
+
+.odetail h4 { display: flex; align-items: baseline; gap: 6px; margin: 22px 0 6px; font-size: 13px; color: var(--text); }
+.odetail h4 small { color: var(--muted); font-weight: 500; }
+.odetail dl { margin: 0; }
+.odetail dl div { grid-template-columns: 72px minmax(0, 1fr); padding: 8px 0; }
+.odetail dd { line-height: 1.45; }
+.odetail .mono { font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.odetail > label { display: block; margin-top: 8px; }
+.odetail .ochips { margin-top: 10px; }
+
+.opanel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.otracks { display: grid; gap: 8px; }
+.otrack { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.otrack > span { display: grid; gap: 2px; }
+.otrack b { font-size: 13px; }
+.otrack small { color: var(--muted); font-size: 11px; }
+.upload-ok, .upload-errors { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.upload-ok b, .upload-errors b { color: var(--text); }
+
+.stat.is-link { text-align: left; cursor: pointer; border: 1px solid transparent; }
+.stat.is-link:hover { border-color: var(--line); }
+
+/* 보정: 상세 패널의 공통 dl 행 규칙(.sale-detail div)이 새 블록에 번지지 않게 */
+.sale-detail .odetail-head, .sale-detail .oaction, .sale-detail .oship-fields, .sale-detail .ochips,
+.sale-detail .opanel-head, .sale-detail .otracks { grid-template-columns: none; border-top: 0; padding-top: 0; padding-bottom: 0; }
+.sale-detail .oaction { padding: 14px; }
+.sale-detail .otracks { display: grid; }
+.oseg button { width: auto; white-space: nowrap; }
+.ohead .actions .text-btn { white-space: nowrap; }
+.osteps { gap: 4px; }
+.ostep { display: grid; align-content: center; gap: 2px; height: auto; min-height: 56px; padding: 8px 10px; }
+.ostep span { font-size: 11px; }
+.ostep b { font-size: 18px; line-height: 1.1; }
+.ostep.is-exc { margin-left: 6px; }
+.ostep-arrow { width: 8px; height: 8px; }
+.table-wrap { overflow-x: auto; }
+.order-table th, .order-table td { padding: 10px 6px; }
+.order-table td.who small { display: block; color: var(--muted); font-size: 11px; }
+.layout.is-orders { grid-template-columns: 220px minmax(0, 1fr) 380px; }
+.odetail table th:nth-child(1), .odetail table td:nth-child(1) { width: 64px; }
+.odetail table th:nth-child(3), .odetail table td:nth-child(3) { width: 48px; }
+
+/* 보정 2: 상세 머리줄·칩은 flex, 작업 블록은 grid로 되돌린다(.sale-detail div의 grid 상속 때문) */
+.sale-detail .odetail-head, .sale-detail .opanel-head, .sale-detail .ochips { display: flex; }
+.sale-detail .oaction, .sale-detail .oship-fields { display: grid; }
+.layout.is-orders { grid-template-columns: 200px minmax(0, 1fr) 360px; }
+.layout.is-orders aside { padding-left: 12px; padding-right: 12px; }
+.osteps { gap: 3px; }
+.ostep { padding: 8px 8px; }
+.ostep-arrow { width: 7px; height: 7px; }
+
+/* 보정 3: 송장 칸은 줄여 상태 칸이 항상 보이게, 좁은 사이드바에서는 날짜 두 칸을 세로로 */
+.order-table td.ship { max-width: 104px; }
+.order-table td.ship small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-side .date-pair { flex-direction: column; }
