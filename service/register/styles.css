@@ -23,7 +23,7 @@ html, body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font: 14px/1.45 "Pretendard", "Apple SD Gothic Neo", sans-serif;
+  font: 14px/1.45 "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", sans-serif;
 }
 
 body { display: flex; flex-direction: column; -webkit-touch-callout: none; }
