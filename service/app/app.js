@@ -283,8 +283,8 @@ const state = {
   midIndex: 0,
   midSuppress: false,
   balance: 100000,
-  // 지갑 연결은 토마톡 쪽에서 따로 한다(2026-10-23). 포토카드 안에서는 연결된 것으로 보고 바로 뽑기로 간다.
-  walletConnected: true,
+  // 처음에는 지갑 미연결. 결제 시트의 "지갑 연결하기"를 누르면 연결된 것으로 보고(mock) 저장한다(2026-10-27).
+  walletConnected: false,
   walletReturn: null,
   walletCurrency: "KRW",
   ledgerFilter: "all",
@@ -335,6 +335,7 @@ const state = {
   // 포인트 교환(mock). TP와 교환 내역은 localStorage에 남긴다.
   tp: 0,
   exchanges: [],
+  fills: [], // 채우기(SOL → TOTT) 내역
   walletId: "",
   wallets: [],
   walletSheet: null,
@@ -342,10 +343,13 @@ const state = {
   renameText: "",
   historyWallet: "",
   historyPicker: false,
+  walletPick: false, // 교환·채우기 화면의 사용 지갑 드롭다운
+  exMode: "tott", // 교환 입력 기준: tott | tp
   historyOpen: null,
   exTott: "",
   exTp: "",
   exDate: "",
+  fillSol: "",
   // 첫 진입: splash → push → marketing → consent → guide → done
   boot: "done",
   guideSeen: false,
@@ -365,9 +369,9 @@ const EXCHANGE_MIN = 50;
 const WALLET_APP_URL = "http://localhost:5173/tomatok_translate/wallet";
 // 지갑 목록 시드(디자인 2025-08 지갑 화면). 이름·순서·대표·연결·잔액은 localStorage에 남기고 NFT는 시드에서만 온다.
 const WALLET_SEED = [
-  { id: "phantom-1", name: "메인 지갑", full: "0x5961c3f0a8d14e7b92ab2485", balance: 123456.789123, main: true, connected: true, nfts: ["토마톡 링", "스테이킹"] },
-  { id: "phantom-2", name: "개인 지갑", full: "0x3a8f71c0de4b9a2f5c6e921f", balance: 82340.11, main: false, connected: true, nfts: [] },
-  { id: "phantom-3", name: "보조 지갑", full: "0xc882b4d19e7a3f6052c7d34a", balance: 0, main: false, connected: true, nfts: [] },
+  { id: "phantom-1", name: "메인 지갑", full: "0x5961c3f0a8d14e7b92ab2485", balance: 123456.789123, sol: 3.25, main: true, connected: true, nfts: ["토마톡 링", "스테이킹"] },
+  { id: "phantom-2", name: "개인 지갑", full: "0x3a8f71c0de4b9a2f5c6e921f", balance: 82340.11, sol: 0.8, main: false, connected: true, nfts: [] },
+  { id: "phantom-3", name: "보조 지갑", full: "0xc882b4d19e7a3f6052c7d34a", balance: 0, sol: 0, main: false, connected: true, nfts: [] },
 ];
 // mock 보내기·받기. days는 며칠 전인지(이번 달 안으로 묶는다).
 const WALLET_MOCK_ROWS = {
@@ -395,6 +399,7 @@ function loadWallet() {
     if (saved) {
       state.tp = Number(saved.tp) || 0;
       state.exchanges = Array.isArray(saved.exchanges) ? saved.exchanges : [];
+      state.fills = Array.isArray(saved.fills) ? saved.fills : [];
       if (Array.isArray(saved.wallets) && saved.wallets.length) {
         const seeded = new Map(state.wallets.map((item) => [item.id, item]));
         state.wallets = saved.wallets.map((item) => ({
@@ -402,6 +407,7 @@ function loadWallet() {
           name: String(item.name || "계정이름"),
           full: String(item.full || seeded.get(item.id)?.full || ""),
           balance: Number(item.balance) || 0,
+          sol: Number.isFinite(Number(item.sol)) ? Number(item.sol) : (seeded.get(item.id)?.sol || 0),
           main: Boolean(item.main),
           connected: item.connected !== false,
           nfts: seeded.get(item.id)?.nfts || [],
@@ -411,6 +417,7 @@ function loadWallet() {
         state.wallets[0].balance = Number(saved.balance);
       }
       state.walletId = typeof saved.walletId === "string" ? saved.walletId : "";
+      state.walletConnected = saved.walletConnected === true;
     }
   } catch (error) {
     console.warn(error);
@@ -423,8 +430,10 @@ function persistWallet() {
   localStorage.setItem(WALLET_KEY, JSON.stringify({
     tp: state.tp,
     exchanges: state.exchanges,
+    fills: state.fills,
     walletId: state.walletId,
-    wallets: state.wallets.map(({ id, name, full, balance, main, connected }) => ({ id, name, full, balance, main, connected })),
+    walletConnected: state.walletConnected,
+    wallets: state.wallets.map(({ id, name, full, balance, sol, main, connected }) => ({ id, name, full, balance, sol, main, connected })),
   }));
 }
 
@@ -1259,7 +1268,6 @@ function productTile(item, compact = false) {
       ${productThumbnail(item.cover, saleMark(item))}
       <span class="tile-who">${artistMark(item)}</span>
       <span class="tile-name">${esc(setTitle(item))}</span>
-      <span class="tile-line">${esc(lineup(item.cards.length))}</span>
       <span class="tile-price">${priceBlock(item.price)}</span>
     </button>`;
 }
@@ -1581,7 +1589,13 @@ function album() {
   const figures = cards.map(cardFigure);
   const body = figures.length
     ? `<div class="owned gallery">${figures.join("")}</div>`
-    : `<p class="empty album-empty">${query ? "찾는 카드가 없어요." : "보유 카드가 없습니다.<br>포토카드를 구매해보세요."}</p>`;
+    : (query
+      ? `<p class="empty album-empty">찾는 카드가 없어요.</p>`
+      : `<div class="empty album-empty">
+          <span class="album-empty-mark" aria-hidden="true">${TAB_ICONS.album}</span>
+          <p>보유 카드가 없습니다.<br>포토카드를 구매해보세요.</p>
+          <button type="button" class="primary album-empty-go" data-nav="home">상품 보러 가기</button>
+        </div>`);
   const header = state.albumSearch
     ? `
     <header class="bar">
@@ -2184,7 +2198,8 @@ const TAB_ICONS = {
 };
 
 // 햄버거 드로어 = 마이페이지(슬라이드 19): 보유 카드 · 구매 내역 · 찜 목록 · 고객센터(드롭다운: 공지사항 · 이용자 가이드 · FAQ · 이용약관) · 이벤트.
-// 맨 위 홈, 아래 지갑·환경설정은 기획 메뉴 밖이지만 진입점이 필요해 둔다. 포인트 교환은 토마톡 지갑에서 한다. SNS는 기획서에 "고민"으로만 있어 뺐다.
+// 맨 위 홈과 맨 아래 환경설정은 기획 메뉴 밖이지만 진입점이 필요해 둔다. 지갑은 상품 상세·결제 시트에서 들어가므로 메뉴에 두지 않는다. SNS는 기획서에 "고민"으로만 있어 뺐다.
+// 묶음(라벨·구분선 없이 간격으로만): 홈·보유 카드·구매 내역·찜 목록 / 고객센터·이벤트 / 환경설정(맨 아래).
 function drawer() {
   if (!state.menuOpen) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
@@ -2196,21 +2211,26 @@ function drawer() {
           <strong>마이페이지</strong>
           <button type="button" data-drawer-close aria-label="닫기">닫기</button>
         </div>
-        ${item("home", "홈")}
-        ${item("album", "보유 카드")}
-        ${item("purchases", "구매 내역")}
-        ${item("wished", "찜 목록")}
-        <button type="button" class="nav-group" data-menu-group="support" aria-expanded="${open}">고객센터<i class="nav-chevron" aria-hidden="true"></i></button>
-        ${open ? `
-        <div class="nav-sub">
-          ${item("notice", "공지사항")}
-          ${item("guide", "이용자 가이드")}
-          ${item("faq", "FAQ")}
-          ${item("terms", "이용약관")}
-        </div>` : ""}
-        ${item("events", "이벤트")}
-        ${item("wallet", "지갑 · 토마톡")}
-        ${item("settings", "환경설정")}
+        <div class="nav-sec">
+          ${item("home", "홈")}
+          ${item("album", "보유 카드")}
+          ${item("purchases", "구매 내역")}
+          ${item("wished", "찜 목록")}
+        </div>
+        <div class="nav-sec">
+          <button type="button" class="nav-group" data-menu-group="support" aria-expanded="${open}">고객센터<i class="nav-chevron" aria-hidden="true"></i></button>
+          ${open ? `
+          <div class="nav-sub">
+            ${item("notice", "공지사항")}
+            ${item("guide", "이용자 가이드")}
+            ${item("faq", "FAQ")}
+            ${item("terms", "이용약관")}
+          </div>` : ""}
+          ${item("events", "이벤트")}
+        </div>
+        <div class="nav-sec nav-foot">
+          ${item("settings", "환경설정")}
+        </div>
       </aside>
       <button type="button" class="nav-dim" data-drawer-close aria-label="메뉴 닫기"></button>
     </div>
@@ -2259,7 +2279,214 @@ const SUPPORT_PAGES = {
   events: { title: "이벤트", heading: "진행 중인 이벤트", empty: "진행 중인 이벤트가 없어요." },
 };
 
+// FAQ(기본 문항). 관리자 입력 기능이 생기기 전까지 쓰는 기본 내용이다.
+const FAQ_ITEMS = [
+  { cat: "뽑기", q: "랜덤 포토카드는 어떻게 뽑나요?", a: "홈 목록에서 앨범을 고르고 1장 뽑기 또는 5장 연속 뽑기를 누르면 TP로 결제돼요. 결제 뒤 포장을 손가락으로 밀어 열면 카드가 나와요." },
+  { cat: "뽑기", q: "같은 카드가 또 나올 수 있나요?", a: "네. 뽑기는 매번 무작위라 같은 카드가 중복으로 나올 수 있어요. 같은 카드는 보유 카드에서 장수로 함께 표시돼요." },
+  { cat: "뽑기", q: "5장 연속 뽑기는 1장 뽑기와 뭐가 다른가요?", a: "한 번 결제로 다섯 장을 이어서 뽑아요. 포장을 하나씩 골라 열거나, 바로 오픈하기로 다섯 장을 한꺼번에 열 수 있어요. 결제 금액은 1장 가격의 5배예요." },
+  { cat: "뽑기", q: "포장을 열다가 앱을 닫으면 카드는 어떻게 되나요?", a: "결제가 끝난 순간 카드는 이미 보유 카드에 들어가 있어요. 연출을 보지 못해도 카드는 사라지지 않아요." },
+  { cat: "결제·TP", q: "결제는 어떻게 하나요?", a: "포토카드는 TP로만 결제해요. 1 TP는 1원 기준이고, 결제 시트에서 현재 가격과 보유 TP, 차감 후 잔액을 확인한 뒤 결제하기를 누르면 돼요." },
+  { cat: "결제·TP", q: "TP는 어디서 충전하나요?", a: "토마톡 지갑에서 TOTT를 TP로 교환해요. 결제 시트에서 TP가 모자라면 TP 교환하기 버튼으로 바로 지갑 교환 화면에 갈 수 있고, 교환이 끝나면 결제 시트로 돌아와요." },
+  { cat: "결제·TP", q: "지갑 연결이 꼭 필요한가요?", a: "네. TP 결제와 TOTT 교환은 토마톡 지갑이 연결돼 있어야 해요. 지갑이 연결되어 있지 않으면 결제 시트에서 먼저 연결을 안내해요." },
+  { cat: "결제·TP", q: "교환한 TP를 다시 TOTT로 바꿀 수 있나요?", a: "아니요. 한번 교환된 TP는 다시 TOTT로 바꿀 수 없어요. 또 지갑에 있는 TP는 다른 지갑으로 옮길 수 없으니 교환 전에 지갑과 수량을 확인해 주세요." },
+  { cat: "결제·TP", q: "뽑기를 취소하거나 환불받을 수 있나요?", a: "랜덤 상품 특성상 결제가 끝나고 카드가 확정된 뒤에는 취소·교환·환불이 되지 않아요. 결제 전에 상품과 장수를 꼭 확인해 주세요." },
+  { cat: "보유 카드", q: "뽑은 카드는 어디서 보나요?", a: "메뉴의 보유 카드에서 언제든 볼 수 있어요. 전체 또는 가수별로 모아 보고, 카드를 누르면 앞뒤를 크게 볼 수 있어요." },
+  { cat: "보유 카드", q: "카드 이미지를 저장할 수 있나요?", a: "보유 카드 이미지에는 TOMATOK 워터마크와 보유 카드 ID가 들어가고, 저장·캡처는 막혀 있어요. 실물 카드는 배송으로 받아요." },
+  { cat: "배송", q: "실물 카드는 언제 받을 수 있나요?", a: "배송 기능은 준비 중이에요. 열리면 보유 카드에서 여러 장을 골라 한 번에 배송 신청할 수 있고, 국내·해외 배송을 지원할 예정이에요." },
+  { cat: "배송", q: "실물 카드에 흠집이 있으면 어떻게 하나요?", a: "공식 상품의 제작·포장 과정에서 미세한 스크래치, 인쇄점, 재단 차이가 있을 수 있어요. 이런 경우는 불량으로 보지 않아요. 파손이나 오배송은 토마톡 앱 고객센터로 알려 주세요." },
+  { cat: "계정", q: "다른 기기에서도 보유 카드를 볼 수 있나요?", a: "같은 토마톡 계정으로 로그인하면 어느 기기에서든 보유 카드를 볼 수 있어요. TP는 계정에 묶이고, TOTT는 연결한 지갑마다 달라요." },
+];
+const FAQ_CATS = ["전체", "뽑기", "결제·TP", "보유 카드", "배송", "계정"];
+
+function faqPage() {
+  const cat = state.faqCat || "전체";
+  const items = FAQ_ITEMS.filter((item) => cat === "전체" || item.cat === cat);
+  const chips = FAQ_CATS.map((name) => `<button type="button" class="${name === cat ? "on" : ""}" data-faq-cat="${esc(name)}">${esc(name)}</button>`).join("");
+  const list = items.map((item, index) => `
+    <details class="faq-item"${index === 0 && cat !== "전체" ? " open" : ""}>
+      <summary><span class="faq-q"><b>Q</b>${esc(item.q)}</span><span class="guide-icon" aria-hidden="true"><span class="plus">${icon("plus")}</span><span class="minus">${icon("minus")}</span></span></summary>
+      <div class="faq-a"><b>A</b><p>${esc(item.a)}</p></div>
+    </details>`).join("");
+  return `
+    <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>FAQ</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <section class="support-page faq">
+        <p class="support-lead">자주 묻는 질문을 모았어요.</p>
+        <div class="faq-cats" role="tablist">${chips}</div>
+        <div class="faq-list">${list}</div>
+      </section>
+    </div>
+  `;
+}
+
+// 이용약관(기본 틀). 법무 검토 전 초안이며, 회사명·시행일은 확정 뒤 바꾼다.
+const TERMS_META = { version: "1.0", effective: "2026.11.01" };
+const TERMS_SECTIONS = [
+  { title: "제1조 (목적)", body: ["이 약관은 토마톡(이하 \"회사\")이 제공하는 포토카드 서비스(이하 \"서비스\")의 이용과 관련하여 회사와 이용자의 권리, 의무 및 책임 사항을 정하는 것을 목적으로 합니다."] },
+  { title: "제2조 (용어의 정의)", list: ["\"서비스\"란 회사가 운영하는 랜덤 포토카드 뽑기, 보유 카드 보관, 실물 배송 등 포토카드와 관련된 일체의 서비스를 말합니다.", "\"이용자\"란 이 약관에 따라 회사가 제공하는 서비스를 이용하는 회원을 말합니다.", "\"TP\"란 서비스 안에서 포토카드 결제에 쓰는 포인트로, 1 TP는 1원을 기준으로 합니다.", "\"TOTT\"란 토마톡 지갑에 보유한 토큰으로, 이용자는 이를 TP로 교환할 수 있습니다.", "\"보유 카드\"란 이용자가 뽑기를 통해 확보한 포토카드와 그 디지털 이미지를 말합니다."] },
+  { title: "제3조 (약관의 효력과 변경)", list: ["이 약관은 서비스 화면에 게시하거나 그 밖의 방법으로 이용자에게 공지함으로써 효력이 생깁니다.", "회사는 관련 법령을 위배하지 않는 범위에서 이 약관을 변경할 수 있으며, 변경 시 적용일자와 변경 사유를 명시하여 적용일 7일 전부터 공지합니다. 이용자에게 불리한 변경은 30일 전부터 공지합니다.", "이용자가 변경된 약관의 적용일 이후에도 서비스를 계속 이용하면 변경된 약관에 동의한 것으로 봅니다."] },
+  { title: "제4조 (서비스의 내용)", list: ["회사는 앨범 또는 이벤트 단위로 구성된 포토카드 묶음에서 무작위로 카드를 뽑는 랜덤 뽑기 서비스를 제공합니다.", "뽑기 결과는 무작위로 정해지며, 같은 카드가 중복으로 나올 수 있습니다. 각 상품의 구성과 장수는 상품 상세에 표시합니다.", "회사는 운영상·기술상 필요에 따라 서비스의 전부 또는 일부를 변경하거나 중단할 수 있으며, 이 경우 사전에 공지합니다."] },
+  { title: "제5조 (결제와 TP)", list: ["포토카드 결제는 TP로만 할 수 있습니다. TP는 토마톡 지갑에 연결된 TOTT를 교환하여 충전합니다.", "TOTT와 TP의 교환 비율은 교환 시점의 환율을 따르며, 교환 화면에 표시된 비율이 적용됩니다. 실시간 가격 변동으로 실제 지급되는 TP가 예상과 다를 수 있습니다.", "한번 교환된 TP는 다시 TOTT로 바꿀 수 없으며, 지갑에 보유한 TP는 다른 지갑이나 계정으로 옮길 수 없습니다.", "회사는 최소 교환 수량을 정할 수 있으며, 이에 미달하는 교환 요청은 처리되지 않습니다."] },
+  { title: "제6조 (청약 철회와 환불)", list: ["랜덤 뽑기 상품은 결제와 동시에 카드가 확정되어 제공되는 디지털 콘텐츠로, 「전자상거래 등에서의 소비자보호에 관한 법률」 제17조 제2항에 따라 결제 완료 후에는 청약 철회가 제한됩니다.", "이용자는 결제 전 결제 시트에서 상품명, 장수, 가격, 보유 TP, 차감 후 잔액을 확인해야 하며, 회사는 결제 전 이를 명확히 표시합니다.", "회사의 귀책으로 결제가 중복되거나 카드가 제공되지 않은 경우에는 해당 TP를 복구하거나 카드를 다시 제공합니다."] },
+  { title: "제7조 (보유 카드와 실물 배송)", list: ["뽑은 카드는 보유 카드에 보관되며, 이용자는 보유 카드에서 언제든 카드 이미지를 확인할 수 있습니다.", "보유 카드 이미지에는 워터마크와 보유 카드 ID가 표시되며, 원본 이미지 파일은 제공하지 않습니다.", "실물 카드 배송은 회사가 정한 절차와 기간에 따르며, 국내·해외 배송 조건과 비용은 배송 신청 화면에 표시합니다.", "공식 상품의 제작·포장 과정에서 생길 수 있는 미세한 스크래치, 인쇄점, 재단 차이는 불량으로 보지 않습니다."] },
+  { title: "제8조 (이용자의 의무)", list: ["이용자는 타인의 계정이나 지갑을 이용하거나, 부정한 방법으로 TP를 취득하거나, 뽑기 결과를 조작하려는 행위를 해서는 안 됩니다.", "이용자는 서비스에서 제공하는 카드 이미지를 무단으로 복제, 배포, 판매하거나 상업적으로 이용할 수 없습니다.", "회사는 이용자가 이 조를 위반한 경우 서비스 이용을 제한하거나 계정을 정지할 수 있습니다."] },
+  { title: "제9조 (지식재산권)", list: ["서비스에 포함된 포토카드 이미지, 아티스트 콘텐츠, 디자인, 상표 등은 회사 또는 권리자에게 귀속됩니다.", "이용자는 보유 카드를 개인적인 감상 목적으로만 이용할 수 있으며, 권리자의 허락 없이 2차적 저작물을 만들거나 외부에 게시할 수 없습니다."] },
+  { title: "제10조 (책임의 제한)", list: ["회사는 천재지변, 통신 장애, 블록체인 네트워크 지연 등 회사가 통제할 수 없는 사유로 서비스를 제공하지 못한 경우 책임을 지지 않습니다.", "회사는 이용자의 귀책으로 생긴 손해, 이용자가 서비스를 통해 기대하는 수익을 얻지 못한 것에 대해 책임을 지지 않습니다.", "TOTT의 시세 변동으로 생기는 손실은 이용자가 부담합니다."] },
+  { title: "제11조 (분쟁 해결)", list: ["회사와 이용자 사이에 분쟁이 생기면 토마톡 고객센터를 통해 먼저 해결하도록 노력합니다.", "이 약관과 서비스 이용에 관한 소송은 대한민국 법을 준거법으로 하며, 민사소송법에 따른 관할 법원에 제기합니다."] },
+  { title: "부칙", body: [`이 약관은 ${TERMS_META.effective}부터 시행합니다.`] },
+];
+
+function termsPage() {
+  const sections = TERMS_SECTIONS.map((section) => `
+    <section class="terms-sec">
+      <h3>${esc(section.title)}</h3>
+      ${section.body ? section.body.map((line) => `<p>${esc(line)}</p>`).join("") : ""}
+      ${section.list ? `<ol>${section.list.map((line) => `<li>${esc(line)}</li>`).join("")}</ol>` : ""}
+    </section>`).join("");
+  return `
+    <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>이용약관</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <section class="support-page terms">
+        <div class="terms-head">
+          <h2>포토카드 서비스 이용약관</h2>
+          <p>버전 ${esc(TERMS_META.version)} · 시행일 ${esc(TERMS_META.effective)}</p>
+        </div>
+        ${sections}
+      </section>
+    </div>
+  `;
+}
+
+// 1:1 문의 게시판(기기 저장). 관리자 답변·서버 저장이 없어 드로어 메뉴에서는 뺐다(2026-10-27). 붙을 때 메뉴만 다시 켠다.
+const INQUIRY_KEY = "photocard-inquiries-v1";
+const INQUIRY_CATS = ["주문·결제", "뽑기·개봉", "지갑·TP", "배송", "기타"];
+
+function loadInquiries() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(INQUIRY_KEY) || "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveInquiries(list) {
+  localStorage.setItem(INQUIRY_KEY, JSON.stringify(list));
+}
+
+function inquiryWhen(iso) {
+  const at = new Date(iso);
+  if (Number.isNaN(at.getTime())) return "";
+  return `${at.getFullYear()}.${pad2(at.getMonth() + 1)}.${pad2(at.getDate())} ${pad2(at.getHours())}:${pad2(at.getMinutes())}`;
+}
+
+function inquiryStatus(item) {
+  return item.answer
+    ? `<span class="inq-status done">답변 완료</span>`
+    : `<span class="inq-status">답변 대기</span>`;
+}
+
+function inquiryPage() {
+  const view = state.inqView || "list";
+  if (view === "write") return inquiryWrite();
+  if (view !== "list") {
+    const found = loadInquiries().find((item) => item.id === view);
+    if (found) return inquiryDetail(found);
+  }
+  const list = loadInquiries();
+  const rows = list.map((item) => `
+    <button type="button" class="inq-row" data-inq-open="${esc(item.id)}">
+      <span class="inq-row-top"><em>${esc(item.cat)}</em>${inquiryStatus(item)}</span>
+      <strong>${esc(item.title)}</strong>
+      <small>${esc(inquiryWhen(item.at))}</small>
+    </button>`).join("");
+  return `
+    <header class="bar">
+      <button data-back="home" aria-label="홈">←</button>
+      <h1>1:1 문의</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <section class="support-page inq">
+        <p class="support-lead">궁금한 점이나 문제가 있으면 남겨 주세요. 답변은 보통 1~2일 안에 드리고, 답변이 달리면 앱 알림으로 알려 드려요.</p>
+        <button class="primary inq-new" type="button" data-inq-write>문의하기</button>
+        <h2 class="inq-head">내 문의 <span>${list.length}</span></h2>
+        ${rows || `<p class="empty inq-empty">아직 남긴 문의가 없어요.<br>FAQ에서 답을 먼저 찾아보셔도 좋아요.</p>`}
+      </section>
+    </div>
+  `;
+}
+
+function inquiryWrite() {
+  const cat = state.inqCat || INQUIRY_CATS[0];
+  const ready = String(state.inqTitle || "").trim() && String(state.inqBody || "").trim();
+  const chips = INQUIRY_CATS.map((name) => `<button type="button" class="${name === cat ? "on" : ""}" data-inq-cat="${esc(name)}">${esc(name)}</button>`).join("");
+  return `
+    <header class="bar">
+      <button type="button" data-inq-back aria-label="문의 목록">←</button>
+      <h1>문의하기</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <form class="ship-form inq-form" data-inq-form>
+        <label>문의 유형
+          <span class="faq-cats inq-cats">${chips}</span>
+        </label>
+        <label>제목
+          <input data-field="inqTitle" value="${esc(state.inqTitle || "")}" maxlength="60" placeholder="무엇이 궁금한가요?" />
+        </label>
+        <label>내용
+          <textarea data-field="inqBody" rows="7" maxlength="1000" placeholder="상황을 자세히 적어 주시면 더 빨리 도와드릴 수 있어요. 주문 번호나 카드 번호가 있으면 함께 적어 주세요.">${esc(state.inqBody || "")}</textarea>
+        </label>
+        <p class="inq-note">${icon("info")}<span>결제·지갑 문의는 토마톡 계정과 연결 지갑 주소를 기준으로 확인해요. 비밀번호나 지갑 복구 문구는 절대 적지 마세요.</span></p>
+        <button class="primary inq-submit" type="button" data-inq-submit ${ready ? "" : "disabled"}>문의 등록</button>
+      </form>
+    </div>
+  `;
+}
+
+function inquiryDetail(item) {
+  const answer = item.answer
+    ? `
+      <section class="inq-answer">
+        <h3>답변 <small>${esc(inquiryWhen(item.answeredAt || ""))}</small></h3>
+        <p>${esc(item.answer).replaceAll("\n", "<br>")}</p>
+      </section>`
+    : `
+      <section class="inq-answer waiting">
+        <h3>답변 대기</h3>
+        <p>답변을 준비하고 있어요. 보통 1~2일 안에 답변드리고, 답변이 달리면 앱 알림으로 알려 드려요.</p>
+      </section>`;
+  return `
+    <header class="bar">
+      <button type="button" data-inq-back aria-label="문의 목록">←</button>
+      <h1>문의 내역</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll">
+      <section class="support-page inq-detail">
+        <span class="inq-row-top"><em>${esc(item.cat)}</em>${inquiryStatus(item)}</span>
+        <h2>${esc(item.title)}</h2>
+        <small>${esc(inquiryWhen(item.at))}</small>
+        <p class="inq-body">${esc(item.body).replaceAll("\n", "<br>")}</p>
+        ${answer}
+        <button class="ghost inq-delete" type="button" data-inq-delete="${esc(item.id)}">문의 삭제</button>
+      </section>
+    </div>
+  `;
+}
+
 function supportPage(kind) {
+  if (kind === "faq") return faqPage();
+  if (kind === "terms") return termsPage();
   const page = SUPPORT_PAGES[kind];
   return `
     <header class="bar">
@@ -2473,6 +2700,8 @@ const DECK_FAN = [
   { x: 105, y: 16, r: 18 },
 ];
 // 5장 바로 오픈하기(슬라이드 16): 다섯 장을 2-1-2로 펼친다.
+const SPREAD_POP_AT = 500; // ms, 2-1-2 자리에서 포장이 터져 사라지는 데 걸리는 시간
+const SPREAD_FLIP_AT = 800; // ms, 포장이 사라진 뒤 다섯 장이 한꺼번에 뒤집히기 시작
 const SPREAD_GRID = [
   { x: -82, y: -158 },
   { x: 82, y: -158 },
@@ -2524,6 +2753,26 @@ function tearInk(stage, frame) {
   const ink = TEAR_INK[Math.max(0, Math.min(TEAR_INK.length, frame) - 1)];
   const mid = stage.classList.contains("is-mid");
   const span = (parseFloat(stack.style.getPropertyValue("--tear-span")) || 0);
+  if (stage.classList.contains("is-diag")) {
+    const originX = (parseFloat(stack.style.getPropertyValue("--tear-origin-x")) || 0) / box.width;
+    const originY = (parseFloat(stack.style.getPropertyValue("--tear-origin-y")) || 0) / box.height;
+    const thick = (parseFloat(stack.style.getPropertyValue("--tear-thick")) || 0);
+    const rad = ((Number(stage.dataset.tearAngle) || 0) * Math.PI) / 180;
+    const shown = Math.min(ink.x1, span / box.width);
+    if (shown <= ink.x0) return null;
+    const padX = (thick * 0.5) / box.width;
+    const padY = (thick * 0.5) / box.height;
+    const ax = originX + (ink.x0 * box.width * Math.cos(rad)) / box.width;
+    const ay = originY + (ink.x0 * box.width * Math.sin(rad)) / box.height;
+    const bx = originX + (shown * box.width * Math.cos(rad)) / box.width;
+    const by = originY + (shown * box.width * Math.sin(rad)) / box.height;
+    return {
+      x0: Math.min(ax, bx) - padX,
+      x1: Math.max(ax, bx) + padX,
+      y0: Math.min(ay, by) - padY,
+      y1: Math.max(ay, by) + padY,
+    };
+  }
   if (stage.classList.contains("is-vert")) {
     const thick = (parseFloat(stack.style.getPropertyValue("--tear-thick")) || 0) / box.width;
     const left = (parseFloat(stack.style.getPropertyValue("--tear-left")) || 0) / box.width;
@@ -2592,7 +2841,8 @@ function tearSparks(stage, frame, hit) {
     spark.className = hot ? "tear-spark is-hot" : "tear-spark";
     spark.style.left = `${clamp(x, ink.x0, ink.x1) * 100}%`;
     spark.style.top = `${clamp(top, ink.y0, ink.y1) * 100}%`;
-    if (stage.classList.contains("is-vert")) angle += stage.classList.contains("is-up") ? -90 : 90;
+    if (stage.classList.contains("is-diag")) angle += Number(stage.dataset.tearAngle) || 0;
+    else if (stage.classList.contains("is-vert")) angle += stage.classList.contains("is-up") ? -90 : 90;
     else if (fromRight) angle = 180 - angle;
     spark.style.setProperty("--rot", `${angle}deg`);
     spark.style.setProperty("--dist", reach);
@@ -2775,28 +3025,26 @@ function result() {
     <header class="bar open-bar">
       <button type="button" data-result-close aria-label="닫기">←</button>
       <h1>Photocard Open</h1>
-      ${progress ? `<span class="result-progress" data-result-progress>${progress}</span>` : ""}
+      <button type="button" class="result-album" data-nav="album" aria-label="보유 카드">${TAB_ICONS.album}<span>보유 카드</span></button>
     </header>
     <div class="scroll">
       <div class="result">
-        <div class="result-top">
-          <button type="button" class="result-mine" data-nav="album">보유 카드</button>
-        </div>
         <div class="result-cards${many ? " is-many" : ""}" data-result-cards>
           ${state.reveal.map(revealSlide).join("")}
         </div>
         ${dots}
+        ${progress ? `<p class="result-count" data-result-progress>${progress}</p>` : ""}
         ${artistMark(item)}
         <h2 data-result-name>${esc(item.album)} ${esc(card.no)}</h2>
         <p class="result-grade" data-result-grade>${esc(cardWho(card))}</p>
         <p class="result-status">보유 카드에서 확인 가능해요</p>
         <div class="result-actions">
-          <button class="primary" data-again="1">한 번 더 뽑기</button>
+          <button class="primary" data-again="${count}">${many ? `${count}장 한 번 더 뽑기` : "한 번 더 뽑기"}</button>
           <div class="result-split">
-            <button class="ghost" data-nav="products">다른 상품 보기</button>
             <button class="ghost" data-again="${otherCount}">${otherLabel}</button>
+            <button class="ghost" type="button" data-nav="home">다른 상품 보기</button>
           </div>
-          <button class="ghost" data-result-close>닫기</button>
+          <button class="result-close" type="button" data-result-close>닫기</button>
         </div>
       </div>
     </div>
@@ -2845,12 +3093,12 @@ function sheet() {
     ? [
         ["현재가격", priceBlock(cost)],
         ["보유", priceBlock(state.tp)],
-        short ? ["부족한 TP", `<span class="price short">${tott(cost - state.tp)}</span>`] : ["차감 후 남은 잔액", priceBlock(state.tp - cost)],
+        short ? ["부족한 TP", `<span class="price short"><span class="price-main">${tott(cost - state.tp)}</span><small class="price-sub" data-price-sub="${cost - state.tp}">${priceSub(cost - state.tp)}</small></span>`] : ["차감 후 남은 잔액", priceBlock(state.tp - cost)],
       ]
     : [
         ["5장 뽑기", priceBlock(cost)],
         ["보유", priceBlock(state.tp)],
-        short ? ["부족한 TP", `<span class="price short">${tott(cost - state.tp)}</span>`] : ["결제 후", priceBlock(state.tp - cost)],
+        short ? ["부족한 TP", `<span class="price short"><span class="price-main">${tott(cost - state.tp)}</span><small class="price-sub" data-price-sub="${cost - state.tp}">${priceSub(cost - state.tp)}</small></span>`] : ["결제 후", priceBlock(state.tp - cost)],
       ];
   if (!state.walletConnected) {
     return `
@@ -2882,14 +3130,17 @@ function sheet() {
             .join("")}
         </div>
         <p class="rate-note" data-rate-note>${esc(rateNote())}</p>
-        <div class="sheet-note">
-          ${sheetNotes(item).map((line) => `<p>${esc(line)}</p>`).join("")}
-        </div>
         ${state.tp < cost
-          ? `<p class="sheet-short">TP가 ${tpNumber(cost - state.tp)} TP 부족해요. 토마톡 지갑에서 TOTT를 TP로 교환해요.</p>
-             <button class="primary" type="button" data-go-exchange>TP 교환하기</button>
-             <button class="ghost" type="button" disabled>결제하기</button>`
-          : `<button class="primary" data-pay="${count}">결제하기</button>`}
+          ? (state.balance > 0
+            ? `<p class="sheet-short">토마톡 지갑에서 TOTT를 TP로 교환해요.</p>
+               <button class="primary" type="button" data-go-exchange>TP 교환하기</button>`
+            : `<p class="sheet-short">지갑에 TOTT가 없어요. TOTT를 받은 뒤 TP로 교환해요.</p>
+               <button class="primary" type="button" data-go-receive>TOTT 받기</button>`)
+            + `<button class="ghost" type="button" disabled>결제하기</button>`
+          : `<div class="sheet-note">
+               ${sheetNotes(item).map((line) => `<p>${esc(line)}</p>`).join("")}
+             </div>
+             <button class="primary" data-pay="${count}">결제하기</button>`}
       </div>
     </div>
   `;
@@ -3016,9 +3267,42 @@ function beginOpen() {
 }
 
 // 셔플 화면(슬라이드 11·15·16): SKIP, [한 번 더 섞기 | 바로 오픈하기], 선택 뒤 중간 연출.
+// 셔플에 펼치는 포장 수: 상품의 포토카드 종류("N종 중 랜덤 1장")가 5종 이하면 부채꼴 5개, 6종 이상이면 원형 10개.
+// 매 뽑기가 독립이라 몇 번째든 같은 수에서 고른다.
+const DECK_RING_COUNT = 10;
+const DECK_RING_RADIUS = 118;
+
+function deckCount() {
+  const kinds = product(state.productId)?.cards?.length || 0;
+  return kinds > DECK_FAN.length ? DECK_RING_COUNT : DECK_FAN.length;
+}
+
+function fanSpots(n) {
+  if (n <= DECK_FAN.length) return DECK_FAN.slice(0, n);
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i / n) * 360;
+    const rad = (angle * Math.PI) / 180;
+    return { x: Math.round(Math.sin(rad) * DECK_RING_RADIUS), y: Math.round(-Math.cos(rad) * DECK_RING_RADIUS), r: Math.round(angle) };
+  });
+}
+
+// 5장 뽑기: 1장과 같은 선택 → 연출 → 찢기 흐름을 포장마다 되풀이한다. 연 카드는 위에 쌓인다.
+// 포장은 매번 5개 그대로 펼친다(줄이지 않는다). 뽑기는 매번 무작위라 포장 수가 남은 장수를 뜻하지 않기 때문.
+// 5장 뽑기 안내 둘째 줄: "5장 중 첫 번째 카드입니다." (숫자 1 / 5 대신 순서말)
+const DECK_ORDINALS = ["첫", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉", "열"];
+function deckOrderNote(index, count) {
+  const word = DECK_ORDINALS[index] || `${index + 1}`;
+  return `${count}장 중 ${word} 번째 카드입니다.`;
+}
+
 function cardDeck() {
   const count = state.reveal.length;
-  const packs = DECK_FAN.map((spot, index) => `
+  const done = count > 1 ? Math.min(state.revealIndex, count) : 0;
+  const remain = deckCount();
+  const opened = done
+    ? `<div class="deck-opened" aria-label="연 카드">${state.reveal.slice(0, done).map((card) => `<img class="deck-opened-card guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />`).join("")}</div>`
+    : "";
+  const packs = fanSpots(remain).map((spot, index) => `
     <button type="button" class="deck-card" data-deck-pick="${index}" style="--i:${index};--fan-x:${spot.x}px;--fan-y:${spot.y}px;--fan-r:${spot.r}deg" aria-label="포장 ${index + 1}">
       <span class="deck-spin">
         <img class="deck-face" src="${DECK_PACK}" alt="" draggable="false" />
@@ -3029,14 +3313,17 @@ function cardDeck() {
   return `
     ${openBar(count > 1 ? `${count}장 뽑기` : "")}
     <div class="deck-stage" data-deck>
-      <p class="deck-hint" data-deck-hint>한 장을 선택하세요</p>
-      <button class="deck-skip" type="button" data-open-skip>SKIP</button>
-      <div class="deck" data-deck-cards>${packs}</div>
+      <div class="deck-top">
+        <p class="deck-hint" data-deck-hint>${count > 1 ? "포장을 골라 열어보세요" : "한 장을 선택하세요"}</p>
+      </div>
+      ${count > 1 ? `<p class="deck-note">${deckOrderNote(Math.min(done, count - 1), count)}</p>` : ""}
+      ${opened}
+      <div class="deck${remain > DECK_FAN.length ? " is-ring" : ""}" data-deck-cards>${packs}</div>
       <span class="deck-ring" aria-hidden="true"></span>
       <span class="deck-flash" aria-hidden="true"></span>
       <div class="deck-actions">
-        <button class="ghost deck-again" type="button" data-deck-again><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>한 번 더 섞기</button>
-        <button class="primary deck-direct" type="button" data-deck-direct>바로 오픈하기</button>
+        <button class="ghost deck-again" type="button" data-deck-again aria-label="한 번 더 섞기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>섞기</button>
+        <button class="primary deck-direct" type="button" data-deck-direct>${count > 1 ? (done > 0 ? `남은 ${count - done}장 바로 오픈하기` : "5장 바로 오픈하기") : "바로 오픈하기"}</button>
       </div>
       <img class="deck-cover" src="${DECK_PACK}" alt="" draggable="false" />
     </div>
@@ -3079,7 +3366,11 @@ function armDeck() {
   const deck = stage.querySelector("[data-deck-cards]");
   const hint = stage.querySelector("[data-deck-hint]");
   const cards = [...deck.querySelectorAll(".deck-card")];
-  const row = [-120, -60, 0, 60, 120];
+  const count = state.reveal.length;
+  const multi = count > 1;
+  const pickHint = multi ? "포장을 골라 열어보세요" : "한 장을 선택하세요";
+  // 셔플 줄 간격: 포장 수에 맞춰 가운데 정렬
+  const row = cards.map((_, index) => (index - (cards.length - 1) / 2) * (cards.length > 5 ? 32 : 60));
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let stops = [];
   let seats = cards.map((_, index) => index);
@@ -3127,8 +3418,8 @@ function armDeck() {
     stage.classList.remove("is-cover");
     seats = cards.map((_, index) => index);
     clearInline();
-    if (hint) hint.textContent = "한 장을 선택하세요";
-    if (reduced) {
+    if (hint) hint.textContent = pickHint;
+    if (reduced || cards.length < 2) {
       deck.classList.add("is-fan");
       return;
     }
@@ -3147,7 +3438,13 @@ function armDeck() {
       deck.classList.add("is-fan");
     }, 2920);
   };
-  playShuffle();
+  if (multi && state.revealIndex > 0) {
+    // 두 번째 포장부터는 다시 섞지 않고 남은 포장을 바로 펼친다.
+    seats = cards.map((_, index) => index);
+    deck.classList.add("is-fan");
+  } else {
+    playShuffle();
+  }
   // 중간 연출(슬라이드 16): 나머지 넉 장이 X자 네 방향으로 퍼지고, 고른 포장이 가운데서 커지며 돈다.
   const corners = [[-104, -176], [104, -176], [-104, 176], [104, 176]];
   const choose = (pick, direct = false) => {
@@ -3157,29 +3454,47 @@ function armDeck() {
     let seat = 0;
     cards.forEach((card) => {
       if (card === pick) return;
-      const [x, y] = corners[seat];
+      if (cards.length > 5) {
+        // 원형 배치: 각자 바깥쪽으로 밀려난다
+        const fx = parseFloat(card.style.getPropertyValue("--fan-x")) || 0;
+        const fy = parseFloat(card.style.getPropertyValue("--fan-y")) || 0;
+        card.style.setProperty("--sx", `${Math.round(fx * 2.4)}px`);
+        card.style.setProperty("--sy", `${Math.round(fy * 2.4)}px`);
+        return;
+      }
+      const [x, y] = corners[seat % corners.length];
       seat += 1;
       card.style.setProperty("--sx", `${x}px`);
       card.style.setProperty("--sy", `${y}px`);
     });
     if (hint) hint.textContent = "선택 완료";
-    if (!reduced) {
-      stage.classList.add("is-burst");
-      const prism = pick.querySelector(".prism");
-      const shine = () => {
-        if (!prism || !stage.isConnected) return;
-        prism.classList.remove("is-shine");
-        void prism.offsetWidth;
-        prism.classList.add("is-shine");
-      };
-      later(shine, 200);
-      later(shine, 700);
-    }
+    // 고른 포장은 가운데로 올라오며 한 바퀴 돈다(링·플래시 연출은 뺐다).
     later(() => {
       if (!stage.isConnected) return;
       if (direct) showSpread();
       else showPack();
-    }, reduced ? 240 : 1500);
+    }, reduced ? 240 : 1100);
+  };
+  // 바로 오픈하기(5장): 한 장을 고르지 않고 부채꼴 포장 다섯 개가 각자 2-1-2 자리로 간다.
+  // 자리에 서면 펼침 화면(cardSpread)이 같은 자리에서 포장을 터뜨리고 카드를 뒤집는다.
+  const spreadFromDeck = () => {
+    deck.classList.add("is-picked", "is-spread");
+    // 이미 연 카드만큼은 포장이 필요 없다: 앞쪽 포장은 사라지고, 나머지가 남은 자리로 간다.
+    const done = Math.min(state.revealIndex, count);
+    cards.forEach((card, index) => {
+      if (index < done) {
+        card.classList.add("is-gone");
+        return;
+      }
+      const spot = SPREAD_GRID[index];
+      card.style.setProperty("--sx", `${spot.x}px`);
+      card.style.setProperty("--sy", `${spot.y}px`);
+    });
+    stage.querySelector(".deck-opened")?.classList.add("is-gone");
+    if (hint) hint.textContent = "포장을 열어요";
+    later(() => {
+      if (stage.isConnected) showSpread();
+    }, reduced ? 240 : 650);
   };
   stage.addEventListener("click", (event) => {
     const again = event.target.closest("[data-deck-again]");
@@ -3195,6 +3510,10 @@ function armDeck() {
     if (direct) {
       event.stopPropagation();
       if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
+      if (multi && cards.length === SPREAD_GRID.length) {
+        spreadFromDeck();
+        return;
+      }
       choose(cards[Math.floor(Math.random() * cards.length)], true);
       return;
     }
@@ -3209,6 +3528,8 @@ function armDeck() {
 // 찢기 없이 공개: 1장은 결과, 여러 장은 2-1-2 펼침 화면.
 function showSpread() {
   state.sheet = null;
+  // 이미 찢어서 연 카드 수. 펼침 화면에서 그 카드들은 포장 없이 앞면으로 바로 선다.
+  state.spreadDone = Math.min(state.revealIndex, state.reveal.length);
   state.revealIndex = 0;
   if (state.reveal.length < 2) {
     finishOpen();
@@ -3224,12 +3545,19 @@ function showSpread() {
 
 function cardSpread() {
   const count = state.reveal.length;
+  const done = state.spreadDone || 0;
   const cards = state.reveal.slice(0, SPREAD_GRID.length).map((card, index) => {
     const spot = SPREAD_GRID[index];
+    const back = revealBackSrc(card);
+    const opened = index < done;
+    const backFace = back
+      ? `<span class="spread-face back"><img src="${back}" alt="" draggable="false" /></span>`
+      : `<span class="spread-face back spread-back-blank"></span>`;
     return `
-      <div class="spread-card" style="--i:${index};--sx:${spot.x}px;--sy:${spot.y}px">
+      <div class="spread-card${opened ? " is-open" : ""}" style="--i:${index};--sx:${spot.x}px;--sy:${spot.y}px">
+        ${opened ? "" : `<img class="spread-pack" src="${DECK_PACK}" alt="" draggable="false" />`}
         <div class="spread-spin">
-          <img class="spread-face back" src="${DECK_PACK}" alt="" draggable="false" />
+          ${backFace}
           <span class="spread-face front"><img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" /><span class="prism" aria-hidden="true"></span></span>
         </div>
         <small>${esc(card.no)}</small>
@@ -3250,16 +3578,15 @@ function armSpread() {
   if (!stage || stage.dataset.bound) return;
   stage.dataset.bound = "1";
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const cards = [...stage.querySelectorAll(".spread-card")];
-  const flips = cards.length;
   if (reduced) {
     stage.classList.add("is-done");
     return;
   }
+  // 2-1-2 자리의 포장이 터져 사라지고(0.5초) 뒷면이 남은 뒤 다섯 장이 한꺼번에 앞면으로 뒤집힌다
   requestAnimationFrame(() => stage.classList.add("is-live"));
   window.setTimeout(() => {
     if (stage.isConnected) stage.classList.add("is-done");
-  }, 700 + flips * 320 + 500);
+  }, SPREAD_POP_AT + SPREAD_FLIP_AT + 700 + 400);
 }
 
 function showPack() {
@@ -3421,9 +3748,10 @@ function applyScene(id) {
   state.reveal = [];
   state.revealIndex = 0;
   state.exchanges = [];
+  state.fills = [];
   localStorage.removeItem(WALLET_KEY);
   loadWallet();
-  state.walletConnected = true;
+  state.walletConnected = false;
   state.walletModal = false;
   state.cartModal = false;
   state.region = "";
@@ -3868,6 +4196,30 @@ function tearFromEdge(box, clientX, clientY, vertical) {
   return x <= PACK_FACE.left + edge || x >= PACK_FACE.right - edge;
 }
 
+// 대각선 판정: 가로·세로 축에서 22.5° 넘게 벗어난 드래그
+const TEAR_DIAG_MIN = 22.5;
+function tearIsDiagonal(angle) {
+  const off = Math.abs(angle) % 90;
+  return Math.min(off, 90 - off) >= TEAR_DIAG_MIN;
+}
+
+// 손끝(origin)에서 각도 방향으로 포장 앞면 경계까지의 거리(px). 띠가 포장 밖으로 자라지 않게 한다.
+function tearRayLimit(box, originX, originY, angle) {
+  const rad = (angle * Math.PI) / 180;
+  const ux = Math.cos(rad);
+  const uy = Math.sin(rad);
+  let limit = Infinity;
+  if (Math.abs(ux) > 1e-6) {
+    const edge = ux > 0 ? box.width * PACK_FACE.right : box.width * PACK_FACE.left;
+    limit = Math.min(limit, (edge - originX) / ux);
+  }
+  if (Math.abs(uy) > 1e-6) {
+    const edge = uy > 0 ? box.height * PACK_FACE.bottom : box.height * PACK_FACE.top;
+    limit = Math.min(limit, (edge - originY) / uy);
+  }
+  return Number.isFinite(limit) ? Math.max(0, limit) : 0;
+}
+
 function placeTear(stage, clientX, clientY) {
   const stack = stage.querySelector(".open-stack");
   if (!stack) return;
@@ -3875,6 +4227,24 @@ function placeTear(stage, clientX, clientY) {
   const anchor = 85 / 259;
   const band = tearBand();
   const mid = stage.classList.contains("is-mid");
+  if (stage.classList.contains("is-diag")) {
+    // 띠 길이는 가로 찢기와 같게(box.width) 두어 질감 배율을 맞추고, 길이는 --tear-span으로만 드러낸다.
+    const angle = Number(stage.dataset.tearAngle) || 0;
+    const originX = Math.max(box.width * PACK_FACE.left, Math.min(box.width * PACK_FACE.right, clientX - box.left));
+    const originY = Math.max(box.height * band.top, Math.min(box.height * band.bottom, clientY - box.top));
+    const thick = box.width * (259 / 985);
+    stack.style.setProperty("--tear-origin-x", `${originX}px`);
+    stack.style.setProperty("--tear-origin-y", `${originY}px`);
+    stack.style.setProperty("--tear-top", `${originY - anchor * thick}px`);
+    stack.style.setProperty("--tear-long", `${box.width}px`);
+    stack.style.setProperty("--tear-thick", `${thick}px`);
+    stack.style.setProperty("--tear-angle", `${angle}deg`);
+    // 왼쪽으로 찢을 때는 띠를 세로로 뒤집어 질감의 위쪽이 계속 위를 보게 한다(가로의 scaleX(-1)에 해당)
+    stack.style.setProperty("--tear-flip", Math.abs(angle) > 90 ? "-1" : "1");
+    stack.style.setProperty("--tear-span", "0px");
+    stage.dataset.tearY = String(originY / box.height);
+    return;
+  }
   if (stage.classList.contains("is-vert")) {
     const span = PACK_FACE.right - PACK_FACE.left;
     const minX = box.width * (PACK_FACE.left + span * TEAR_EDGE);
@@ -3918,6 +4288,17 @@ function growTear(stage, clientX, clientY) {
   const box = stack.getBoundingClientRect();
   if (!box.width || !box.height) return;
   let span = parseFloat(stack.style.getPropertyValue("--tear-span")) || 0;
+  if (stage.classList.contains("is-diag")) {
+    const originX = parseFloat(stack.style.getPropertyValue("--tear-origin-x")) || 0;
+    const originY = parseFloat(stack.style.getPropertyValue("--tear-origin-y")) || 0;
+    const angle = Number(stage.dataset.tearAngle) || 0;
+    const rad = (angle * Math.PI) / 180;
+    const travel = (clientX - box.left - originX) * Math.cos(rad) + (clientY - box.top - originY) * Math.sin(rad);
+    const limit = tearRayLimit(box, originX, originY, angle);
+    span = Math.max(span, Math.min(limit, Math.max(0, travel)));
+    stack.style.setProperty("--tear-span", `${span}px`);
+    return;
+  }
   if (stage.classList.contains("is-vert")) {
     const originY = parseFloat(stack.style.getPropertyValue("--tear-origin-y")) || 0;
     const y = clientY - box.top;
@@ -3958,7 +4339,7 @@ function armOpenCut() {
     startX = event.clientX;
     startY = event.clientY;
     if (TEAR_METHOD === 2) {
-      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid", "is-diag");
       delete stage.dataset.tearAxis;
       placeTear(stage, event.clientX, event.clientY);
     } else {
@@ -4006,13 +4387,18 @@ function armOpenCut() {
       const dx = event.clientX - startX;
       const dy = event.clientY - startY;
       if (!stage.dataset.tearAxis && dragSpan(dx, dy) >= 10) {
-        const vertical = Math.abs(dy) > Math.abs(dx);
-        const fromEdge = box ? tearFromEdge(box, startX, startY, vertical) : false;
-        stage.dataset.tearAxis = vertical ? "v" : "h";
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const diagonal = tearIsDiagonal(angle);
+        const vertical = !diagonal && Math.abs(dy) > Math.abs(dx);
+        const fromEdge = !diagonal && box ? tearFromEdge(box, startX, startY, vertical) : false;
+        stage.dataset.tearAxis = diagonal ? "d" : vertical ? "v" : "h";
+        stage.dataset.tearAngle = String(angle);
+        stage.classList.toggle("is-diag", diagonal);
         stage.classList.toggle("is-vert", vertical);
         stage.classList.toggle("is-up", vertical && dy < 0);
-        stage.classList.toggle("is-mid", !fromEdge);
-        stage.classList.toggle("is-rtl", !vertical && (fromEdge ? startX >= box.left + box.width / 2 : dx < 0));
+        // 대각선은 항상 손끝에서 시작해 드래그 방향으로 자란다
+        stage.classList.toggle("is-mid", diagonal || !fromEdge);
+        stage.classList.toggle("is-rtl", !diagonal && !vertical && (fromEdge ? startX >= box.left + box.width / 2 : dx < 0));
         placeTear(stage, startX, startY);
       }
       if (stage.dataset.tearAxis && stage.classList.contains("is-mid")) growTear(stage, event.clientX, event.clientY);
@@ -4032,7 +4418,7 @@ function armOpenCut() {
     const span = dragSpan(dx, dy);
     if (span < OPEN_CUT.minDistance) {
       showOpenFrame(stage, 0);
-      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid", "is-diag");
       delete stage.dataset.tearAxis;
       stage.querySelectorAll(".tear-spark").forEach((spark) => spark.remove());
       return;
@@ -4049,7 +4435,7 @@ function armOpenCut() {
     stage.classList.remove("is-touching");
     if (state.openCut === "idle") {
       showOpenFrame(stage, 0);
-      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid");
+      stage.classList.remove("is-rtl", "is-vert", "is-up", "is-mid", "is-diag");
       delete stage.dataset.tearAxis;
     }
   });
@@ -4289,7 +4675,6 @@ function adminSaleScreen(sale) {
           ${productThumbnail(item.cover, badge ? `<span class="sale-mark ${sale}">${badge}</span>` : "")}
           <span class="tile-who">${artistMark(item)}</span>
           <span class="tile-name">${esc(setTitle(item))}</span>
-          <span class="tile-line">${esc(lineup(item.cards.length))}</span>
           <span class="tile-price">${tott(item.price)}</span>
         </div>
       </div>`
@@ -4405,12 +4790,18 @@ function wonText(krw) {
 // ---- 토마톡 지갑 mock 화면 (디자인 2025-08: 지갑 · 지갑 관리 · 거래 내역) ----
 
 const WALLET_SVG = {
-  ghost: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v9.2l2.4-1.8 2.3 1.8 2.3-1.8 2.3 1.8 2.3-1.8 2.4 1.8V10a7 7 0 0 0-7-7z" fill="#fff"/><circle cx="9.6" cy="10.4" r="1.1" fill="#8b7cf6"/><circle cx="14.4" cy="10.4" r="1.1" fill="#8b7cf6"/></svg>`,
+  ghost: `<svg viewBox="0 0 21 21" fill="none" aria-hidden="true"><path d="M9.17939e-07 10.5C4.10975e-07 16.299 4.70101 21 10.5 21C16.299 21 21 16.299 21 10.5C21 4.70101 16.299 1.4249e-06 10.5 9.1794e-07C4.70101 4.10976e-07 1.4249e-06 4.70101 9.17939e-07 10.5Z" fill="#9083D8"/><path d="M17.6883 7.03317C17.6883 7.03317 16.7724 2.9647 11.2812 4.89812C11.2812 4.89812 5.89179 6.52626 3.44958 13.1368C3.13111 13.9999 2.83902 16.1877 4.26365 16.5947C5.68827 17.0018 7.86855 15.9314 8.91252 13.8736C8.91252 13.8736 8.63551 15.7825 9.95837 15.8843C11.2812 15.9861 12.5909 15.0175 13.2071 13.8736C13.2071 13.8736 13.111 15.4773 14.6374 14.9685C16.1638 14.4597 18.5023 11.7141 17.6883 7.03505V7.03317ZM12.6022 9.67701C12.0972 9.67701 11.6864 9.22098 11.6864 8.65943C11.6864 8.09787 12.0953 7.64184 12.6022 7.64184C13.1091 7.64184 13.518 8.09787 13.518 8.65943C13.518 9.22098 13.1091 9.67701 12.6022 9.67701ZM15.1443 9.67701C14.6393 9.67701 14.2285 9.22098 14.2285 8.65943C14.2285 8.09787 14.6374 7.64184 15.1443 7.64184C15.6512 7.64184 16.0601 8.09787 16.0601 8.65943C16.0601 9.22098 15.6512 9.67701 15.1443 9.67701Z" fill="white"/></svg>`,
+  // 지갑 카드 하단 4개 액션 아이콘: 디자인 프레임(Frame 2087324830.svg)에서 아이콘 부분만 잘라 썼다.
+  actSend: `<svg class="ico" viewBox="14.5 3 28 28" fill="currentColor" aria-hidden="true"><path d="M28.9783 8.65021C28.6528 8.31608 28.0659 8.31608 27.7404 8.65021L25.1156 11.2352C24.774 11.5716 24.774 12.1179 25.1156 12.4543C25.4571 12.7907 26.0119 12.7907 26.3535 12.4543L27.4837 11.339L27.4837 18.7372C27.4837 19.2136 27.8757 19.5996 28.3594 19.5996C28.8431 19.5996 29.2351 19.2136 29.2351 18.7372L29.2351 11.339L30.3653 12.4543C30.7068 12.7907 31.2616 12.7907 31.6032 12.4543C31.9448 12.1179 31.9448 11.5716 31.6032 11.2352L28.9783 8.65021Z"/><path d="M39.6772 14C40.1521 14 40.5403 14.3863 40.5067 14.8601C40.0642 21.0988 34.8465 26.04 28.4971 26.04C21.9623 26.04 16.6262 20.8062 16.4609 14.3105C16.4588 14.1397 16.5967 14 16.7676 14H17.3224C17.7943 14 18.1731 14.3838 18.2119 14.8541C18.6484 20.1469 23.0933 24.3183 28.4971 24.3184C33.899 24.3184 38.3428 20.1497 38.7818 14.8595C38.821 14.3862 39.2023 14 39.6772 14Z"/></svg>`,
+  actReceive: `<svg class="ico" viewBox="85 3 28 28" fill="currentColor" aria-hidden="true"><path d="M98.4064 19.3498C98.7189 19.6839 99.2823 19.6839 99.5948 19.3498L102.115 16.7648C102.443 16.4284 102.443 15.8821 102.115 15.5457C101.787 15.2093 101.254 15.2093 100.926 15.5457L99.8413 16.661V9.2628C99.8413 8.78644 99.465 8.40039 99.0006 8.40039C98.5363 8.40039 98.1599 8.78644 98.1599 9.2628V16.661L97.075 15.5457C96.7471 15.2093 96.2145 15.2093 95.8866 15.5457C95.5586 15.8821 95.5586 16.4284 95.8866 16.7648L98.4064 19.3498Z"/><path d="M110.219 13.5C110.694 13.5 111.082 13.8863 111.049 14.3601C110.606 20.5984 105.388 25.539 99.0391 25.5391C92.69 25.5391 87.4725 20.5984 87.0295 14.3601C86.9959 13.8863 87.3841 13.5 87.8591 13.5C88.3339 13.5 88.7151 13.8862 88.7544 14.3594C89.1939 19.6492 93.6374 23.8174 99.0391 23.8174C104.441 23.8173 108.884 19.6492 109.324 14.3594C109.363 13.8862 109.744 13.5 110.219 13.5Z"/></svg>`,
+  actFill: `<svg class="ico" viewBox="154 0 28 28" fill="currentColor" aria-hidden="true"><path d="M178.68 17.9364C178.647 17.605 178.555 17.2808 178.409 16.9728C178.27 16.6815 178.081 16.4031 177.847 16.1452C177.41 15.6642 176.823 15.2577 176.104 14.937C174.919 14.4085 173.457 14.1527 171.917 14.1964C171.904 14.1387 171.89 14.0809 171.874 14.023C171.854 13.9525 171.832 13.8821 171.808 13.8116C173.231 13.4459 174.506 12.8363 175.468 12.0509C176.078 11.5539 176.536 11.0087 176.83 10.4306C176.988 10.1207 177.097 9.80272 177.154 9.48552C177.214 9.15005 176.728 5.91013 176.672 5.58163C176.617 5.25312 176.505 4.93562 176.338 4.63791C176.18 4.35635 175.973 4.09084 175.722 3.84885C175.254 3.39749 174.642 3.03021 173.903 2.75713C172.46 2.2241 170.655 2.09831 168.821 2.40309C166.986 2.70787 165.321 3.41031 164.131 4.38098C163.521 4.87798 163.063 5.42313 162.769 6.00119C162.647 6.23995 162.555 6.48355 162.493 6.72786C162.466 6.82366 162.444 6.91967 162.427 7.01558C162.367 7.35105 162.364 7.68763 162.42 8.01613C162.445 8.16706 162.483 8.31566 162.532 8.46104C162.539 8.49698 162.546 8.53433 162.553 8.57289C162.227 8.58339 161.909 8.61257 161.602 8.66093C160.824 8.78379 160.151 9.02396 159.602 9.37477C159.376 9.51974 159.172 9.68339 158.994 9.86309C158.923 9.93234 158.855 10.0041 158.791 10.0783C158.568 10.3376 158.395 10.6268 158.275 10.9379C158.221 11.0809 158.178 11.228 158.146 11.3782C157.795 12.3435 157.085 14.3492 157.079 14.6202C157.072 14.9424 157.115 15.2754 157.209 15.6102C157.382 16.2346 157.723 16.8588 158.222 17.4654C159.196 18.6501 160.689 19.6651 162.427 20.3234C163.118 20.5852 163.818 20.7792 164.506 20.903C164.637 21.9167 164.802 23.0809 164.887 23.2591C165.026 23.5503 165.215 23.8288 165.449 24.0867C165.886 24.5676 166.472 24.9742 167.192 25.2948C168.596 25.9211 170.389 26.1645 172.24 25.9802C174.091 25.7959 175.799 25.2038 177.051 24.3129C177.692 23.8568 178.185 23.3428 178.517 22.7852C178.695 22.4863 178.825 22.176 178.903 21.8632C178.985 21.5324 178.714 18.2676 178.68 17.9363L178.68 17.9364ZM175.662 8.55048C175.642 9.45311 175.384 10.3584 174.566 10.9587C173.654 11.6274 172.477 12.2069 171.13 12.5186C171.046 12.4011 170.956 12.2842 170.86 12.1679C170.596 11.8457 170.292 11.5362 169.956 11.2429C170.061 11.2283 170.166 11.2123 170.271 11.1949C172.106 10.8901 173.771 10.1877 174.961 9.21698C175.223 9.00336 175.457 8.78076 175.662 8.55058V8.55048ZM163.868 7.0811C164.061 6.41399 164.629 5.85763 165.015 5.54256C166.016 4.72634 167.444 4.13112 169.037 3.86652C170.63 3.60192 172.176 3.70297 173.389 4.15131C174.014 4.38229 175.088 4.91462 175.251 5.88429C175.414 6.85405 174.574 7.70429 174.058 8.12476C173.058 8.94097 171.629 9.5362 170.037 9.8008C169.358 9.91356 168.688 9.9597 168.049 9.94102C167.607 9.7055 167.141 9.4937 166.655 9.30976C165.874 9.01396 165.082 8.80458 164.308 8.68546C164.118 8.49051 163.962 8.26246 163.876 7.99766C163.866 7.89155 163.855 7.79615 163.841 7.71367C163.805 7.49551 163.819 7.28351 163.868 7.081V7.0811ZM164.455 18.1537C164.422 18.2476 164.394 18.342 164.37 18.4366C164.291 18.7577 164.265 19.0835 164.294 19.4055C163.844 19.3076 163.388 19.175 162.934 19.003C161.425 18.4314 160.14 17.5705 159.324 16.5718C158.612 15.6992 158.512 14.7832 158.657 13.9502C158.816 14.2245 159.006 14.4968 159.227 14.7657C160.2 15.9504 161.694 16.9654 163.432 17.6237C163.792 17.7603 164.155 17.8784 164.518 17.9779C164.495 18.0363 164.474 18.0951 164.455 18.1539L164.455 18.1537ZM165.323 16.723C164.864 16.6181 164.4 16.4777 163.939 16.3029C162.43 15.7313 161.148 14.868 160.329 13.8718C159.939 13.3977 159.351 12.51 159.541 11.6534C159.587 11.557 159.626 11.4692 159.656 11.391C159.735 11.1844 159.856 11.0086 160.001 10.8588C160.507 10.3798 161.281 10.1853 161.774 10.1074C162.113 10.054 162.469 10.0291 162.838 10.0318C163.864 10.0394 164.988 10.2606 166.097 10.681C166.587 10.8667 167.053 11.0831 167.487 11.3248C168.231 11.7391 168.881 12.2278 169.396 12.7635C169.506 12.8777 169.61 12.994 169.707 13.1122C169.905 13.3528 170.153 13.6998 170.326 14.0954C170.36 14.1727 170.39 14.2519 170.417 14.3324C168.814 14.5777 167.351 15.1317 166.245 15.919C165.892 16.1703 165.584 16.4391 165.323 16.7231L165.323 16.723ZM165.751 19.5112C165.749 19.4047 165.744 19.3087 165.736 19.2256C165.713 19.0055 165.742 18.7949 165.805 18.596C165.845 18.4844 165.896 18.3768 165.955 18.2736C166.242 17.7726 166.714 17.3755 167.051 17.1357C167.14 17.0727 167.231 17.0114 167.326 16.952C168.136 16.4406 169.15 16.0635 170.266 15.8554C170.563 15.8002 170.866 15.7568 171.175 15.726C171.423 15.7013 171.669 15.6853 171.913 15.6776C173.247 15.636 174.5 15.8491 175.499 16.2944C176.107 16.5657 177.143 17.1669 177.242 18.1453C177.341 19.1236 176.446 19.9171 175.903 20.303C174.851 21.0521 173.386 21.5528 171.779 21.7128C170.173 21.8728 168.637 21.6709 167.456 21.1443C167.372 21.1068 167.279 21.0629 167.183 21.0127C166.658 20.7404 165.999 20.279 165.78 19.6089C165.769 19.5768 165.76 19.5443 165.751 19.5112H165.751ZM176.222 23.1641C175.132 23.8581 173.705 24.4138 172.098 24.5738C170.491 24.7338 168.954 24.5357 167.774 24.0053C166.744 23.5421 166.242 22.767 165.996 21.9577C166.262 22.1325 166.554 22.2915 166.873 22.4337C168.278 23.06 170.07 23.3034 171.921 23.1191C173.772 22.9347 175.48 22.3426 176.732 21.4518C177.007 21.2557 177.256 21.0489 177.475 20.8325C177.395 21.7318 177.078 22.6184 176.222 23.164L176.222 23.1641Z"/></svg>`,
+  actHistory: `<svg class="ico" viewBox="231.5 -1 28 28" fill="currentColor" aria-hidden="true"><path d="M240.416 9.81625C240.917 9.81625 241.324 9.40967 241.324 8.90812C241.324 8.40658 240.917 8 240.416 8C239.914 8 239.508 8.40658 239.508 8.90812C239.508 9.40967 239.914 9.81625 240.416 9.81625Z"/><path d="M240.416 13.8162C240.917 13.8162 241.324 13.4097 241.324 12.9081C241.324 12.4066 240.917 12 240.416 12C239.914 12 239.508 12.4066 239.508 12.9081C239.508 13.4097 239.914 13.8162 240.416 13.8162Z"/><path d="M240.416 17.8162C240.917 17.8162 241.324 17.4097 241.324 16.9081C241.324 16.4066 240.917 16 240.416 16C239.914 16 239.508 16.4066 239.508 16.9081C239.508 17.4097 239.914 17.8162 240.416 17.8162Z"/><path d="M251.018 8H243.332C242.872 8 242.5 8.38035 242.5 8.84954V8.85046C242.5 9.31965 242.872 9.7 243.332 9.7H251.018C251.478 9.7 251.85 9.31965 251.85 8.85046V8.84954C251.85 8.38035 251.478 8 251.018 8Z"/><path d="M251.018 12H243.332C242.872 12 242.5 12.3804 242.5 12.8495V12.8505C242.5 13.3196 242.872 13.7 243.332 13.7H251.018C251.478 13.7 251.85 13.3196 251.85 12.8505V12.8495C251.85 12.3804 251.478 12 251.018 12Z"/><path d="M251.018 16H243.332C242.872 16 242.5 16.3804 242.5 16.8495V16.8505C242.5 17.3196 242.872 17.7 243.332 17.7H251.018C251.478 17.7 251.85 17.3196 251.85 16.8505V16.8495C251.85 16.3804 251.478 16 251.018 16Z"/><path d="M253.5 5.44629C253.5 4.37482 252.626 3.5 251.54 3.5H238.96C237.874 3.5 237 4.37482 237 5.44629V21.7197L240.728 20.5166L243.861 21.8691L245.343 20.5186L247.757 21.8613L250.203 20.0967L253.5 21.5869V5.44629ZM255 23.9121L250.377 21.8213L248.249 23.3584L247.861 23.6377L245.556 22.3535L244.157 23.6309L243.713 23.4385L240.651 22.1172L235.5 23.7803V5.44629C235.5 3.53937 237.053 2 238.96 2H251.54C253.447 2 255 3.53937 255 5.44629V23.9121Z"/></svg>`,
   starFill: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.8l-5.9 3.1 1.2-6.6L2.5 9.7l6.6-.9z" fill="#f5b400"/></svg>`,
-  star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m12 2.8 2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.8l-5.9 3.1 1.2-6.6L2.5 9.7l6.6-.9z"/></svg>`,
-  pencil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17z"/><path d="m13.5 7.5 3 3"/></svg>`,
-  link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.5 1.5"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5"/></svg>`,
-  unlink: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.5 1.5" stroke-dasharray="2.2 2.6"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.5-1.5"/><path d="m5 5 2 2M19 19l-2-2"/></svg>`,
+  // 지갑 설정 시트 아이콘: Phosphor Icons Regular(star · pencil-simple · link-break · arrows-clockwise)
+  star: `<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M239.18,97.26A16.38,16.38,0,0,0,224.92,86l-59-4.76L143.14,26.15a16.36,16.36,0,0,0-30.27,0L90.11,81.23,31.08,86a16.46,16.46,0,0,0-9.37,28.86l45,38.83L53,211.75a16.38,16.38,0,0,0,24.5,17.82L128,198.49l50.53,31.08A16.4,16.4,0,0,0,203,211.75l-13.76-58.07,45-38.83A16.43,16.43,0,0,0,239.18,97.26Zm-15.34,5.47-48.7,42a8,8,0,0,0-2.56,7.91l14.88,62.8a.37.37,0,0,1-.17.48c-.18.14-.23.11-.38,0l-54.72-33.65a8,8,0,0,0-8.38,0L69.09,215.94c-.15.09-.19.12-.38,0a.37.37,0,0,1-.17-.48l14.88-62.8a8,8,0,0,0-2.56-7.91l-48.7-42c-.12-.1-.23-.19-.13-.5s.18-.27.33-.29l63.92-5.16A8,8,0,0,0,103,91.86l24.62-59.61c.08-.17.11-.25.35-.25s.27.08.35.25L153,91.86a8,8,0,0,0,6.75,4.92l63.92,5.16c.15,0,.24,0,.33.29S224,102.63,223.84,102.73Z"/></svg>`,
+  pencil: `<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/></svg>`,
+  link: `<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,48V96a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h28.69L182.06,73.37a79.56,79.56,0,0,0-56.13-23.43h-.45A79.52,79.52,0,0,0,69.59,72.71,8,8,0,0,1,58.41,61.27a96,96,0,0,1,135,.79L208,76.69V48a8,8,0,0,1,16,0ZM186.41,183.29a80,80,0,0,1-112.47-.66L59.31,168H88a8,8,0,0,0,0-16H40a8,8,0,0,0-8,8v48a8,8,0,0,0,16,0V179.31l14.63,14.63A95.43,95.43,0,0,0,130,222.06h.53a95.36,95.36,0,0,0,67.07-27.33,8,8,0,0,0-11.18-11.44Z"/></svg>`,
+  unlink: `<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M198.63,57.37a32,32,0,0,0-45.19-.06L141.79,69.52a8,8,0,0,1-11.58-11l11.72-12.29a1.59,1.59,0,0,1,.13-.13,48,48,0,0,1,67.88,67.88,1.59,1.59,0,0,1-.13.13l-12.29,11.72a8,8,0,0,1-11-11.58l12.21-11.65A32,32,0,0,0,198.63,57.37ZM114.21,186.48l-11.65,12.21a32,32,0,0,1-45.25-45.25l12.21-11.65a8,8,0,0,0-11-11.58L46.19,141.93a1.59,1.59,0,0,0-.13.13,48,48,0,0,0,67.88,67.88,1.59,1.59,0,0,0,.13-.13l11.72-12.29a8,8,0,1,0-11.58-11ZM216,152H192a8,8,0,0,0,0,16h24a8,8,0,0,0,0-16ZM40,104H64a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Zm120,80a8,8,0,0,0-8,8v24a8,8,0,0,0,16,0V192A8,8,0,0,0,160,184ZM96,72a8,8,0,0,0,8-8V40a8,8,0,0,0-16,0V64A8,8,0,0,0,96,72Z"/></svg>`,
   more: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg>`,
   drag: `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>`,
   down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`,
@@ -4430,12 +4821,15 @@ function walletLedger(walletId = currentWallet().id) {
   state.exchanges
     .filter((entry) => (entry.wallet || WALLET_SEED[0].id) === walletId)
     .forEach((entry) => rows.push({ kind: "exchange", at: entry.at, label: "교환", tott: -entry.tott, tp: entry.tp, status: "완료" }));
+  state.fills
+    .filter((entry) => entry.wallet === walletId)
+    .forEach((entry) => rows.push({ kind: "fill", at: entry.at, label: "채우기", sol: -entry.sol, tott: entry.tott, status: "완료" }));
   if (w.main) {
     readOrderStore().filter((order) => order.kind === "purchase").forEach((order) => {
       const price = Number(order.price);
       if (!Number.isFinite(price)) return;
       const at = /^\d{4}-\d{2}-\d{2}T/.test(String(order.purchasedOn)) ? order.purchasedOn : `${String(order.purchasedOn || "").slice(0, 10)}T12:00:00`;
-      rows.push({ kind: "use", at, label: `사용 · ${order.productName || "포토카드"}`, tp: -price, status: "완료" });
+      rows.push({ kind: "use", at, label: "포토카드 구매", tp: -price, status: "완료" });
     });
   }
   const today = new Date().getDate();
@@ -4452,16 +4846,28 @@ function walletLedger(walletId = currentWallet().id) {
 }
 
 function ledgerRow(row) {
-  const glyph = row.kind === "exchange" ? "swap" : row.kind === "use" ? "coins" : row.kind === "receive" ? "arrowDown" : "arrowUp";
-  const amounts = [];
-  if (row.tott) amounts.push(`<strong class="${row.tott < 0 ? "minus" : "plus"}">${row.tott < 0 ? "- " : "+ "}${tottText(Math.abs(row.tott))} <small>TOTT</small></strong>`);
-  if (row.tp) amounts.push(`<strong class="${row.tp < 0 ? "minus" : "plus"}">${row.tp < 0 ? "- " : "+ "}${tpText(Math.abs(row.tp))} <small>TP</small></strong>`);
+  const glyph = row.kind === "exchange" ? "swap" : row.kind === "use" || row.kind === "fill" ? "coins" : row.kind === "receive" ? "arrowDown" : "arrowUp";
+  // 교환·채우기처럼 한 건에 두 통화가 걸리면 오른쪽에는 받은 쪽만 크게 쓰고, 쓴 쪽은 왼쪽 날짜 옆에 작게 적는다(세 줄 방지)
+  const amount = (value, unitHtml, text) => `<strong class="${value < 0 ? "minus" : "plus"}">${value < 0 ? "- " : "+ "}${text(Math.abs(value))} ${unitHtml}</strong>`;
+  const units = {
+    sol: [`<small>SOL</small>`, solText, "SOL"],
+    tott: [`<small>TOTT</small>`, tottText, "TOTT"],
+    tp: [`<span class="coin-mark tp" aria-hidden="true">TP</span>`, tpText, "TP"],
+  };
+  const moves = ["sol", "tott", "tp"].filter((key) => row[key]);
+  const gained = moves.filter((key) => row[key] > 0);
+  const spent = moves.filter((key) => row[key] < 0);
+  const main = gained.length && spent.length ? gained : moves;
+  const amounts = main.map((key) => amount(row[key], units[key][0], units[key][1]));
+  const spentNote = gained.length && spent.length
+    ? ` · ${spent.map((key) => `${units[key][1](Math.abs(row[key]))} ${units[key][2]} 사용`).join(", ")}`
+    : "";
   return `
     <article class="ledger-row">
       <span class="ledger-icon" aria-hidden="true">${icon(glyph)}</span>
       <span class="ledger-body">
         <strong>${esc(row.label)}</strong>
-        <small>${esc(exchangeWhen(row.at))}</small>
+        <small>${esc(exchangeWhen(row.at))}${esc(spentNote)}</small>
       </span>
       <span class="ledger-amount">
         ${amounts.join("")}
@@ -4509,15 +4915,14 @@ function walletCard(w) {
         </div>
       </div>
       <div class="wallet-tp">
-        <p class="wallet-coin"><span class="coin-mark tp" aria-hidden="true">TP</span>포인트(TP)</p>
-        <strong>${tpText(state.tp)} <small>TP</small></strong>
+        <span class="wallet-tp-body"><small>TP 포인트</small><strong>${tpText(state.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></span>
         <button type="button" class="wallet-exchange" data-nav="exchange-form">교환하기 ${icon("caretRight")}</button>
       </div>
       <div class="wallet-actions">
-        <button type="button" data-soon="보내기">${icon("arrowUp")}<span>보내기</span></button>
-        <button type="button" data-soon="받기">${icon("arrowDown")}<span>받기</span></button>
-        <button type="button" data-soon="채우기(LBank에서 TOTT 구매)">${icon("coins")}<span>채우기</span></button>
-        <button type="button" data-nav="exchange-history">${icon("receipt")}<span>거래보기</span></button>
+        <button type="button" data-soon="보내기">${WALLET_SVG.actSend}<span>보내기</span></button>
+        <button type="button" data-nav="receive">${WALLET_SVG.actReceive}<span>받기</span></button>
+        <button type="button" data-nav="fill">${WALLET_SVG.actFill}<span>채우기</span></button>
+        <button type="button" data-nav="exchange-history">${WALLET_SVG.actHistory}<span>거래보기</span></button>
       </div>
     </article>`;
 }
@@ -4571,12 +4976,11 @@ function wallet() {
           </div>
           <div class="token-card">
             <p><span class="token-mark" aria-hidden="true">${WALLET_SVG.sol}</span><b>Solana</b> <small>USDT</small></p>
-            <div><span>현재가</span><strong>200.96</strong></div>
+            <div><span>현재가</span><strong>${SOL_USDT}</strong></div>
             <div class="down"><span>전일 대비</span><strong>- 0.98<br>- 0.49%</strong></div>
           </div>
         </div>
       </section>
-      <p class="wallet-foot">토마톡 지갑 화면의 mock이에요. 실제 지갑과 연동되면 이 화면 대신 토마톡 지갑이 열려요.</p>
     </div>
     ${link}
   `;
@@ -4592,6 +4996,29 @@ function armWalletRail() {
   const stride = () => cards[1].offsetLeft - cards[0].offsetLeft || rail.clientWidth || 1;
   const index = Number(rail.dataset.index) || 0;
   if (index > 0) rail.scrollLeft = stride() * index;
+  // 마우스로도 넘긴다: 36px 이상 끌면 한 장씩. 끌고 난 뒤의 click은 카드 안 버튼이 눌리지 않게 막는다.
+  let dragX = null;
+  let dragged = false;
+  rail.addEventListener("pointerdown", (event) => {
+    if (event.pointerType !== "mouse" || event.button !== 0) return;
+    dragX = event.clientX;
+    dragged = false;
+  });
+  rail.addEventListener("pointerup", (event) => {
+    if (event.pointerType !== "mouse" || dragX === null) return;
+    const delta = event.clientX - dragX;
+    dragX = null;
+    if (Math.abs(delta) < 36) return;
+    dragged = true;
+    const current = Math.round(rail.scrollLeft / stride());
+    scrollWalletRail(current + (delta < 0 ? 1 : -1));
+  });
+  rail.addEventListener("click", (event) => {
+    if (!dragged) return;
+    dragged = false;
+    event.stopPropagation();
+    event.preventDefault();
+  }, true);
   let timer = 0;
   rail.addEventListener("scroll", () => {
     window.clearTimeout(timer);
@@ -4842,23 +5269,207 @@ function exchangeHint() {
   const { tott } = exchangeAmounts();
   if (!tott) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
   if (tott < EXCHANGE_MIN) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
-  if (tott > state.balance) return "보유한 TOTT보다 많아요. 채우기에서 TOTT를 구매해요.";
+  if (tott > state.balance) return "보유한 TOTT보다 많아요. 채우기에서 SOL을 TOTT로 바꿔요.";
   return "";
 }
 
 function exchangeRateLine() {
   const { at } = rates();
   const when = at ? `${clockText(new Date(at)).slice(11)} 기준` : "기본 환율";
-  return `현재 환율 1 TOTT ≈ ${tpText(tpPerTott())} TP · ${when}`;
+  return `1 TOTT ≈ ${tpText(tpPerTott())} TP · ${when}`;
 }
 
-// TOTT · TP 교환 (토마톡 지갑의 교환 페이지 구성 + 버튼 비활성·환율·받을 TP·라벨·유의사항 보완)
-function exchangeForm() {
+// ---- 채우기: 솔라나(SOL) → TOTT 교환 ----
+// 실제 토마톡 지갑에서 "채우기"를 누르면 SOL을 TOTT로 바꾸는 화면이 열린다. 그 흐름을 TP 교환 페이지와 같은 틀로 목업한다.
+const SOL_USDT = 200.96;
+const FILL_MIN_SOL = 0.01;
+
+function solText(amount) {
+  return (Number(amount) || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+}
+
+// 1 SOL이 몇 TOTT인지: SOL 달러 시세 ÷ TOTT 달러 시세
+function tottPerSol() {
+  const price = rates();
+  const tottUsdt = price.tottKrw / price.usdKrw;
+  return tottUsdt > 0 ? SOL_USDT / tottUsdt : 0;
+}
+
+function fillAmounts() {
+  const sol = Number(String(state.fillSol).replace(/,/g, ""));
+  const safe = Number.isFinite(sol) ? Math.max(0, sol) : 0;
+  return { sol: safe, tott: Number((safe * tottPerSol()).toFixed(6)) };
+}
+
+function fillReady() {
+  const { sol } = fillAmounts();
+  return sol >= FILL_MIN_SOL && sol <= currentWallet().sol;
+}
+
+function fillHint() {
+  const { sol } = fillAmounts();
+  if (!sol || sol < FILL_MIN_SOL) return `최소 ${FILL_MIN_SOL} SOL부터 바꿀 수 있어요.`;
+  if (sol > currentWallet().sol) return "보유한 SOL보다 많아요.";
+  return "";
+}
+
+function fillRateLine() {
+  const { at } = rates();
+  const when = at ? `${clockText(new Date(at)).slice(11)} 기준` : "기본 환율";
+  return `1 SOL ≈ ${tottText(tottPerSol())} TOTT · ${when}`;
+}
+
+function setFillSol(amount) {
+  const value = Math.max(0, Math.min(currentWallet().sol, Number(amount) || 0));
+  state.fillSol = value ? String(Number(value.toFixed(4))) : "";
+}
+
+// 받기: TOTT를 지갑 주소로 바로 받는다(거래소·다른 지갑에서 송금). TOTT가 0일 때의 기본 경로.
+function receivePage() {
   const w = currentWallet();
+  const action = state.walletReturn
+    ? `<button class="primary ex-confirm" type="button" data-ex-return>결제로 돌아가기</button>`
+    : `<button class="primary ex-confirm" type="button" data-nav="wallet">지갑으로 가기</button>`;
+  return `
+    <header class="bar light-bar">
+      <button data-back="wallet" aria-label="지갑">←</button>
+      <h1>TOTT 받기</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll light ex-form rcv">
+      <p class="ex-intro">거래소나 다른 지갑에서 아래 주소로 TOTT를 보내면 이 지갑에 들어와요.</p>
+      ${walletPicker()}
+      <section class="ex-card rcv-card">
+        <div class="rcv-qr" aria-hidden="true">${icon("qr")}</div>
+        <p class="rcv-label">${esc(w.name || "지갑")} 주소 · Solana</p>
+        <p class="rcv-addr">${esc(w.full)}</p>
+        <button type="button" class="rcv-copy" data-wallet-copy="${esc(w.full)}">${icon("copy")} 주소 복사</button>
+      </section>
+      <ul class="rcv-notes">
+        <li>Solana 네트워크의 TOTT만 받을 수 있어요. 다른 네트워크로 보내면 돌려받을 수 없어요.</li>
+        <li>입금은 보통 몇 분 안에 반영되고, 거래 내역에서 확인할 수 있어요.</li>
+        <li>받은 TOTT는 교환하기에서 TP로 바꿔 결제에 써요.</li>
+      </ul>
+      ${action}
+      <button class="rcv-alt" type="button" data-nav="fill">SOL이 있다면 TOTT로 채우기 ›</button>
+    </div>
+  `;
+}
+
+function fillForm() {
+  const w = currentWallet();
+  const { sol, tott } = fillAmounts();
+  const ready = fillReady();
+  return `
+    <header class="bar light-bar">
+      <button data-back="wallet" aria-label="지갑">←</button>
+      <h1>채우기</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll light ex-form">
+      <p class="ex-intro">지갑에 있는 솔라나(SOL)를 TOTT로 바꿔 채워요.</p>
+      ${walletPicker()}
+      <section class="ex-card">
+        <div class="ex-line"><span>보유 SOL</span><strong class="ex-inline">${solText(w.sol)} <small>SOL</small></strong></div>
+        <div class="ex-line"><span>보유 TOTT</span><strong class="ex-inline">${tottText(state.balance)} <small>TOTT</small></strong></div>
+      </section>
+      <div class="ex-head-row"><h2>사용할 SOL</h2></div>
+      <section class="ex-card ex-box">
+        <div class="ex-field">
+          <span class="ex-field-head"><label for="fill-sol">보유 ${solText(w.sol)} SOL</label><button type="button" class="ex-max" data-fill-pct="100">최대</button></span>
+          <span class="ex-input">
+            <input id="fill-sol" data-field="fillSol" inputmode="decimal" placeholder="0" value="${esc(state.fillSol)}" aria-label="사용할 SOL" />
+            <b>SOL</b>
+          </span>
+        </div>
+        <div class="ex-big"><span>받을 TOTT</span><strong class="green" data-fill-get>+ ${tottText(tott)} TOTT</strong></div>
+        <p class="ex-rate"><span class="ex-rate-label">현재 환율</span><span class="ex-rate-value" data-fill-rate>${esc(fillRateLine())} <button type="button" data-ex-refresh aria-label="환율 새로고침">${icon("refresh")}</button></span></p>
+        <p class="ex-hint${sol > 0 && !ready ? " warn" : ""}${fillHint() ? "" : " is-empty"}" data-fill-hint>${icon("info")}<span>${esc(fillHint())}</span></p>
+      </section>
+      <section class="ex-card ex-preview">
+        <div class="ex-line"><span>교환 후 TOTT</span><strong class="ex-inline" data-fill-after-tott>${tottText(state.balance + tott)} <small>TOTT</small></strong></div>
+        <div class="ex-line"><span>교환 후 남은 SOL</span><strong class="ex-inline" data-fill-after-sol>${solText(Math.max(0, w.sol - sol))} <small>SOL</small></strong></div>
+      </section>
+      <button class="primary ex-confirm" type="button" data-fill-confirm ${ready ? "" : "disabled"}>TOTT로 바꾸기</button>
+      <section class="ex-notice">
+        <h3>${icon("info")} 채우기 안내 사항</h3>
+        <ol>
+          <li>솔라나 네트워크 수수료가 따로 들 수 있어요.</li>
+          <li>SOL·TOTT 시세 변동으로 실제 받는 TOTT 수량이 달라질 수 있어요.</li>
+          <li>바꾼 TOTT는 다시 SOL로 되돌릴 수 없어요.</li>
+        </ol>
+      </section>
+    </div>
+  `;
+}
+
+// 입력 중에는 전체 render 없이 미리보기·버튼만 갱신한다(포커스 유지).
+function syncFillForm() {
+  const { sol, tott } = fillAmounts();
+  const w = currentWallet();
+  const button = app.querySelector("[data-fill-confirm]");
+  if (button) button.disabled = !fillReady();
+  const hint = app.querySelector("[data-fill-hint]");
+  if (hint) {
+    const text = fillHint();
+    hint.lastElementChild.textContent = text;
+    hint.classList.toggle("warn", sol > 0 && !fillReady());
+    hint.classList.toggle("is-empty", !text);
+  }
+  const get = app.querySelector("[data-fill-get]");
+  if (get) get.textContent = `+ ${tottText(tott)} TOTT`;
+  const afterTott = app.querySelector("[data-fill-after-tott]");
+  if (afterTott) afterTott.firstChild.textContent = `${tottText(state.balance + tott)} `;
+  const afterSol = app.querySelector("[data-fill-after-sol]");
+  if (afterSol) afterSol.firstChild.textContent = `${solText(Math.max(0, w.sol - sol))} `;
+}
+
+function runFill() {
+  if (!fillReady()) return false;
+  const { sol, tott } = fillAmounts();
+  const w = currentWallet();
+  w.sol = Number((w.sol - sol).toFixed(6));
+  state.balance = Number((state.balance + tott).toFixed(6));
+  w.balance = state.balance;
+  state.fills.unshift({ id: `FILL_${Date.now()}`, at: new Date().toISOString(), wallet: w.id, sol, tott });
+  persistWallet();
+  state.fillSol = "";
+  return true;
+}
+
+// 사용 지갑(교환·채우기 공통): 지갑 종류는 Phantom으로 고정(줄 앞 로고가 그 표시), 연결된 Phantom 주소 중 하나만 고른다.
+// 드롭다운은 거래 내역 화면의 지갑 선택(hist-pick)을 그대로 쓴다.
+function walletPicker() {
+  const w = currentWallet();
+  const list = activeWallets();
+  const open = Boolean(state.walletPick);
+  return `
+    <div class="hist-pick use-wallet${open ? " open" : ""}">
+      <button type="button" class="hist-pick-btn" data-wallet-pick aria-expanded="${open ? "true" : "false"}">${pickerRow(w)}${WALLET_SVG.down}</button>
+      ${open
+        ? `<div class="hist-pick-list">${list.map((item) => `<button type="button" class="hist-pick-item${item.id === w.id ? " on" : ""}" data-wallet-pick-item="${esc(item.id)}">${pickerRow(item)}</button>`).join("")}</div>`
+        : ""}
+    </div>`;
+}
+
+// 사용 지갑을 바꾸면: 선택 지갑·TOTT/SOL 잔액 갱신, 입력값과 예상값 초기화. TP는 계정 공통이라 그대로.
+function pickWallet(id) {
+  if (!walletById(id)) return;
+  state.walletId = id;
+  syncBalance();
+  persistWallet();
+  state.exTott = "";
+  state.exTp = "";
+  state.fillSol = "";
+  state.walletPick = false;
+}
+
+// TOTT · TP 교환 (기획 31장): 사용 지갑 → 잔액 → 입력(TOTT 기준 / TP 기준 전환) → 교환 예상 → 교환 → 안내 사항
+function exchangeForm() {
   const { tott, tp } = exchangeAmounts();
   const ready = exchangeReady();
-  const hint = exchangeHint();
-  const tpValue = state.exTp !== "" ? state.exTp : (tp ? tpText(tp) : "");
+  const tpMode = state.exMode === "tp";
+  const amount = tpMode ? state.exTp : state.exTott;
   return `
     <header class="bar light-bar">
       <button data-back="wallet" aria-label="지갑">←</button>
@@ -4866,92 +5477,92 @@ function exchangeForm() {
       ${menuButton()}
     </header>
     <div class="scroll light ex-form">
+      <p class="ex-intro">토마톡 앱에 연동되어 있는 팬텀 지갑을 통해 TOTT를 TP로 교환할 수 있습니다.</p>
+      ${walletPicker()}
       <section class="ex-card">
-        <div class="ex-line"><span>연결 지갑</span><strong><span class="wallet-logo small" aria-hidden="true">${WALLET_SVG.ghost}</span>${esc(shortAddr(w.full))}</strong></div>
-        <div class="ex-line top"><span>보유 TOTT</span><strong><em class="red">${tottText(state.balance)}</em> TOTT<small>≈ ${tpText(tottToTp(state.balance))} TP</small><button type="button" class="ex-chip-btn" data-soon="LBank에서 TOTT 구매">LBank에서 TOTT 구매 <b>L</b></button></strong></div>
-        <div class="ex-line"><span>보유 TP</span><strong>${tpText(state.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
+        <div class="ex-line"><span>보유 TOTT</span><strong class="ex-inline">${tottText(state.balance)} <small>TOTT</small></strong></div>
+        <div class="ex-line"><span>보유 TP</span><strong class="ex-inline">${tpText(state.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
       </section>
-      <div class="ex-head-row"><h2>교환할 금액 입력</h2><small>원하는 기준 중에 입력하면 자동으로 계산됩니다.</small></div>
-      <section class="ex-card ex-box">
-        <label class="ex-field">
-          <span>TOTT 기준 입력</span>
-          <span class="ex-input">
-            <input data-field="exTott" inputmode="decimal" placeholder="0" value="${esc(state.exTott)}" />
-            <b>TOTT</b>
-          </span>
-        </label>
-        <div class="ex-chips">
-          ${[10, 25, 50, 75].map((pct) => `<button type="button" data-ex-pct="${pct}">${pct}%</button>`).join("")}
-          <button type="button" data-ex-pct="100">최대</button>
+      ${state.balance > 0 ? "" : `
+      <section class="ex-card ex-none">
+        <h2>TOTT가 없어요</h2>
+        <p>지갑 주소로 TOTT를 받은 뒤<br>TP로 교환할 수 있어요.</p>
+        <button class="primary" type="button" data-go-receive>TOTT 받기</button>
+      </section>`}
+      <div class="ex-head-row"><h2>교환할 수량</h2>
+        <div class="ex-mode" role="tablist">
+          <button type="button" role="tab" class="${tpMode ? "" : "on"}" aria-selected="${!tpMode}" data-ex-mode="tott">TOTT 기준</button>
+          <button type="button" role="tab" class="${tpMode ? "on" : ""}" aria-selected="${tpMode}" data-ex-mode="tp">TP 기준</button>
         </div>
-        <span class="ex-swap" aria-hidden="true">${icon("swap")}</span>
-        <label class="ex-field">
-          <span>TP(원) 기준 입력 <small>1 TP = ₩1</small></span>
+      </div>
+      <section class="ex-card ex-box${state.balance > 0 ? "" : " is-off"}">
+        <div class="ex-field">
+          <span class="ex-field-head"><label for="ex-amount">${tpMode ? "받고 싶은 TP" : "사용할 TOTT"} <small>1 TP = ₩1</small></label><button type="button" class="ex-max" data-ex-pct="100">최대</button></span>
           <span class="ex-input">
-            <input data-field="exTp" inputmode="numeric" placeholder="0" value="${esc(tpValue)}" />
-            <b>TP</b>
+            <input id="ex-amount" data-field="exAmount" inputmode="${tpMode ? "numeric" : "decimal"}" placeholder="0" value="${esc(amount)}" />
+            <b>${tpMode ? "TP" : "TOTT"}</b>
           </span>
-        </label>
-        <p class="ex-warn">${icon("info")} TOTT 가격 변동으로 실제 지급 TP 수량이 달라질 수 있습니다.</p>
-        <div class="ex-chips">
-          ${[1000, 10000, 100000, 1000000].map((amount) => `<button type="button" data-ex-add="${amount}">${amount === 1000 ? "1천원" : amount === 10000 ? "1만원" : amount === 100000 ? "10만원" : "100만원"}</button>`).join("")}
-          <button type="button" data-ex-pct="100">최대</button>
         </div>
-        <p class="ex-rate" data-ex-rate>${esc(exchangeRateLine())} <button type="button" data-ex-refresh aria-label="환율 새로고침">${icon("refresh")}</button></p>
-        <p class="ex-hint" data-ex-hint>${esc(hint)}</p>
+        <p class="ex-rate"><span class="ex-rate-label">현재 환율</span><span class="ex-rate-value" data-ex-rate>${esc(exchangeRateLine())} <button type="button" data-ex-refresh aria-label="환율 새로고침">${icon("refresh")}</button></span></p>
+        <p class="ex-hint${tott > 0 && !ready ? " warn" : ""}${exchangeHint() ? "" : " is-empty"}" data-ex-hint>${icon("info")}<span>${esc(exchangeHint())}</span></p>
       </section>
+      <div class="ex-head-row"><h2>교환 예상</h2></div>
       <section class="ex-card ex-preview">
-        <div class="ex-line"><span>받을 TP</span><strong class="green" data-ex-get>+ ${tpText(tp)} TP</strong></div>
-        <div class="ex-line"><span>예상 교환 후 TP 보유량</span><strong data-ex-after-tp>${tpText(state.tp + tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-        <div class="ex-line"><span>예상 교환 후 남은 TOTT</span><strong data-ex-after-tott>${tottText(Math.max(0, state.balance - tott))} <small>TOTT</small></strong></div>
+        <div class="ex-line"><span>받을 TP</span><strong class="green ex-inline" data-ex-get>+ ${tpText(tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
+        <div class="ex-line"><span>교환 후 TP</span><strong class="ex-inline" data-ex-after-tp>${tpText(state.tp + tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
       </section>
-      <button class="primary ex-confirm" type="button" data-ex-confirm ${ready ? "" : "disabled"}>TP로 교환</button>
+      <button class="primary ex-confirm" type="button" data-ex-confirm ${ready ? "" : "disabled"}>교환하기</button>
       <section class="ex-notice">
-        <h3>${icon("info")} 교환시 유의사항</h3>
+        <h3>${icon("info")} 교환 안내 사항</h3>
         <ol>
-          <li>교환된 TP는 취소 및 환불이 불가합니다.</li>
-          <li>교환 비율은 운영 정책에 따라 변경될 수 있습니다.</li>
-          <li>팬텀 지갑의 TOTT 잔액 범위 내에서만 교환 가능합니다.</li>
-          <li>교환된 TP는 포토카드 등 토마톡 서비스 결제에만 사용 가능합니다.</li>
-          <li>최소 교환 수량은 ${EXCHANGE_MIN} TOTT이며, 지갑별 TOTT·TP 잔액이 다르니 지갑을 확인하세요.</li>
-          <li>지갑에 보유한 TP는 다른 지갑으로 이동할 수 없습니다.</li>
+          <li>최소 변경 가능한 금액은 ${EXCHANGE_MIN} TOTT에요.</li>
+          <li>최소 변경 수량보다 적을 경우 교환이 되지 않아요.</li>
+          <li>실시간 TOTT 가격 변동으로 인해 실제 지급 TP 수량이 달라질 수 있어요.</li>
+          <li>TP 교환 비율은 KRW와 1:1로 맞춰져 있어요.</li>
+          <li>한번 교환된 TP는 다시 TOTT로 변경할 수 없어요.</li>
+          <li>지갑별 TOTT 수량과 TP 수량이 다르므로 확인을 잘해주세요.</li>
+          <li>지갑에 보유한 TP는 다른 지갑으로 이동이 불가능해요.</li>
         </ol>
       </section>
     </div>
   `;
 }
 
-// 입력 중에는 전체 render 없이 반대쪽 칸·미리보기·버튼만 갱신한다(포커스 유지).
-function syncExchangeForm(changed) {
-  const tottInput = app.querySelector("[data-field=exTott]");
-  const tpInput = app.querySelector("[data-field=exTp]");
-  if (changed === "tott") {
-    const { tp } = exchangeAmounts();
-    state.exTp = tp ? tpText(tp) : "";
-    if (tpInput) tpInput.value = state.exTp;
-  } else {
+// 입력 중에는 전체 render 없이 반대쪽 값·예상·버튼만 갱신한다(포커스 유지).
+function syncExchangeForm() {
+  if (state.exMode === "tp") {
     const tp = Number(String(state.exTp).replace(/,/g, ""));
     const safe = Number.isFinite(tp) && tp > 0 ? tp : 0;
-    state.exTott = safe ? String(Number(tpToTott(safe).toFixed(6))) : "";
-    if (tottInput) tottInput.value = state.exTott;
+    let tott = safe ? tpToTott(safe) : 0;
+    if (tott > state.balance && safe <= Math.floor(state.balance * tpPerTott())) tott = state.balance;
+    state.exTott = tott ? String(Number(tott.toFixed(6))) : "";
+  } else {
+    const { tp } = exchangeAmounts();
+    state.exTp = tp ? tpText(tp) : "";
   }
   const { tott, tp } = exchangeAmounts();
+  const set = (selector, text) => {
+    const node = app.querySelector(selector);
+    if (node) node.firstChild.textContent = text;
+  };
   const button = app.querySelector("[data-ex-confirm]");
   if (button) button.disabled = !exchangeReady();
   const hint = app.querySelector("[data-ex-hint]");
-  if (hint) hint.textContent = exchangeHint();
-  const get = app.querySelector("[data-ex-get]");
-  if (get) get.textContent = `+ ${tpText(tp)} TP`;
-  const afterTp = app.querySelector("[data-ex-after-tp]");
-  if (afterTp) afterTp.firstChild.textContent = `${tpText(state.tp + tp)} `;
-  const afterTott = app.querySelector("[data-ex-after-tott]");
-  if (afterTott) afterTott.firstChild.textContent = `${tottText(Math.max(0, state.balance - tott))} `;
+  if (hint) {
+    const text = exchangeHint();
+    hint.lastElementChild.textContent = text;
+    hint.classList.toggle("warn", tott > 0 && !exchangeReady());
+    hint.classList.toggle("is-empty", !text);
+  }
+  set("[data-ex-get]", `+ ${tpText(tp)} `);
+  set("[data-ex-after-tp]", `${tpText(state.tp + tp)} `);
 }
 
 function setExchangeTott(amount) {
   const value = Math.max(0, Math.min(state.balance, Number(amount) || 0));
   state.exTott = value ? String(Number(value.toFixed(6))) : "";
-  state.exTp = value ? tpText(tottToTp(value)) : "";
+  // TP 표기는 내림: 반올림해 올리면 보유 TOTT보다 많은 TP가 적혀 "최대"가 보유량을 넘는 것처럼 보인다
+  state.exTp = value ? tpText(Math.floor(value * tpPerTott())) : "";
 }
 
 function runExchange() {
@@ -4972,6 +5583,46 @@ function runExchange() {
   state.exTott = "";
   state.exTp = "";
   return true;
+}
+
+// 교환 완료 화면: 결제 시트로 바로 돌아가지 않고 받은 TP·남은 TOTT·환율을 먼저 보여 준다.
+function exchangeDone() {
+  const done = state.exDone;
+  if (!done) return exchangeForm();
+  const wallet = walletById(done.wallet) || currentWallet();
+  const at = new Date(done.at);
+  const when = `${at.getFullYear()}.${pad2(at.getMonth() + 1)}.${pad2(at.getDate())} ${pad2(at.getHours())}:${pad2(at.getMinutes())}`;
+  const action = state.walletReturn
+    ? `<button class="primary ex-confirm" type="button" data-ex-return>결제로 돌아가기</button>`
+    : `<button class="primary ex-confirm" type="button" data-nav="wallet">지갑으로 가기</button>`;
+  return `
+    <header class="bar light-bar">
+      <button data-back="wallet" aria-label="지갑">←</button>
+      <h1>교환 완료</h1>
+      ${menuButton()}
+    </header>
+    <div class="scroll light ex-form ex-done">
+      <div class="ex-done-head">
+        <span class="ex-done-mark" aria-hidden="true">${icon("check")}</span>
+        <h2>교환이 완료됐어요</h2>
+        <p>${tottText(done.tott)} TOTT를 ${tpText(done.tp)} TP로 바꿨어요.</p>
+      </div>
+      <section class="ex-card ex-preview">
+        <div class="ex-line"><span>받은 TP</span><strong class="green ex-inline">+ ${tpText(done.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
+        <div class="ex-line"><span>보유 TP</span><strong class="ex-inline">${tpText(done.tpAfter)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
+        <div class="ex-line ex-group"><span>사용한 TOTT</span><strong class="ex-inline">${tottText(done.tott)} <small>TOTT</small></strong></div>
+        <div class="ex-line"><span>남은 TOTT</span><strong class="ex-inline">${tottText(done.balanceAfter)} <small>TOTT</small></strong></div>
+      </section>
+      <section class="ex-card ex-done-meta">
+        <div class="ex-line"><span>적용 환율</span><strong>${esc(done.rate)}</strong></div>
+        <div class="ex-line"><span>지갑</span><strong>${esc(wallet.name || "")}</strong></div>
+        <div class="ex-line"><span>교환 시각</span><strong>${when}</strong></div>
+      </section>
+      <p class="ex-done-note">${icon("info")}<span>교환된 TP는 다시 TOTT로 바꿀 수 없어요.</span></p>
+      ${action}
+      <button class="ex-done-more" type="button" data-nav="exchange-history">거래 내역 보기</button>
+    </div>
+  `;
 }
 
 // 지갑·교환에서 결제 시트로 돌아간다(슬라이드 18 "연결 후 현재 결제 화면으로 돌아옵니다").
@@ -5012,23 +5663,23 @@ const GUIDE_REWARD_TP = 1000;
 const GUIDE_PAGES = [
   {
     demo: "pick",
-    title: "상품을 고르고 뽑기",
-    body: "홈에서 아티스트와 상품을 고른 뒤 1장 뽑기 또는 5장 연속 뽑기를 눌러요.",
+    title: "앨범을 고르고 뽑기",
+    body: "목록에서 앨범을 고르고 수량을 선택한 뒤\n마음에 드는 카드를 한 개 골라 주세요.",
   },
   {
     demo: "pay",
     title: "TP로 결제하기",
-    body: "토마톡 지갑에서 TOTT를 TP로 바꾼 뒤, 지갑을 연결하고 TP로 결제해요.",
+    body: "지갑이 연결되어 있지 않다면 먼저 연결해 주세요.\n지갑에서 TOTT를 TP로 바꾼 뒤 TP로 결제해요.",
   },
   {
     demo: "open",
     title: "포장을 밀어 열기",
-    body: "포장을 손가락으로 밀어 열고, 나온 카드를 드래그해 앞뒤를 확인해요.",
+    body: "포장을 손가락으로 밀어 열어 주세요.\n나온 카드는 드래그해 앞뒤를 볼 수 있어요.",
   },
   {
     demo: "album",
     title: "보유 카드에 보관",
-    body: "뽑은 카드는 보유 카드에서 언제든 볼 수 있어요. 같은 카드는 장수로 표시돼요.",
+    body: "뽑은 카드는 보유 카드에서 언제든 볼 수 있어요.\n같은 카드는 장수로 함께 표시돼요.",
   },
 ];
 
@@ -5039,22 +5690,37 @@ function fingerIcon() {
 function demoScene(kind) {
   const finger = `<span class="demo-finger" aria-hidden="true">${fingerIcon()}</span>`;
   if (kind === "pick") {
+    // 목록에서 앨범을 누르면 포장 5개가 부채꼴로 펼쳐지고, 그중 하나를 고른다.
     return `
       <div class="demo demo-pick" aria-hidden="true">
-        <div class="demo-tiles">
-          <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>2,500 TP</small></span>
-          <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>2,500 TP</small></span>
+        <div class="demo-screen demo-list">
+          <span class="demo-list-head">NEW</span>
+          <div class="demo-tiles">
+            <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>2,500 TP</small></span>
+            <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>2,500 TP</small></span>
+          </div>
         </div>
-        <span class="demo-btn">1장 뽑기</span>
+        <div class="demo-screen demo-deck">
+          <span class="demo-deck-hint">한 장을 선택하세요</span>
+          ${[0, 1, 2, 3, 4].map((index) => `<img class="demo-deck-card d${index}" src="${DECK_PACK}" alt="" />`).join("")}
+        </div>
         ${finger}
       </div>`;
   }
   if (kind === "pay") {
+    // 지갑 연결이 먼저다. 연결 시트 → 연결 뒤 결제 시트 순으로 보여 준다.
     return `
       <div class="demo demo-pay" aria-hidden="true">
         <img class="demo-bg" src="/assets/covers/jump.jpg" alt="" />
-        <div class="demo-sheet">
+        <div class="demo-sheet demo-sheet-wallet">
           <i class="demo-grab"></i>
+          <b class="demo-need">지갑 연결이 필요해요</b>
+          <small>포토카드는 TP로 결제해요.<br>지갑을 연결하면 결제를 계속할 수 있어요.</small>
+          <span class="demo-btn">지갑 연결하기</span>
+        </div>
+        <div class="demo-sheet demo-sheet-pay">
+          <i class="demo-grab"></i>
+          <span class="demo-linked"><i>✓</i>지갑 연결됨 · TOTT → TP 교환 가능</span>
           <div><span>현재가격</span><b>2,500 TP</b></div>
           <div><span>보유</span><b>50,000 TP</b></div>
           <div><span>차감 후 남은 잔액</span><b>47,500 TP</b></div>
@@ -5068,7 +5734,7 @@ function demoScene(kind) {
     return `
       <div class="demo demo-open" aria-hidden="true">
         <div class="demo-pack">
-          <img class="demo-base" src="${OPEN_BASE}" alt="" />
+          <img class="demo-base" src="tears/base.png?v=1" alt="" />
           ${overs}
           <img class="demo-shell" src="tears/over-5.png?v=3" alt="" />
         </div>
@@ -5114,7 +5780,7 @@ function guide(firstRun) {
   const note = firstRun
     ? (state.guideSeen
       ? (rewardLeft ? `<p class="guide-note">시청 완료! 시작하기를 누르면 ${tpText(GUIDE_REWARD_TP)} TP 보상을 받아요.</p>` : "")
-      : `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.${rewardLeft ? ` 끝까지 보면 ${tpText(GUIDE_REWARD_TP)} TP를 드려요.` : ""}</p>`)
+      : `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.${rewardLeft ? `<br>끝까지 보면 ${tpText(GUIDE_REWARD_TP)} TP를 드려요.` : ""}</p>`)
     : "";
   const header = firstRun
     ? `<header class="bar"><h1>포토카드 이용 가이드</h1></header>`
@@ -5191,9 +5857,9 @@ function splash() {
         ${silhouette("c1", "f")}
         ${mystery("c2")}
         ${silhouette("c5", "m")}
-        <div class="mys-pack"><div class="mys-pack-float"><img src="${DECK_PACK}" alt="" draggable="false" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" /><i class="mys-gloss"></i></div></div>
+        <div class="mys-pack"><div class="mys-pack-float"><img class="mys-pack-front" src="${DECK_PACK}" alt="" draggable="false" /><img class="mys-pack-back" src="${DECK_BACK}" alt="" draggable="false" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" /><i class="mys-gloss"></i></div></div>
         ${sparks}
-        <img class="mys-emblem" src="/assets/splash/emblem.png?v=1" alt="TOMATOK PHOTOCARD" draggable="false" />
+        <img class="mys-emblem" src="/assets/splash/emblem-chrome.png?v=1" alt="TOMATOK PHOTOCARD" draggable="false" />
         <i class="mys-emblem-shine"></i>
       </div>
       <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>
@@ -5308,7 +5974,10 @@ function render() {
   else if (state.screen === "wallet") view = wallet();
   else if (state.screen === "wallet-manage") view = walletManage();
   else if (state.screen === "exchange-history") view = exchangeHistory();
+  else if (state.screen === "exchange-done") view = exchangeDone();
   else if (state.screen === "exchange-form") view = exchangeForm();
+  else if (state.screen === "fill") view = fillForm();
+  else if (state.screen === "receive") view = receivePage();
   else if (state.tab === "track" || state.screen === "track") view = state.shipmentId ? shipmentDetail() : tracking();
   else if (state.tab === "album") view = album();
   else if (state.tab === "ship" || state.screen === "ship") view = ship();
@@ -5317,6 +5986,7 @@ function render() {
   else if (state.screen === "notice") view = notices();
   else if (state.screen === "settings") view = settings();
   else if (SUPPORT_PAGES[state.screen]) view = supportPage(state.screen);
+  else if (state.screen === "inquiry") view = inquiryPage();
   app.innerHTML = view + drawer() + sheet() + walletSheet() + walletModal() + walletRenameModal() + cartModal() + resultBoxModal() + (state.toast ? `<p class="toast">${esc(state.toast)}</p>` : "");
   blurFronts();
   protectFronts();
@@ -5399,11 +6069,25 @@ app.addEventListener("click", (event) => {
   const guideStart = event.target.closest("[data-guide-start]");
   const guideClose = event.target.closest("[data-guide-close]");
   const exPct = event.target.closest("[data-ex-pct]");
-  const exAdd = event.target.closest("[data-ex-add]");
+  const exMode = event.target.closest("[data-ex-mode]");
+  const walletPickBtn = event.target.closest("[data-wallet-pick]");
+  const walletPickItem = event.target.closest("[data-wallet-pick-item]");
+  const fillPct = event.target.closest("[data-fill-pct]");
+  const fillConfirm = event.target.closest("[data-fill-confirm]");
   const exConfirm = event.target.closest("[data-ex-confirm]");
+  const exReturn = event.target.closest("[data-ex-return]");
+  const faqCat = event.target.closest("[data-faq-cat]");
+  const inqWrite = event.target.closest("[data-inq-write]");
+  const inqOpen = event.target.closest("[data-inq-open]");
+  const inqCat = event.target.closest("[data-inq-cat]");
+  const inqSubmit = event.target.closest("[data-inq-submit]");
+  const inqBack = event.target.closest("[data-inq-back]");
+  const inqDelete = event.target.closest("[data-inq-delete]");
   const exRefresh = event.target.closest("[data-ex-refresh]");
   const exDateClear = event.target.closest("[data-ex-date-clear]");
   const goExchange = event.target.closest("[data-go-exchange]");
+  const goFill = event.target.closest("[data-go-fill]");
+  const goReceive = event.target.closest("[data-go-receive]");
   const walletLink = event.target.closest("[data-wallet-link]");
   const walletCopy = event.target.closest("[data-wallet-copy]");
   const walletCurrency = event.target.closest("[data-wallet-currency]");
@@ -5421,6 +6105,12 @@ app.addEventListener("click", (event) => {
   const historyWalletPick = event.target.closest("[data-history-wallet]");
   const historyDay = event.target.closest("[data-history-day]");
   if (openOk) {
+    if (state.openPhase !== "spread" && state.reveal.length > 1 && state.revealIndex < state.reveal.length - 1) {
+      // 5장: 다음 포장을 고르러 돌아간다(연 카드는 위에 쌓인다)
+      state.revealIndex += 1;
+      beginOpen();
+      return;
+    }
     finishOpen();
   } else if (openSkip) {
     // SKIP과 개봉 화면의 ←: 남은 연출을 모두 건너뛰고 결과로 간다(Q12·Q13 기본값).
@@ -5524,8 +6214,21 @@ app.addEventListener("click", (event) => {
     state.exTott = "";
     state.exTp = "";
     state.screen = "exchange-form";
+  } else if (goReceive) {
+    // TOTT가 없을 때: 받기 화면(주소·복사). 결제에서 왔다면 돌아갈 시트를 기억한다.
+    if (state.sheet) state.walletReturn = { productId: state.productId, sheet: state.sheet };
+    state.sheet = null;
+    state.screen = "receive";
+  } else if (goFill) {
+    // TOTT가 없을 때: 채우기 → 채운 뒤 교환 화면으로 → 교환 뒤 결제 시트로(결제에서 왔다면)
+    if (state.sheet) state.walletReturn = { productId: state.productId, sheet: state.sheet };
+    state.sheet = null;
+    state.fillReturn = "exchange-form";
+    state.fillSol = "";
+    state.screen = "fill";
   } else if (walletLink) {
     state.walletConnected = true;
+    persistWallet();
     returnToSheet();
   } else if (walletCopy) {
     if (navigator.clipboard) navigator.clipboard.writeText(walletCopy.dataset.walletCopy).catch(() => {});
@@ -5537,18 +6240,70 @@ app.addEventListener("click", (event) => {
     state.historyOpen = null;
   } else if (exPct) {
     setExchangeTott(state.balance * (Number(exPct.dataset.exPct) / 100));
-  } else if (exAdd) {
-    const { tp } = exchangeAmounts();
-    setExchangeTott(tpToTott(tp + Number(exAdd.dataset.exAdd)));
+  } else if (exMode) {
+    state.exMode = exMode.dataset.exMode === "tp" ? "tp" : "tott";
+  } else if (walletPickBtn) {
+    state.walletPick = !state.walletPick;
+  } else if (walletPickItem) {
+    pickWallet(walletPickItem.dataset.walletPickItem);
+  } else if (fillPct) {
+    setFillSol(currentWallet().sol * (Number(fillPct.dataset.fillPct) / 100));
+  } else if (fillConfirm) {
+    if (fillConfirm.disabled) return;
+    const { tott } = fillAmounts();
+    if (!runFill()) return;
+    toast(`${tottText(tott)} TOTT를 채웠어요.`);
+    if (state.fillReturn === "exchange-form") {
+      state.exTott = "";
+      state.exTp = "";
+      state.screen = "exchange-form";
+    } else {
+      state.screen = "wallet";
+    }
+    state.fillReturn = null;
   } else if (exConfirm) {
     if (exConfirm.disabled || !runExchange()) return;
-    toast("교환이 완료됐어요.");
+    // 완료 화면에서 받은 TP·남은 TOTT를 보여 준 뒤 결제 시트(또는 지갑)로 돌아간다
+    state.exDone = { ...state.exchanges[0], balanceAfter: state.balance, rate: exchangeRateLine() };
+    state.screen = "exchange-done";
+  } else if (exReturn) {
     returnToSheet();
+  } else if (faqCat) {
+    state.faqCat = faqCat.dataset.faqCat;
+  } else if (inqWrite) {
+    state.inqView = "write";
+    state.inqCat = INQUIRY_CATS[0];
+    state.inqTitle = "";
+    state.inqBody = "";
+  } else if (inqOpen) {
+    state.inqView = inqOpen.dataset.inqOpen;
+  } else if (inqCat) {
+    state.inqCat = inqCat.dataset.inqCat;
+  } else if (inqBack) {
+    state.inqView = "list";
+  } else if (inqDelete) {
+    saveInquiries(loadInquiries().filter((item) => item.id !== inqDelete.dataset.inqDelete));
+    state.inqView = "list";
+    toast("문의를 삭제했어요.");
+  } else if (inqSubmit) {
+    const title = String(state.inqTitle || "").trim();
+    const body = String(state.inqBody || "").trim();
+    if (!title || !body) return;
+    const list = loadInquiries();
+    list.unshift({ id: `INQ_${Date.now()}`, cat: state.inqCat || INQUIRY_CATS[0], title, body, at: new Date().toISOString(), answer: null, answeredAt: null });
+    saveInquiries(list);
+    state.inqView = "list";
+    state.inqTitle = "";
+    state.inqBody = "";
+    toast("문의가 등록됐어요.");
   } else if (exRefresh) {
     fetchRates().then((ok) => {
       if (!ok) return;
       const line = app.querySelector("[data-ex-rate]");
       if (line) line.firstChild.textContent = `${exchangeRateLine()} `;
+      const fillLine = app.querySelector("[data-fill-rate]");
+      if (fillLine) fillLine.firstChild.textContent = `${fillRateLine()} `;
+      if (state.screen === "fill") syncFillForm();
     });
     toast("시세를 새로 불러왔어요.");
   } else if (exDateClear) {
@@ -5598,14 +6353,17 @@ app.addEventListener("click", (event) => {
       state.screen = "artists";
       state.searchOpen = false;
       state.query = "";
-    } else if (name === "wallet" || name === "wallet-manage" || name === "exchange-form" || name === "exchange-history") {
+    } else if (name === "wallet" || name === "wallet-manage" || name === "exchange-form" || name === "exchange-history" || name === "fill" || name === "receive") {
       state.tab = "home";
       state.screen = name;
+      if (name === "fill") state.fillSol = "";
       if (name === "wallet") state.walletReturn = null;
       if (name === "exchange-form") {
         state.exTott = "";
         state.exTp = "";
+        state.exMode = "tott";
       }
+      state.walletPick = false;
       if (name === "exchange-history") {
         state.exDate = "";
         state.ledgerFilter = "all";
@@ -5640,6 +6398,10 @@ app.addEventListener("click", (event) => {
     } else if (name === "notice") {
       state.tab = "home";
       state.screen = "notice";
+    } else if (name === "inquiry") {
+      state.tab = "home";
+      state.screen = "inquiry";
+      state.inqView = "list";
     } else if (name === "settings" || SUPPORT_PAGES[name]) {
       state.tab = "home";
       state.screen = name;
@@ -5993,10 +6755,11 @@ app.addEventListener("click", (event) => {
     state.shipmentId = "";
     if (menu.dataset.menu === "track") state.focusTrack = "all";
   } else if (walletConnect) {
-    // 지갑 연결은 포토카드 밖(토마톡)에서 한다. 혹시 이 버튼이 보이면 안내만 하고 넘어간다.
+    // 지갑 연결(mock): 연결된 것으로 저장하고, 열려 있던 결제 시트가 결제 상태로 다시 그려진다.
     state.walletModal = false;
     state.walletConnected = true;
-    toast("지갑 연결은 토마톡 앱에서 해요.");
+    persistWallet();
+    toast("토마톡 지갑을 연결했어요.");
   } else if (walletClose || (state.walletModal && walletBackdrop)) {
     state.walletModal = false;
   } else if (state.cartModal && walletBackdrop) {
@@ -6041,8 +6804,19 @@ app.addEventListener("input", (event) => {
   const field = event.target.dataset.field;
   if (!field) return;
   state[field] = event.target.value;
-  if (field === "exTott" || field === "exTp") {
-    syncExchangeForm(field === "exTott" ? "tott" : "tp");
+  if (field === "exAmount") {
+    if (state.exMode === "tp") state.exTp = event.target.value;
+    else state.exTott = event.target.value;
+    syncExchangeForm();
+    return;
+  }
+  if (field === "inqTitle" || field === "inqBody") {
+    const button = app.querySelector("[data-inq-submit]");
+    if (button) button.disabled = !(String(state.inqTitle || "").trim() && String(state.inqBody || "").trim());
+    return;
+  }
+  if (field === "fillSol") {
+    syncFillForm();
     return;
   }
   if (field === "exDate") return; // change 이벤트에서 다시 그린다.
