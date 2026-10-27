@@ -1387,7 +1387,8 @@ function home() {
       <i class="profile-all" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></i>
       <span>전체</span>
     </button>`;
-  const rail = state.searchOpen ? "" : `<div class="profiles">${profiles}${allArtists}</div>`;
+  // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다
+  const rail = state.searchOpen ? "" : `<div class="profiles">${allArtists}${profiles}</div>`;
   const banner = state.searchOpen
     ? ""
     : `
