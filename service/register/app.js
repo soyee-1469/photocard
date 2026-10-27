@@ -492,7 +492,7 @@ function packRows() {
         <td>${escapeAttr(item.eventName || "—")}</td>
         <td>${item.cards.length}종</td>
         <td>${stockLabel(item)}</td>
-        <td>${item.price} TOTT</td>
+        <td>${item.price} TP</td>
         <td>${saleLabel(item.status)}</td>
         <td>${item.home ? "ON" : "OFF"}</td>
         <td>${escapeAttr(item.created || "—")}</td>
@@ -656,7 +656,7 @@ function renderPackInfo(item) {
         <div class="app-offer">
           <p class="app-lineup">${item.cards.length}종 중 랜덤 1장<span>포토카드 구성 수</span></p>
           <label>가격
-            <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TOTT</em></span>
+            <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TP</em></span>
             <span class="app-where">상세 오른쪽, 목록 가격</span>
           </label>
         </div>
@@ -735,18 +735,15 @@ function renderPackCopy(item) {
       ${fact("state", "상품 상태", "미사용 공식 MD")}
     </div>
     <div class="grid cols-3">
-      ${["실물 카드", "보관 가능", "배송 가능"].map((placeholder, index) => `
+      ${["실물 카드", "보관 가능"].map((placeholder, index) => `
         <label>혜택 ${index + 1}
           <input data-perk="${index}" value="${escapeAttr(item.perks[index] || "")}" placeholder="${escapeAttr(placeholder)}" />
         </label>`).join("")}
     </div>
-    ${guide("random", "랜덤 상품 안내", ["상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.", "한 줄에 하나씩 적어요."])}
-    ${guide("storage", "보관 안내", ["뽑은 포토카드는 바로 배송되지 않고 마이 앨범에 보관돼요."])}
-    ${guide("shipping", "배송 안내", ["국내·해외 배송을 지원해요.", "배송비는 배송 요청 시 안내돼요."])}
-    ${guide("condition", "상품 상태 안내", ["제작·포장 과정에서 미세한 차이가 있을 수 있어요."])}
-    ${guide("refund", "교환·환불 안내", ["랜덤 상품은 단순 변심 변경이 어려울 수 있어요."])}
+    ${guide("random", "랜덤 상품 안내", ["상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.", "동일한 카드가 다시 나올 수 있어요."])}
+    ${guide("photocard", "포토카드 안내", ["뽑은 포토카드는 보유카드에서 확인이 가능해요.", "배송 기능은 추후 업데이트 될 예정이에요.(국내, 해외)", "한 줄에 하나씩 적어요."])}
     <div class="grid cols-3">
-      ${["뽑은 카드는 마이앨범에 보관돼요.", "배송은 별도로 신청해요.", "랜덤 결과 확정 후에는 변경이 어려울 수 있으며, 동일 카드가 중복될 수 있어요."].map((placeholder, index) => `
+      ${["뽑은 카드는 보유 카드에 보관됩니다.", "동일 카드가 중복으로 뽑힐 수 있습니다."].map((placeholder, index) => `
         <label>결제 안내 ${index + 1}
           <input data-sheet-note="${index}" value="${escapeAttr(item.sheetNotes[index] || "")}" placeholder="${escapeAttr(placeholder)}" />
         </label>`).join("")}
@@ -923,7 +920,7 @@ function renderPackCreate() {
     </div>
     <div class="price-save">
       <label>5. 가격
-        <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TOTT</em></span>
+        <span class="app-price"><input data-field="price" type="number" min="1" value="${item.price}" /><em>TP</em></span>
       </label>
       <div class="actions">${next}</div>
     </div>`;
@@ -1071,7 +1068,7 @@ function purchaseDetail(order) {
       <td>${escapeAttr(card.member || "없음")}</td>
       <td>${card.count}</td>
     </tr>`).join("");
-  const amount = Number.isFinite(order.price) ? `${order.price}TOTT` : "—";
+  const amount = Number.isFinite(order.price) ? `${order.price}TP` : "—";
   return `
     <section class="sale-detail">
       <h3>${escapeAttr(order.id)} · ${escapeAttr(order.productName || order.album || "상품")}</h3>
@@ -1124,7 +1121,7 @@ function orderDate(value) {
 }
 
 function orderAmount(order) {
-  if (order.kind === "purchase") return Number.isFinite(order.price) ? `${order.price} TOTT` : "—";
+  if (order.kind === "purchase") return Number.isFinite(order.price) ? `${order.price} TP` : "—";
   return order.feeText || "미정";
 }
 
@@ -1466,7 +1463,7 @@ function renderOrders() {
     ? "보내기 전 주문을 여러 건 골라 준비중으로 바꾸거나 송장을 넣어요."
     : screen === "track"
       ? "보낸 뒤 상태만 봐요. 배송지연과 반송은 여기서 표시해요."
-      : "구매는 뽑기 결제(TOTT)이고, 배송은 실물 요청이에요. 배송비는 정책에 금액이 있을 때만 나오고, 없으면 미정이에요.";
+      : "구매는 뽑기 결제(TP)이고, 배송은 실물 요청이에요. 배송비는 정책에 금액이 있을 때만 나오고, 없으면 미정이에요.";
   document.getElementById("main").innerHTML = `
     <div class="form-head">
       <h2>${screen === "ship" ? "배송처리" : screen === "track" ? "배송현황" : "주문내역"}</h2>
@@ -1557,6 +1554,26 @@ function orderDetail(order) {
 }
 
 const POLICY_KEY = "photocard-shipping-policy-v1";
+// 앱의 시세·환율 설정. API가 정해지기 전에는 기본값으로 보조 표기를 만든다.
+const RATES_CONFIG_KEY = "photocard-rates-config-v1";
+
+function loadRatesConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(RATES_CONFIG_KEY) || "null") || {};
+    return { api: saved.api || "", tottKrw: saved.tottKrw || "", usdKrw: saved.usdKrw || "" };
+  } catch (error) {
+    return { api: "", tottKrw: "", usdKrw: "" };
+  }
+}
+
+function saveRatesConfig() {
+  const config = {
+    api: String(document.getElementById("rates-api")?.value || "").trim(),
+    tottKrw: String(document.getElementById("rates-tott")?.value || "").trim(),
+    usdKrw: String(document.getElementById("rates-usd")?.value || "").trim(),
+  };
+  localStorage.setItem(RATES_CONFIG_KEY, JSON.stringify(config));
+}
 const NOTICE_KEY = "photocard-notices-v1";
 let policy = loadPolicy();
 let notices = loadNotices();
@@ -1905,7 +1922,7 @@ function renderCardList() {
   const sale = pack ? `
     <div class="grid fields">
       <label>뽑기 가격
-        <span class="app-price"><input data-field="price" type="number" min="1" value="${pack.price}" /><em>TOTT</em></span>
+        <span class="app-price"><input data-field="price" type="number" min="1" value="${pack.price}" /><em>TP</em></span>
         <span class="field-help">이 행사를 한 장 뽑는 값이에요. 안의 카드는 같은 값으로 나와요.</span>
       </label>
       <label>노출
@@ -2051,6 +2068,7 @@ function renderCards() {
 }
 
 function renderPolicy() {
+  const ratesConfig = loadRatesConfig();
   const zones = policy.zones.map((zone, index) => `
     <tr>
       <td><input data-zone="${index}" data-zone-field="country" value="${escapeAttr(zone.country)}" placeholder="국가" /></td>
@@ -2092,7 +2110,23 @@ function renderPolicy() {
       </table>
       <button class="text-btn" id="add-zone" type="button">국가 추가</button>
     </section>
-    <button class="save" id="save-policy" type="button">이 브라우저에 저장</button>`;
+    <button class="save" id="save-policy" type="button">이 브라우저에 저장</button>
+    <section class="policy-block">
+      <h3>시세·환율</h3>
+      <p class="hint">상품 가격은 TP(원화 1:1)로 고정이에요. 여기 값은 앱의 "≈ ₩ · $" 보조 표기와 TOTT 참고 환율에만 써요. API 주소를 넣으면 앱이 5분마다 받아오고, 비어 있으면 아래 기본값을 써요. 응답 형식: {"tottKrw": 60.39, "usdKrw": 1400, "at": "ISO 시각"}</p>
+      <div class="grid cols-3">
+        <label>시세 API 주소
+          <input id="rates-api" value="${escapeAttr(ratesConfig.api)}" placeholder="https://…/rates" />
+        </label>
+        <label>1 TOTT = 원 (기본값)
+          <input id="rates-tott" type="number" min="0" step="any" value="${escapeAttr(ratesConfig.tottKrw)}" placeholder="1" />
+        </label>
+        <label>1 USD = 원 (기본값)
+          <input id="rates-usd" type="number" min="0" step="any" value="${escapeAttr(ratesConfig.usdKrw)}" placeholder="1400" />
+        </label>
+      </div>
+      <button class="save" id="save-rates" type="button">시세 설정 저장</button>
+    </section>`;
 }
 
 function noticeCategories() {
@@ -2421,6 +2455,11 @@ document.body.addEventListener("click", (event) => {
   if (event.target.id === "save-policy") {
     savePolicy();
     toast("배송정책을 이 브라우저에 저장했다");
+    return;
+  }
+  if (event.target.id === "save-rates") {
+    saveRatesConfig();
+    toast("시세 설정을 이 브라우저에 저장했다");
     return;
   }
   const problem = event.target.closest("[data-order-problem]");
