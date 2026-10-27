@@ -1,0 +1,7 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/service/app/", "permanent": false },
+    { "source": "/app", "destination": "/service/app/", "permanent": false },
+    { "source": "/admin", "destination": "/service/register/", "permanent": false }
+  ]
+}
