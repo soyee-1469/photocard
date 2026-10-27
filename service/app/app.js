@@ -2581,7 +2581,6 @@ function wished() {
         <span>
           ${artistMark(item)}
           <p class="name">${esc(productName(item))}</p>
-          <p class="wish-price">${priceBlock(item.price)}</p>
         </span>
       </button>`;
     }).join("")
