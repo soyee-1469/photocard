@@ -15,7 +15,7 @@ html, body {
   height: 100%;
   background: #050506;
   color: var(--text);
-  font: 15px/1.45 "Pretendard", "Apple SD Gothic Neo", sans-serif;
+  font: 15px/1.45 "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", sans-serif;
 }
 
 body {
@@ -3787,13 +3787,14 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   transform: translate(-50%, -50%);
   opacity: 0; animation: mys-orbit-in 1.6s ease-out 0.1s forwards, mys-orbit 26s ease-in-out 1.7s infinite alternate;
 }
+/* 타이틀 엠블럼은 떠다니는 카드·포장보다 앞에 둔다 */
 .mys-emblem {
-  position: absolute; left: 7%; top: 14%; width: 86%; aspect-ratio: 1821 / 864; object-fit: contain;
+  position: absolute; left: 7%; top: 14%; width: 86%; aspect-ratio: 1821 / 864; object-fit: contain; z-index: 8;
   filter: drop-shadow(0 0 18px rgba(255, 200, 140, 0.35));
   opacity: 0; animation: mys-emblem-in 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s forwards;
 }
 .mys-emblem-shine {
-  position: absolute; left: 7%; top: 14%; width: 86%; aspect-ratio: 1821 / 864;
+  position: absolute; left: 7%; top: 14%; width: 86%; aspect-ratio: 1821 / 864; z-index: 9;
   background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
   background-size: 260% 100%; background-position: 120% 0;
   -webkit-mask: url("/assets/splash/emblem-chrome.png?v=1") center / contain no-repeat; mask: url("/assets/splash/emblem-chrome.png?v=1") center / contain no-repeat;
