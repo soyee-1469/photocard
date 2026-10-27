@@ -5669,7 +5669,7 @@ const GUIDE_PAGES = [
   {
     demo: "pay",
     title: "TP로 결제하기",
-    body: "지갑이 연결되어 있지 않다면 먼저 연결해 주세요.\n지갑에서 TOTT를 TP로 바꾼 뒤 TP로 결제해요.",
+    body: "지갑이 연결되어 있지 않다면 먼저 연결해 주세요.\n지갑에서 TOTT를 TP로 바꾼 뒤 결제해요.",
   },
   {
     demo: "open",
