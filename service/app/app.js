@@ -5780,7 +5780,7 @@ function guide(firstRun) {
   const note = firstRun
     ? (state.guideSeen
       ? (rewardLeft ? `<p class="guide-note">시청 완료! 시작하기를 누르면 ${tpText(GUIDE_REWARD_TP)} TP 보상을 받아요.</p>` : "")
-      : `<p class="guide-note">가이드를 끝까지 확인해야 서비스를 이용할 수 있어요.${rewardLeft ? `<br>끝까지 보면 ${tpText(GUIDE_REWARD_TP)} TP를 드려요.` : ""}</p>`)
+      : `<p class="guide-note">${rewardLeft ? `이용 가이드 끝까지 확인하고 ${tpText(GUIDE_REWARD_TP)} TP 받으세요.` : "가이드를 끝까지 확인해야 서비스를 이용할 수 있어요."}</p>`)
     : "";
   const header = firstRun
     ? `<header class="bar"><h1>포토카드 이용 가이드</h1></header>`
