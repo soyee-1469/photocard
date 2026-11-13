@@ -35,6 +35,7 @@ let shipPanel = false;
 let bulkCarrier = "";
 let bulkTracks = {};
 let uploadPreview = null;
+let uploadIncludeOutside = false; // 송장 업로드: 현재 목록 밖 주문도 함께 처리할지
 let noticeId = "";
 let categories = [];
 let categoryId = "";
@@ -45,8 +46,8 @@ let cardEvent = "";
 const ORDERS_KEY = "photocard-orders-v1";
 // 배송 주문 단계. 기획서 3.6과 고객 앱의 TRACK과 같다(발송대기 단계는 뺐다. 2026-10-27).
 const ORDER_STATUS = [
-  ["shipping_requested", "신규 주문"],
-  ["preparing", "준비중"],
+  ["shipping_requested", "신규 요청"],
+  ["preparing", "배송 준비"],
   ["shipped", "배송중"],
   ["delivered", "배송완료"],
 ];
@@ -572,7 +573,7 @@ function renderSidebar() {
   const search = document.querySelector(".search");
   const list = document.getElementById("pack-list");
   if (!search || !list) return;
-  const showSearch = screen === "orders" || screen === "notice" || screen === "category" || (screen === "cards" && cardView === "edit");
+  const showSearch = screen === "notice" || screen === "category" || (screen === "cards" && cardView === "edit");
   search.hidden = !showSearch;
   if (screen === "category") renderCategorySidebar();
   else if (screen === "cards" && cardView === "edit") renderCardSidebar();
@@ -1131,13 +1132,29 @@ function orderAmount(order) {
 
 const SHIP_STATUSES = ["shipping_requested", "preparing"];
 const TRACK_STATUSES = ["shipped", "delivered"];
+// 단계 탭 라벨. 배지·스테퍼에는 ORDER_STATUS의 이름을 쓴다.
+const STEP_LABEL = { shipping_requested: "신규 요청", preparing: "배송 준비", shipped: "배송중", delivered: "배송완료" };
+// 단계마다 관리자가 할 일. 단계 표 아래 안내줄과 상세의 '다음 할 일'에 쓴다.
+const STEP_TODO = {
+  shipping_requested: "주문 내용을 확인하고 배송 준비를 시작해요.",
+  preparing: "카드를 확인해 포장하고, 택배사와 송장번호를 적어 발송처리해요.",
+  shipped: "발송 정보를 확인하고, 지연이나 반송이 생기면 표시해요.",
+  delivered: "끝난 주문이에요. 기록만 봐요.",
+  all: "모든 단계를 한 번에 봐요. 처리할 주문은 단계 탭에서 고르는 게 안전해요.",
+  exception: "보류·지연·반송 주문이에요. 보류 주문은 풀어야 준비·발송할 수 있어요.",
+};
 
 function orderScope(order) {
   return orderView === "purchase" ? order.kind === "purchase" : order.kind !== "purchase";
 }
 
+// 배송 보류. 보류 중에는 준비·발송·송장 업로드가 모두 막힌다. 단순 주의는 관리자 메모에 적는다.
+function isHeld(order) {
+  return order.kind !== "purchase" && Boolean(order.problem);
+}
+
 function hasException(order) {
-  return order.kind !== "purchase" && (Boolean(order.problem) || order.exception === "delay" || order.exception === "return");
+  return order.kind !== "purchase" && (isHeld(order) || order.exception === "delay" || order.exception === "return");
 }
 
 function orderMatchesFilter(order, id) {
@@ -1147,11 +1164,12 @@ function orderMatchesFilter(order, id) {
   return order.status === id;
 }
 
-function orderVisible(order) {
+// 단계 탭을 뺀 조회 조건(검색·국내외·국가·기간). 단계별 건수도 이 조건으로 센다.
+function orderInQuery(order) {
   if (!orderScope(order)) return false;
   const text = query.trim().toLowerCase();
   if (text) {
-    const hay = [order.id, order.receiver, order.phone, order.email, order.tracking, order.place].join(" ").toLowerCase();
+    const hay = [order.id, order.receiver, order.phone, order.email, order.tracking, order.place, order.productName].join(" ").toLowerCase();
     if (!hay.includes(text)) return false;
   }
   if (order.kind !== "purchase") {
@@ -1163,45 +1181,54 @@ function orderVisible(order) {
   const day = order.kind === "purchase" ? order.purchasedOn : order.requestedOn;
   if (dateFrom && (!day || day < dateFrom)) return false;
   if (dateTo && (!day || day > dateTo)) return false;
-  return orderMatchesFilter(order, orderFilter);
+  return true;
 }
 
-// 단계 표 라벨은 짧게(칸이 좁다). 배지·상세에는 ORDER_STATUS의 긴 이름을 쓴다.
-const STEP_SHORT = { shipping_requested: "신규", preparing: "준비중", shipped: "배송중", delivered: "완료" };
-function orderFilters() {
-  return [["all", "전체"], ...ORDER_STATUS.map(([id]) => [id, STEP_SHORT[id]]), ["exception", "예외"]];
+function orderVisible(order) {
+  return orderInQuery(order) && orderMatchesFilter(order, orderFilter);
+}
+
+function visibleShipOrders() {
+  return orders.filter((order) => isShipOrder(order) && orderVisible(order));
+}
+
+// 선택은 '지금 보이는 목록' 안에서만 유효하다. 필터·탭이 바뀌어 목록에서 빠진 주문은 선택에서도 빠진다.
+function pickedOrders() {
+  const visible = visibleShipOrders();
+  const ids = new Set(visible.map((order) => order.id));
+  [...selectedOrderIds].forEach((id) => {
+    if (!ids.has(id)) selectedOrderIds.delete(id);
+  });
+  return visible.filter((order) => selectedOrderIds.has(order.id));
+}
+
+function clearOrderSelection() {
+  selectedOrderIds = new Set();
+  shipPanel = false;
+}
+
+// 송장 양식에 들어갈 주문: 체크한 주문이 있으면 그중 신규·준비 상태, 없으면 지금 보이는 목록의 신규·준비 상태. 보류는 뺀다.
+function trackingTargets() {
+  const ready = (order) => SHIP_STATUSES.includes(order.status) && !isHeld(order);
+  const picked = pickedOrders().filter(ready);
+  return { list: picked.length ? picked : visibleShipOrders().filter(ready), fromPick: picked.length > 0 };
+}
+
+// 송장 업로드 결과를 지금 보이는 목록 안/밖으로 나눈다. 밖의 주문은 체크해야 같이 처리된다.
+function uploadGroups() {
+  const ok = uploadPreview?.ok || [];
+  const inside = [];
+  const outside = [];
+  ok.forEach((row) => {
+    const order = orders.find((item) => item.id === row.id);
+    (order && orderVisible(order) ? inside : outside).push(row);
+  });
+  return { inside, outside, bad: uploadPreview?.bad || [] };
 }
 
 function renderOrderSidebar() {
-  const input = document.getElementById("query");
-  if (input) input.placeholder = "주문번호, 받는 사람, 전화, 송장";
-  const places = [...new Set(orders.filter(isShipOrder).map((order) => order.place).filter(Boolean))];
-  const dirty = regionFilter !== "all" || countryFilter || dateFrom || dateTo || query.trim();
-  const shipTools = orderView === "ship" ? `
-    <label>국내/해외
-      <select id="region-filter">
-        <option value="all" ${regionFilter === "all" ? "selected" : ""}>전체</option>
-        <option value="domestic" ${regionFilter === "domestic" ? "selected" : ""}>국내</option>
-        <option value="overseas" ${regionFilter === "overseas" ? "selected" : ""}>해외</option>
-      </select>
-    </label>
-    <label>국가
-      <select id="country-filter">
-        <option value="">전체</option>
-        ${places.map((place) => `<option value="${escapeAttr(place)}" ${place === countryFilter ? "selected" : ""}>${escapeAttr(place)}</option>`).join("")}
-      </select>
-    </label>` : "";
-  document.getElementById("pack-list").innerHTML = `
-    <div class="order-side">
-      ${shipTools}
-      <label>${orderView === "ship" ? "요청일" : "구매일"}
-        <span class="date-pair"><input id="date-from" type="date" value="${escapeAttr(dateFrom)}" /><input id="date-to" type="date" value="${escapeAttr(dateTo)}" /></span>
-      </label>
-      ${dirty ? `<button class="text-btn" id="order-reset" type="button">조건 지우기</button>` : ""}
-      <p class="hint">${orderView === "ship"
-        ? "배송 주문은 신규 → 준비중 → 배송중 → 배송완료 순서로 처리해요. 위의 단계 표에서 골라 보세요."
-        : "뽑기 결제는 TP 결제 기록이에요. 처리할 일은 없고 확인용이에요."}</p>
-    </div>`;
+  const list = document.getElementById("pack-list");
+  if (list) list.innerHTML = "";
 }
 
 function isShipOrder(order) {
@@ -1216,7 +1243,7 @@ function orderBadge(order) {
   if (order.kind === "purchase") return "랜덤팩 구매";
   if (order.exception === "delay") return "배송지연";
   if (order.exception === "return") return "반송";
-  if (order.problem) return "문제 주문";
+  if (order.problem) return "배송 보류";
   return orderStatusLabel(order.status);
 }
 
@@ -1227,7 +1254,7 @@ function orderBadgeHtml(order) {
   const extras = [];
   if (order.exception === "delay") extras.push(`<span class="obadge warn">배송지연</span>`);
   if (order.exception === "return") extras.push(`<span class="obadge warn">반송</span>`);
-  if (order.problem) extras.push(`<span class="obadge warn">문제</span>`);
+  if (order.problem) extras.push(`<span class="obadge hold">보류</span>`);
   return main + extras.join("");
 }
 
@@ -1386,8 +1413,8 @@ function reviewTracking(rows) {
     else if (!row.tracking) reason = "송장번호 없음";
     else if (!row.carrier) reason = "택배사 없음";
     else if (order.status === "shipped" || order.status === "delivered") reason = "이미 발송된 주문";
-    else if (order.problem) reason = "문제 주문";
-    else if (!SHIP_STATUSES.includes(order.status)) reason = "발송할 수 없는 상태";
+    else if (order.problem) reason = "배송 보류 중";
+    else if (!SHIP_STATUSES.includes(order.status)) reason = "발송할 수 없는 단계";
     seen.add(row.id);
     if (reason) bad.push({ ...row, reason });
     else ok.push(row);
@@ -1408,49 +1435,104 @@ function applyTrackingRows(rows) {
   saveOrders();
 }
 
+function orderFilterBar() {
+  const places = [...new Set(orders.filter(isShipOrder).map((order) => order.place).filter(Boolean))];
+  const dirty = regionFilter !== "all" || countryFilter || dateFrom || dateTo || query.trim();
+  const shipTools = orderView === "ship" ? `
+    <label>국내/해외
+      <select id="region-filter">
+        <option value="all" ${regionFilter === "all" ? "selected" : ""}>전체</option>
+        <option value="domestic" ${regionFilter === "domestic" ? "selected" : ""}>국내</option>
+        <option value="overseas" ${regionFilter === "overseas" ? "selected" : ""}>해외</option>
+      </select>
+    </label>
+    <label>국가
+      <select id="country-filter">
+        <option value="">전체</option>
+        ${places.map((place) => `<option value="${escapeAttr(place)}" ${place === countryFilter ? "selected" : ""}>${escapeAttr(place)}</option>`).join("")}
+      </select>
+    </label>` : "";
+  return `
+    <div class="ofilters">
+      <label class="ofilter-q">검색
+        <input id="order-query" type="search" value="${escapeAttr(query)}" placeholder="${orderView === "ship" ? "주문번호, 받는 사람, 전화, 송장" : "주문번호, 상품"}" />
+      </label>
+      ${shipTools}
+      <label class="ofilter-d">${orderView === "ship" ? "요청일" : "구매일"}
+        <span class="date-pair"><input id="date-from" type="date" value="${escapeAttr(dateFrom)}" /><input id="date-to" type="date" value="${escapeAttr(dateTo)}" /></span>
+      </label>
+      ${dirty ? `<button class="text-btn" id="order-reset" type="button">조건 지우기</button>` : ""}
+    </div>`;
+}
+
+function orderSegment() {
+  const shipCount = orders.filter(isShipOrder).length;
+  const purchaseCount = orders.filter((order) => order.kind === "purchase").length;
+  return `
+    <div class="oseg" role="tablist">
+      <button type="button" role="tab" class="${orderView === "ship" ? "on" : ""}" data-order-view="ship">배송 주문 <b>${shipCount}</b></button>
+      <button type="button" role="tab" class="${orderView === "purchase" ? "on" : ""}" data-order-view="purchase">뽑기 결제 <b>${purchaseCount}</b></button>
+    </div>`;
+}
+
+function renderPurchaseOrders(rows) {
+  const body = rows.map((order) => `<tr class="${order.id === orderId ? "on" : ""}" data-order="${escapeAttr(order.id)}"><td class="id">${escapeAttr(order.id)}</td><td>${shortDay(order.purchasedOn)}</td><td>${escapeAttr(order.productName || order.album || "상품")}</td><td class="num">${order.count || cardCount(order)}장</td><td class="num">${escapeAttr(orderAmount(order))}</td></tr>`).join("");
+  document.getElementById("main").innerHTML = `
+    <div class="form-head ohead">${orderSegment()}</div>
+    <p class="otodo"><b>뽑기 결제</b> TP 결제 기록이에요. 처리할 일은 없고 확인용이에요. 배송 처리는 배송 주문 탭에서 해요.</p>
+    ${orderFilterBar()}
+    <div class="table-wrap">
+      <table class="order-table is-purchase">
+        <thead><tr>${["번호", "구매일", "상품", "장수", "금액"].map((label) => `<th>${label}</th>`).join("")}</tr></thead>
+        <tbody>${body || `<tr><td class="empty" colspan="5">이 조건의 결제 기록이 없어요.</td></tr>`}</tbody>
+      </table>
+    </div>`;
+  const selected = rows.find((order) => order.id === orderId);
+  document.getElementById("detail").innerHTML = selected ? purchaseDetail(selected) : `<p class="empty">결제를 고르면 상세가 나와요.</p>`;
+}
+
 function renderOrders() {
   captureBulkDraft();
   const rows = orders.filter(orderVisible);
   if (!rows.some((order) => order.id === orderId)) orderId = rows[0]?.id || "";
-  const shipAll = orders.filter(isShipOrder);
-  const picked = shipAll.filter((order) => selectedOrderIds.has(order.id));
-  const pickedNew = picked.filter((order) => order.status === "shipping_requested").length;
-  const pickedPrep = picked.filter((order) => order.status === "preparing").length;
-  const pool = orders.filter(orderScope);
-  const steps = orderFilters().map(([id, label]) => {
-    const count = pool.filter((order) => orderMatchesFilter(order, id)).length;
-    return `<button type="button" class="ostep${id === orderFilter ? " on" : ""}${id === "exception" ? " is-exc" : ""}" data-order-filter="${id}"><span>${label}</span><b>${count}</b></button>`;
-  }).join(`<i class="ostep-arrow" aria-hidden="true"></i>`);
-  const segment = `
-    <div class="oseg" role="tablist">
-      <button type="button" role="tab" class="${orderView === "ship" ? "on" : ""}" data-order-view="ship">배송 주문 <b>${shipAll.length}</b></button>
-      <button type="button" role="tab" class="${orderView === "purchase" ? "on" : ""}" data-order-view="purchase">뽑기 결제 <b>${orders.filter((order) => order.kind === "purchase").length}</b></button>
-    </div>`;
-  const tools = orderView === "ship" ? `
-    <button class="text-btn" id="excel-visible" type="button">목록 엑셀</button>
-    <button class="text-btn" id="tracking-download" type="button">송장 양식 받기</button>
-    <label class="text-btn upload-btn">송장 엑셀 업로드<input id="tracking-upload" type="file" accept=".csv,.txt,.xls,text/csv" /></label>` : "";
-  const selection = orderView === "ship" && picked.length ? `
+  if (orderView === "purchase") {
+    renderPurchaseOrders(rows);
+    return;
+  }
+  // 단계별 건수는 검색·국내외·국가·기간을 적용한 같은 조건으로 센다.
+  const queried = orders.filter((order) => isShipOrder(order) && orderInQuery(order));
+  const countOf = (id) => queried.filter((order) => orderMatchesFilter(order, id)).length;
+  const stepButton = (id, label, extra = "") => `<button type="button" class="ostep${id === orderFilter ? " on" : ""}${extra}" data-order-filter="${id}"><span>${label}</span><b>${countOf(id)}</b></button>`;
+  const steps = ORDER_STATUS.map(([id]) => stepButton(id, STEP_LABEL[id])).join(`<i class="ostep-arrow" aria-hidden="true"></i>`);
+  const views = `${stepButton("all", "전체", " is-view")}${stepButton("exception", "문제 주문", " is-view is-exc")}`;
+  const todoLabel = orderFilter === "all" ? "전체" : orderFilter === "exception" ? "문제 주문" : (STEP_LABEL[orderFilter] || "");
+  const todo = STEP_TODO[orderFilter] ? `<p class="otodo"><b>${todoLabel}</b> ${STEP_TODO[orderFilter]}</p>` : "";
+
+  const picked = pickedOrders();
+  const held = picked.filter(isHeld).length;
+  const pickedNew = picked.filter((order) => order.status === "shipping_requested" && !isHeld(order)).length;
+  const pickedPrep = picked.filter((order) => order.status === "preparing" && !isHeld(order)).length;
+  const tracks = trackingTargets();
+  const tools = `
+    <button class="text-btn" id="excel-visible" type="button" ${rows.length ? "" : "disabled"}>목록 엑셀 <b>${rows.length}</b></button>
+    <button class="text-btn" id="tracking-download" type="button" ${tracks.list.length ? "" : "disabled"} title="${tracks.fromPick ? "체크한 주문 중 신규·준비 상태" : "지금 보이는 목록의 신규·준비 상태"}">송장 양식 <b>${tracks.list.length}</b>${tracks.fromPick ? "<small>선택</small>" : ""}</button>
+    <label class="text-btn upload-btn">송장 업로드<input id="tracking-upload" type="file" accept=".csv,.txt,.xls,text/csv" /></label>`;
+  const selection = picked.length ? `
     <div class="osel">
-      <strong>${picked.length}건 선택</strong>
-      <button class="text-btn" id="bulk-prepare" type="button" ${pickedNew ? "" : "disabled"}>준비중으로 변경${pickedNew ? ` (${pickedNew})` : ""}</button>
+      <strong>현재 목록에서 ${picked.length}건 선택</strong>
+      ${held ? `<small>보류 ${held}건은 일괄 처리에서 빠져요</small>` : ""}
+      <span class="osel-gap"></span>
+      <button class="text-btn" id="bulk-prepare" type="button" ${pickedNew ? "" : "disabled"}>배송 준비 시작${pickedNew ? ` (${pickedNew})` : ""}</button>
       <button class="save" id="open-ship-panel" type="button" ${pickedPrep ? "" : "disabled"}>발송처리${pickedPrep ? ` (${pickedPrep})` : ""}</button>
-      <button class="text-btn" id="excel-selected" type="button">선택 엑셀</button>
+      <button class="text-btn" id="excel-selected" type="button">선택 엑셀 (${picked.length})</button>
       <button class="text-btn" id="clear-pick" type="button">선택 해제</button>
     </div>` : "";
-  const visibleShip = shipOrdersIn(rows);
-  const allOn = visibleShip.length > 0 && visibleShip.every((order) => selectedOrderIds.has(order.id));
-  const head = orderView === "ship"
-    ? [`<input type="checkbox" id="pick-all" ${allOn ? "checked" : ""} aria-label="전체 선택" />`, "주문번호", "받는 사람", "카드", "요청일", "배송비", "송장", "상태"]
-    : ["번호", "구매일", "상품", "장수", "금액"];
+  const allOn = rows.length > 0 && rows.every((order) => selectedOrderIds.has(order.id));
+  const head = [`<input type="checkbox" id="pick-all" ${allOn ? "checked" : ""} ${rows.length ? "" : "disabled"} aria-label="목록 전체 선택" />`, "주문번호", "받는 사람", "카드", "요청일", "배송비", "송장", "상태"];
   const body = rows.map((order) => {
-    const on = order.id === orderId ? " on" : "";
-    if (orderView === "purchase") {
-      return `<tr class="${on}" data-order="${escapeAttr(order.id)}"><td>${escapeAttr(order.id)}</td><td>${shortDay(order.purchasedOn)}</td><td>${escapeAttr(order.productName || order.album || "상품")}</td><td class="num">${order.count || cardCount(order)}장</td><td class="num">${escapeAttr(orderAmount(order))}</td></tr>`;
-    }
     const check = `<input type="checkbox" data-pick-order="${escapeAttr(order.id)}" ${selectedOrderIds.has(order.id) ? "checked" : ""} aria-label="${escapeAttr(order.id)} 선택" />`;
     const ship = order.tracking ? `${escapeAttr(carrierText(order))} <small>${escapeAttr(order.tracking)}</small>` : `<span class="dim">—</span>`;
-    return `<tr class="${on}${hasException(order) ? " is-exc" : ""}" data-order="${escapeAttr(order.id)}">
+    return `<tr class="${order.id === orderId ? "on" : ""}${hasException(order) ? " is-exc" : ""}" data-order="${escapeAttr(order.id)}">
       <td>${check}</td>
       <td class="id">${escapeAttr(order.id)}</td>
       <td class="who">${escapeAttr(order.receiver || "—")}<small>${escapeAttr(order.place || "—")}</small></td>
@@ -1461,25 +1543,30 @@ function renderOrders() {
       <td>${orderBadgeHtml(order)}</td>
     </tr>`;
   }).join("");
-  const emptyText = orderView === "purchase"
-    ? "이 조건의 결제 기록이 없어요."
-    : orderFilter === "all" ? "배송 주문이 없어요. 고객이 보유 카드에서 배송을 신청하면 여기에 쌓여요." : "이 단계의 주문이 없어요.";
+  const emptyText = orderFilter === "all"
+    ? (queried.length || !orders.some(isShipOrder) ? "배송 주문이 없어요. 고객이 보유 카드에서 배송을 신청하면 여기에 쌓여요." : "이 조건에 맞는 주문이 없어요.")
+    : "이 단계의 주문이 없어요.";
   document.getElementById("main").innerHTML = `
     <div class="form-head ohead">
-      ${segment}
+      ${orderSegment()}
       <div class="actions">${tools}</div>
     </div>
-    ${orderView === "ship" ? `<div class="osteps">${steps}</div>` : ""}
+    ${orderFilterBar()}
+    <div class="osteps-row">
+      <div class="osteps">${steps}</div>
+      <div class="oviews">${views}</div>
+    </div>
+    ${todo}
     ${selection}
     <div class="table-wrap">
-      <table class="order-table${orderView === "ship" ? " is-ship" : " is-purchase"}">
+      <table class="order-table is-ship">
         <thead><tr>${head.map((label) => `<th>${label}</th>`).join("")}</tr></thead>
         <tbody>${body || `<tr><td class="empty" colspan="${head.length}">${emptyText}</td></tr>`}</tbody>
       </table>
     </div>`;
-  const selected = orders.find((order) => order.id === orderId);
+  const selected = rows.find((order) => order.id === orderId);
   const detail = document.getElementById("detail");
-  if (shipPanel) detail.innerHTML = bulkShipPanel(picked.filter((order) => order.status === "preparing"));
+  if (shipPanel) detail.innerHTML = bulkShipPanel(picked.filter((order) => order.status === "preparing" && !isHeld(order)));
   else if (uploadPreview) detail.innerHTML = uploadReviewPanel();
   else detail.innerHTML = selected ? orderDetail(selected) : `<p class="empty">주문을 고르면 상세가 나와요.</p>`;
 }
@@ -1489,7 +1576,7 @@ function bulkShipPanel(list) {
   return `
     <section class="sale-detail opanel">
       <div class="opanel-head"><h3>발송처리 ${list.length}건</h3><button class="text-btn" id="close-ship-panel" type="button">닫기</button></div>
-      <p class="hint">준비중인 주문만 발송처리할 수 있어요. 배송회사 하나를 고르고 주문마다 송장번호를 적어요.</p>
+      <p class="hint">지금 목록에서 체크한 배송 준비 주문이에요. 배송회사 하나를 고르고 주문마다 송장번호를 적어요.</p>
       <label>배송회사
         <select id="bulk-carrier">
           <option value="">선택</option>
@@ -1501,21 +1588,79 @@ function bulkShipPanel(list) {
           <label class="otrack">
             <span><b>${escapeAttr(order.id)}</b><small>${escapeAttr(order.receiver || "—")} · ${escapeAttr(order.place || "—")} · ${cardCount(order)}장</small></span>
             <input data-bulk-track="${escapeAttr(order.id)}" value="${escapeAttr(bulkTracks[order.id] ?? order.tracking ?? "")}" placeholder="송장번호" />
-          </label>`).join("") || `<p class="hint">준비중 상태로 체크된 주문이 없어요.</p>`}
+          </label>`).join("") || `<p class="hint">배송 준비 상태로 체크된 주문이 없어요.</p>`}
       </div>
       <button class="save wide" id="apply-ship" type="button" ${list.length ? "" : "disabled"}>${list.length}건 발송처리</button>
     </section>`;
 }
 
 function uploadReviewPanel() {
+  const { inside, outside, bad } = uploadGroups();
+  const total = inside.length + (uploadIncludeOutside ? outside.length : 0);
+  const line = (row) => `<li><b>${escapeAttr(row.id)}</b> ${escapeAttr(row.carrier)} ${escapeAttr(row.tracking)}</li>`;
   return `
     <section class="sale-detail opanel">
-      <div class="opanel-head"><h3>송장 업로드 결과</h3><button class="text-btn" id="close-upload" type="button">닫기</button></div>
-      <p>정상 <b>${uploadPreview.ok.length}</b>건 · 오류 <b>${uploadPreview.bad.length}</b>건</p>
-      ${uploadPreview.ok.length ? `<ul class="upload-ok">${uploadPreview.ok.map((row) => `<li><b>${escapeAttr(row.id)}</b> ${escapeAttr(row.carrier)} ${escapeAttr(row.tracking)}</li>`).join("")}</ul>` : ""}
-      ${uploadPreview.bad.length ? `<ul class="upload-errors">${uploadPreview.bad.map((row) => `<li><b>${escapeAttr(row.id || "번호 없음")}</b> ${escapeAttr(row.reason)}</li>`).join("")}</ul>` : ""}
-      <button class="save wide" id="apply-upload" type="button" ${uploadPreview.ok.length ? "" : "disabled"}>정상 ${uploadPreview.ok.length}건 발송처리</button>
+      <div class="opanel-head"><h3>송장 업로드 확인</h3><button class="text-btn" id="close-upload" type="button">닫기</button></div>
+      <p class="hint">파일에 적힌 주문번호대로 발송처리해요. 지금 보이는 목록 밖의 주문은 체크해야 같이 처리돼요.</p>
+      <h4>현재 목록 <small>${inside.length}건</small></h4>
+      ${inside.length ? `<ul class="upload-ok">${inside.map(line).join("")}</ul>` : `<p class="hint">현재 목록에 해당하는 주문이 없어요.</p>`}
+      ${outside.length ? `
+        <h4>현재 목록 밖 <small>${outside.length}건</small></h4>
+        <label class="check"><input id="upload-include-outside" type="checkbox" ${uploadIncludeOutside ? "checked" : ""} /> 목록 밖 ${outside.length}건도 함께 발송처리</label>
+        <ul class="upload-ok${uploadIncludeOutside ? "" : " is-off"}">${outside.map(line).join("")}</ul>` : ""}
+      ${bad.length ? `
+        <h4>처리 안 됨 <small>${bad.length}건</small></h4>
+        <ul class="upload-errors">${bad.map((row) => `<li><b>${escapeAttr(row.id || "번호 없음")}</b> ${escapeAttr(row.reason)}</li>`).join("")}</ul>` : ""}
+      <button class="save wide" id="apply-upload" type="button" ${total ? "" : "disabled"}>${total}건 발송처리</button>
     </section>`;
+}
+
+// 상세의 '다음 할 일' 블록. 단계마다 하나의 행동만 크게 보여 준다. 보류 중이면 버튼을 막는다.
+function orderActionBlock(order) {
+  const held = isHeld(order);
+  const overseas = Boolean(order.place) && order.place !== "대한민국";
+  const carriers = overseas ? CARRIERS_OVERSEAS : CARRIERS_DOMESTIC;
+  const dis = held ? "disabled" : "";
+  const holdNote = held ? `<p class="oaction-hold">배송 보류 중이라 처리할 수 없어요. 아래 관리에서 보류를 풀면 다시 처리할 수 있어요.</p>` : "";
+  if (order.status === "shipping_requested") {
+    return `<div class="oaction${held ? " is-held" : ""}">
+      <p>주문 내용을 확인했으면 배송 준비를 시작해요. 이 카드들은 다른 배송에 다시 담을 수 없게 돼요.</p>
+      ${holdNote}
+      <button class="save wide" type="button" data-order-status="preparing" ${dis}>배송 준비 시작</button>
+    </div>`;
+  }
+  if (order.status === "preparing") {
+    return `<div class="oaction${held ? " is-held" : ""}">
+      <p>위의 카드 ${cardCount(order)}장을 확인해 포장하고, 택배사에 넘기면 송장을 적고 발송처리해요. 고객 화면은 바로 배송중으로 바뀌어요.</p>
+      ${holdNote}
+      <div class="oship-fields">
+        <label>배송회사
+          <select id="carrier-input" ${dis}>
+            <option value="">선택</option>
+            ${carriers.map((name) => `<option ${order.carrier === name ? "selected" : ""}>${name}</option>`).join("")}
+          </select>
+        </label>
+        <label class="carrier-name${order.carrier === "기타" ? "" : " is-hidden"}">배송회사명
+          <input id="carrier-name" value="${escapeAttr(order.carrierName || "")}" placeholder="기타일 때 직접 입력" ${dis} />
+        </label>
+        <label>송장번호
+          <input id="tracking-input" value="${escapeAttr(order.tracking || "")}" placeholder="택배사가 준 번호" ${dis} />
+        </label>
+      </div>
+      <button class="save wide" type="button" data-order-status="shipped" ${dis}>발송처리</button>
+    </div>`;
+  }
+  if (order.status === "shipped") {
+    return `<div class="oaction">
+      <p>고객이 받았으면 배송완료로 바꿔요. 지연이나 반송이 생기면 여기서 표시해요.</p>
+      <div class="ochips">
+        <button class="text-btn${order.exception === "delay" ? " on" : ""}" type="button" data-order-exception="${order.exception === "delay" ? "" : "delay"}">배송지연</button>
+        <button class="text-btn${order.exception === "return" ? " on" : ""}" type="button" data-order-exception="${order.exception === "return" ? "" : "return"}">반송</button>
+      </div>
+      <button class="save wide" type="button" data-order-status="delivered">배송완료</button>
+    </div>`;
+  }
+  return `<div class="oaction done"><p>배송이 끝난 주문이에요. 기록만 봐요. 이 카드들은 다시 배송바구니에 담을 수 없어요.</p></div>`;
 }
 
 function orderDetail(order) {
@@ -1529,43 +1674,9 @@ function orderDetail(order) {
       <td>${card.count}</td>
     </tr>`).join("");
   const overseas = Boolean(order.place) && order.place !== "대한민국";
-  const carriers = overseas ? CARRIERS_OVERSEAS : CARRIERS_DOMESTIC;
+  const held = isHeld(order);
   const stepIndex = Math.max(0, ORDER_STATUS.findIndex(([id]) => id === order.status));
-  const stepper = `<ol class="ostepper">${ORDER_STATUS.map(([id, label], index) => `<li class="${index < stepIndex ? "past" : index === stepIndex ? "now" : ""}"><i></i><span>${label}</span></li>`).join("")}</ol>`;
-  const action = order.status === "shipping_requested"
-    ? `<div class="oaction">
-        <p>주문 내용을 확인했으면 준비중으로 바꿔요. 이 카드들은 다른 배송에 다시 담을 수 없게 돼요.</p>
-        <button class="save wide" type="button" data-order-status="preparing">준비중으로 변경</button>
-      </div>`
-    : order.status === "preparing"
-      ? `<div class="oaction">
-          <p>포장이 끝나고 택배사에 넘기면 송장을 적고 발송처리해요. 고객 화면은 바로 배송중으로 바뀌어요.</p>
-          <div class="oship-fields">
-            <label>배송회사
-              <select id="carrier-input">
-                <option value="">선택</option>
-                ${carriers.map((name) => `<option ${order.carrier === name ? "selected" : ""}>${name}</option>`).join("")}
-              </select>
-            </label>
-            <label class="carrier-name${order.carrier === "기타" ? "" : " is-hidden"}">배송회사명
-              <input id="carrier-name" value="${escapeAttr(order.carrierName || "")}" placeholder="기타일 때 직접 입력" />
-            </label>
-            <label>송장번호
-              <input id="tracking-input" value="${escapeAttr(order.tracking || "")}" placeholder="택배사가 준 번호" />
-            </label>
-          </div>
-          <button class="save wide" type="button" data-order-status="shipped">발송처리</button>
-        </div>`
-      : order.status === "shipped"
-        ? `<div class="oaction">
-            <p>고객이 받았으면 배송완료로 바꿔요. 지연이나 반송은 아래에서 표시해요.</p>
-            <button class="save wide" type="button" data-order-status="delivered">배송완료</button>
-            <div class="ochips">
-              <button class="text-btn${order.exception === "delay" ? " on" : ""}" type="button" data-order-exception="${order.exception === "delay" ? "" : "delay"}">배송지연</button>
-              <button class="text-btn${order.exception === "return" ? " on" : ""}" type="button" data-order-exception="${order.exception === "return" ? "" : "return"}">반송</button>
-            </div>
-          </div>`
-        : `<div class="oaction done"><p>배송이 끝난 주문이에요. 이 카드들은 다시 배송바구니에 담을 수 없어요.</p></div>`;
+  const stepper = `<ol class="ostepper">${ORDER_STATUS.map(([id], index) => `<li class="${index < stepIndex ? "past" : index === stepIndex ? "now" : ""}"><i></i><span>${STEP_LABEL[id]}</span></li>`).join("")}</ol>`;
   const row = (label, value) => value ? `<div><dt>${label}</dt><dd>${value}</dd></div>` : "";
   const addressText = [order.postcode ? `(${escapeAttr(order.postcode)})` : "", escapeAttr(order.address || ""), escapeAttr(order.addressDetail || "")].filter(Boolean).join(" ");
   const contact = [escapeAttr(order.phone || ""), escapeAttr(order.email || "")].filter(Boolean).join("<br>");
@@ -1583,7 +1694,7 @@ function orderDetail(order) {
         <span class="odetail-badges">${orderBadgeHtml(order)}</span>
       </div>
       ${stepper}
-      ${action}
+      ${held ? `<p class="ohold">배송 보류 중 · 준비·발송·송장 업로드가 막혀 있어요.</p>` : ""}
       <h4>배송지 <small>${overseas ? "해외" : "국내"}</small></h4>
       <dl>
         ${row("받는 사람", escapeAttr(order.receiver || ""))}
@@ -1593,20 +1704,23 @@ function orderDetail(order) {
         ${row("배송비", escapeAttr(order.feeText || "미정"))}
         ${row("요청일", escapeAttr(order.requestedOn || ""))}
       </dl>
-      ${shipInfo}
       <h4>보낼 카드 <small>${cardCount(order)}장</small></h4>
       <table>
         <thead><tr><th>보유 번호</th><th>디자인</th><th>멤버</th><th>수량</th></tr></thead>
         <tbody>${cards}</tbody>
       </table>
+      ${shipInfo}
+      <h4>다음 할 일 <small>${STEP_LABEL[order.status] || ""}</small></h4>
+      ${orderActionBlock(order)}
       <h4>관리</h4>
       <label>관리자 메모
-        <input id="order-memo" value="${escapeAttr(order.memo || "")}" placeholder="고객에게는 보이지 않아요" />
+        <input id="order-memo" value="${escapeAttr(order.memo || "")}" placeholder="고객에게는 보이지 않아요. 주의만 남길 때는 여기에 적어요." />
       </label>
       <div class="ochips">
-        <button class="text-btn${order.problem ? " on" : ""}" type="button" data-order-problem="${order.problem ? "0" : "1"}">${order.problem ? "문제 주문 해제" : "문제 주문으로 표시"}</button>
-        ${order.exception ? `<button class="text-btn" type="button" data-order-exception="">예외 해제</button>` : ""}
+        <button class="text-btn${held ? " on" : ""}" type="button" data-order-problem="${held ? "0" : "1"}">${held ? "보류 해제" : "배송 보류"}</button>
+        ${order.exception ? `<button class="text-btn" type="button" data-order-exception="">${order.exception === "delay" ? "지연 해제" : "반송 해제"}</button>` : ""}
       </div>
+      <p class="hint">배송 보류는 준비·발송·송장 업로드를 모두 막아요. 단순 주의는 메모에만 적어요.</p>
     </section>
   `;
 }
@@ -1845,10 +1959,10 @@ function renderDash() {
   const count = (status) => activePacks().filter((item) => item.status === status).length;
   const ordersOf = (status) => orders.filter((order) => order.status === status).length;
   const stats = [
-    ["신규 주문", ordersOf("shipping_requested"), "shipping_requested"],
-    ["준비중", ordersOf("preparing"), "preparing"],
+    ["신규 요청", ordersOf("shipping_requested"), "shipping_requested"],
+    ["배송 준비", ordersOf("preparing"), "preparing"],
     ["배송중", ordersOf("shipped"), "shipped"],
-    ["예외 주문", orders.filter(hasException).length, "exception"],
+    ["문제 주문", orders.filter(hasException).length, "exception"],
     ["품절 상품", count("out"), ""],
     ["재고 부족 카드", stockShortCount(), ""],
   ];
@@ -1860,8 +1974,8 @@ function renderDash() {
     <div class="shortcuts">
       <button class="text-btn" type="button" data-menu="category">가수 등록</button>
       <button class="text-btn" type="button" data-menu="cards">카드 등록</button>
-      <button class="text-btn" type="button" data-menu="orders" data-filter="shipping_requested">신규 주문 확인</button>
-      <button class="text-btn" type="button" data-menu="orders" data-filter="preparing">발송할 주문 확인</button>
+      <button class="text-btn" type="button" data-menu="orders" data-filter="shipping_requested">신규 요청 확인</button>
+      <button class="text-btn" type="button" data-menu="orders" data-filter="preparing">배송 준비 주문 확인</button>
       <button class="text-btn" type="button" data-menu="banner">배너 등록</button>
       <button class="text-btn" type="button" data-menu="notice">공지 등록</button>
     </div>`;
@@ -2302,6 +2416,18 @@ document.body.addEventListener("input", (event) => {
     renderSidebar();
     return;
   }
+  if (event.target.id === "order-query") {
+    // 목록 위 검색. 다시 그린 뒤 입력칸에 포커스를 돌려놓는다.
+    query = event.target.value;
+    clearOrderSelection();
+    renderOrders();
+    const input = document.getElementById("order-query");
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+    return;
+  }
   if (event.target.id === "pack-query") {
     query = event.target.value;
     paintPackRows();
@@ -2458,6 +2584,7 @@ document.body.addEventListener("click", (event) => {
   const orderFilterButton = event.target.closest("[data-order-filter]");
   if (orderFilterButton) {
     orderFilter = orderFilterButton.dataset.orderFilter;
+    clearOrderSelection();
     render();
     return;
   }
@@ -2465,7 +2592,7 @@ document.body.addEventListener("click", (event) => {
   if (orderViewButton) {
     orderView = orderViewButton.dataset.orderView;
     orderFilter = "all";
-    shipPanel = false;
+    clearOrderSelection();
     render();
     return;
   }
@@ -2486,8 +2613,7 @@ document.body.addEventListener("click", (event) => {
     dateFrom = "";
     dateTo = "";
     query = "";
-    const input = document.getElementById("query");
-    if (input) input.value = "";
+    clearOrderSelection();
     render();
     return;
   }
@@ -2558,6 +2684,7 @@ document.body.addEventListener("click", (event) => {
     const order = orders.find((item) => item.id === orderId);
     if (order) order.problem = problem.dataset.orderProblem === "1";
     saveOrders();
+    toast(problem.dataset.orderProblem === "1" ? "배송 보류했어요. 준비·발송이 막혀요" : "보류를 풀었어요");
     render();
     return;
   }
@@ -2574,15 +2701,15 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "excel-selected") {
-    downloadOrdersExcel(orders.filter((order) => isShipOrder(order) && selectedOrderIds.has(order.id)));
+    downloadOrdersExcel(pickedOrders());
     return;
   }
   if (event.target.id === "excel-visible") {
-    downloadOrdersExcel(shipOrdersIn(orders.filter(orderVisible)));
+    downloadOrdersExcel(visibleShipOrders());
     return;
   }
   if (event.target.id === "pick-all") {
-    const visible = shipOrdersIn(orders.filter(orderVisible));
+    const visible = visibleShipOrders();
     const allOn = visible.length > 0 && visible.every((order) => selectedOrderIds.has(order.id));
     visible.forEach((order) => {
       if (allOn) selectedOrderIds.delete(order.id);
@@ -2592,13 +2719,12 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "bulk-prepare") {
-    const picked = orders.filter((order) => selectedOrderIds.has(order.id) && isShipOrder(order));
-    const ready = picked.filter((order) => order.status === "shipping_requested");
+    const ready = pickedOrders().filter((order) => order.status === "shipping_requested" && !isHeld(order));
     ready.forEach((order) => {
       order.status = "preparing";
     });
     saveOrders();
-    toast(ready.length ? `${ready.length}건을 준비중으로 바꿨어요` : "배송 요청 상태인 주문만 준비중으로 바꿔요");
+    toast(ready.length ? `${ready.length}건을 배송 준비로 바꿨어요` : "신규 요청 상태인 주문만 배송 준비로 바꿔요");
     render();
     return;
   }
@@ -2608,8 +2734,7 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "tracking-download") {
-    const picked = orders.filter((order) => selectedOrderIds.has(order.id) && isShipOrder(order) && SHIP_STATUSES.includes(order.status));
-    const list = picked.length ? picked : orders.filter((order) => isShipOrder(order) && orderScope(order) && SHIP_STATUSES.includes(order.status));
+    const { list } = trackingTargets();
     if (!list.length) {
       toast("송장을 넣을 주문이 없어요");
       return;
@@ -2623,10 +2748,10 @@ document.body.addEventListener("click", (event) => {
       toast("배송회사를 고른 뒤에 발송처리해요");
       return;
     }
-    const picked = orders.filter((order) => selectedOrderIds.has(order.id) && isShipOrder(order) && order.status === "preparing");
+    const picked = pickedOrders().filter((order) => order.status === "preparing" && !isHeld(order));
     const missing = picked.filter((order) => !(bulkTracks[order.id] || "").trim());
     if (!picked.length || missing.length) {
-      toast(picked.length ? "송장번호가 비어 있는 주문이 있어요" : "준비중인 주문을 골라요");
+      toast(picked.length ? "송장번호가 비어 있는 주문이 있어요" : "배송 준비 상태인 주문을 골라요");
       return;
     }
     picked.forEach((order) => {
@@ -2644,15 +2769,18 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "apply-upload") {
-    const rows = uploadPreview?.ok || [];
+    const { inside, outside } = uploadGroups();
+    const rows = uploadIncludeOutside ? [...inside, ...outside] : inside;
     applyTrackingRows(rows);
     uploadPreview = null;
+    uploadIncludeOutside = false;
     toast(`${rows.length}건을 발송처리했어요`);
     render();
     return;
   }
   if (event.target.id === "close-upload") {
     uploadPreview = null;
+    uploadIncludeOutside = false;
     render();
     return;
   }
@@ -2667,6 +2795,10 @@ document.body.addEventListener("click", (event) => {
   if (event.target.dataset.orderStatus) {
     const order = orders.find((item) => item.id === orderId);
     const next = event.target.dataset.orderStatus;
+    if (order && isHeld(order) && next !== "delivered") {
+      toast("배송 보류 중이에요. 보류를 풀고 처리해요");
+      return;
+    }
     if (order && next === "shipped") {
       const tracking = document.getElementById("tracking-input")?.value.trim() || "";
       const carrier = document.getElementById("carrier-input")?.value || "";
@@ -2889,19 +3021,27 @@ document.body.addEventListener("change", (event) => {
     document.querySelector(".carrier-name")?.classList.toggle("is-hidden", target.value !== "기타");
     return;
   }
+  if (target.id === "upload-include-outside") {
+    uploadIncludeOutside = target.checked;
+    render();
+    return;
+  }
   if (target.id === "region-filter") {
     regionFilter = target.value;
+    clearOrderSelection();
     render();
     return;
   }
   if (target.id === "country-filter") {
     countryFilter = target.value;
+    clearOrderSelection();
     render();
     return;
   }
   if (target.id === "date-from" || target.id === "date-to") {
     if (target.id === "date-from") dateFrom = target.value;
     else dateTo = target.value;
+    clearOrderSelection();
     render();
     return;
   }
@@ -2909,6 +3049,7 @@ document.body.addEventListener("change", (event) => {
     const file = target.files[0];
     file.text().then((text) => {
       uploadPreview = reviewTracking(parseTrackingText(text));
+      uploadIncludeOutside = false;
       shipPanel = false;
       render();
     });

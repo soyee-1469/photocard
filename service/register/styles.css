@@ -141,7 +141,6 @@ h3 { font-size: 16px; line-height: 24px; }
 .layout.is-wide { grid-template-columns: minmax(0, 1fr); }
 .layout.is-wide aside,
 .layout.is-wide #detail { display: none; }
-.layout.is-orders { grid-template-columns: 240px minmax(0, 1fr) 420px; }
 
 aside, main, #detail {
   min-height: 0;
@@ -1048,8 +1047,7 @@ button.save:disabled { opacity: 0.4; }
 }
 
 
-/* ===== 주문관리 개편 (2026-10-27): 한 화면 · 단계 표 · 선택 작업줄 · 상세 상단 다음 작업 ===== */
-.layout.is-orders { grid-template-columns: 240px minmax(0, 1fr) 400px; }
+/* ===== 주문관리 개편 (2026-10-27): 한 화면 · 단계 표 · 선택 작업줄 ===== */
 .order-side { display: grid; gap: 12px; }
 .order-side .hint { line-height: 1.5; }
 .ohead { align-items: center; }
@@ -1065,10 +1063,8 @@ button.save:disabled { opacity: 0.4; }
 .ostep span { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ostep b { font-size: 20px; color: var(--text); }
 .ostep.on { border-color: #fff; background: var(--surface); color: var(--text); }
-.ostep.is-exc { flex: 0 0 auto; margin-left: 8px; border-style: dashed; }
 .ostep.is-exc b { color: var(--danger); }
 .ostep-arrow { flex: none; width: 10px; height: 10px; border-top: 1.5px solid var(--line); border-right: 1.5px solid var(--line); transform: rotate(45deg); }
-.ostep-arrow:nth-last-child(2) { display: none; } /* 예외 칸 앞의 화살표는 뺀다 */
 
 .osel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: #1f1f23; }
 .osel strong { margin-right: 6px; font-size: 14px; }
@@ -1146,7 +1142,6 @@ button.save:disabled { opacity: 0.4; }
 .ostep { display: grid; align-content: center; gap: 2px; height: auto; min-height: 56px; padding: 8px 10px; }
 .ostep span { font-size: 11px; }
 .ostep b { font-size: 18px; line-height: 1.1; }
-.ostep.is-exc { margin-left: 6px; }
 .ostep-arrow { width: 8px; height: 8px; }
 .table-wrap { overflow-x: auto; }
 .order-table th, .order-table td { padding: 10px 6px; }
@@ -1158,8 +1153,6 @@ button.save:disabled { opacity: 0.4; }
 /* 보정 2: 상세 머리줄·칩은 flex, 작업 블록은 grid로 되돌린다(.sale-detail div의 grid 상속 때문) */
 .sale-detail .odetail-head, .sale-detail .opanel-head, .sale-detail .ochips { display: flex; }
 .sale-detail .oaction, .sale-detail .oship-fields { display: grid; }
-.layout.is-orders { grid-template-columns: 200px minmax(0, 1fr) 360px; }
-.layout.is-orders aside { padding-left: 12px; padding-right: 12px; }
 .osteps { gap: 3px; }
 .ostep { padding: 8px 8px; }
 .ostep-arrow { width: 7px; height: 7px; }
@@ -1168,3 +1161,44 @@ button.save:disabled { opacity: 0.4; }
 .order-table td.ship { max-width: 104px; }
 .order-table td.ship small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .order-side .date-pair { flex-direction: column; }
+
+/* ===== 주문관리 2차 정리 (2026-11-13): 필터를 목록 위로 · 단계 탭과 전체/문제 분리 · 선택은 보이는 목록 안에서만 ===== */
+.layout.is-orders { grid-template-columns: minmax(0, 1fr) 400px; }
+.layout.is-orders aside { display: none; }
+
+.ofilters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+.ofilters label { flex: 0 1 160px; min-width: 120px; margin: 0; }
+.ofilters label.ofilter-q { flex: 1 1 220px; }
+.ofilters label.ofilter-d { flex: 0 1 330px; min-width: 300px; }
+.ofilters .date-pair { display: flex; gap: 6px; }
+.ofilters .date-pair input { min-width: 140px; flex: 1; }
+.ofilters > .text-btn { flex: none; height: var(--control); }
+
+.osteps-row { display: flex; align-items: stretch; gap: 14px; }
+.osteps-row .osteps { flex: 1; min-width: 0; }
+.oviews { display: flex; gap: 6px; flex: none; padding-left: 14px; border-left: 1px solid var(--line); }
+.ostep.is-view { flex: none; min-width: 84px; border-style: dashed; }
+.ostep.is-view.on { border-style: solid; }
+.ostep.is-exc b { color: var(--danger); }
+
+.otodo { margin: -6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.otodo b { margin-right: 6px; color: var(--text); }
+
+.osel small { color: var(--muted); font-size: 12px; }
+.osel .osel-gap { flex: 1; }
+.ohead .actions .text-btn b { margin-left: 4px; font-weight: 700; }
+.ohead .actions .text-btn small { margin-left: 4px; color: var(--muted); font-size: 11px; }
+.ohead .actions .text-btn:disabled { opacity: 0.4; }
+
+.obadge.hold { background: rgba(255, 139, 139, 0.16); color: var(--danger); }
+.ohold { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--danger); border-radius: 10px; color: var(--danger); font-size: 12px; line-height: 1.5; }
+.oaction.is-held { border: 1px dashed var(--danger); background: transparent; }
+.oaction.is-held .save, .oaction.is-held select, .oaction.is-held input { opacity: 0.4; }
+.oaction-hold { color: var(--danger) !important; }
+.odetail > .hint { margin-top: 8px; }
+
+.opanel h4 { margin: 18px 0 6px; font-size: 13px; }
+.opanel h4 small { margin-left: 4px; color: var(--muted); font-weight: 500; }
+.opanel .check { display: flex; flex-direction: row; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 13px; }
+.opanel .check input { width: auto; }
+.upload-ok.is-off { opacity: 0.45; }
