@@ -33,6 +33,7 @@ let selectedOrderIds = new Set();
 let selectedTrashIds = new Set();
 let shipPanel = false;
 let bulkCarrier = "";
+let bulkCarrierName = ""; // 일괄 발송에서 택배사가 '기타'일 때 직접 적는 이름
 let bulkTracks = {};
 let uploadPreview = null;
 let uploadIncludeOutside = false; // 송장 업로드: 현재 목록 밖 주문도 함께 처리할지
@@ -1207,11 +1208,13 @@ function clearOrderSelection() {
   shipPanel = false;
 }
 
-// 송장 양식에 들어갈 주문: 체크한 주문이 있으면 그중 신규·준비 상태, 없으면 지금 보이는 목록의 신규·준비 상태. 보류는 뺀다.
+// 송장 양식에 들어갈 주문: 체크한 주문이 있으면 그 안에서만(신규·준비, 보류 제외) 고른다.
+// 체크한 주문 중 처리 가능한 게 없으면 목록으로 넘어가지 않고 비운다. 아무것도 안 체크했을 때만 보이는 목록 전체.
 function trackingTargets() {
   const ready = (order) => SHIP_STATUSES.includes(order.status) && !isHeld(order);
-  const picked = pickedOrders().filter(ready);
-  return { list: picked.length ? picked : visibleShipOrders().filter(ready), fromPick: picked.length > 0 };
+  const picked = pickedOrders();
+  if (picked.length) return { list: picked.filter(ready), fromPick: true };
+  return { list: visibleShipOrders().filter(ready), fromPick: false };
 }
 
 // 송장 업로드 결과를 지금 보이는 목록 안/밖으로 나눈다. 밖의 주문은 체크해야 같이 처리된다.
@@ -1274,6 +1277,8 @@ function shipOrdersIn(list) {
 function captureBulkDraft() {
   const carrier = document.getElementById("bulk-carrier");
   if (carrier) bulkCarrier = carrier.value;
+  const carrierName = document.getElementById("bulk-carrier-name");
+  if (carrierName) bulkCarrierName = carrierName.value;
   document.querySelectorAll("[data-bulk-track]").forEach((input) => {
     bulkTracks[input.dataset.bulkTrack] = input.value;
   });
@@ -1422,8 +1427,10 @@ function reviewTracking(rows) {
   return { ok, bad };
 }
 
+// 검토 패널을 띄운 뒤 주문이 보류되거나 먼저 발송됐을 수 있으니, 적용 직전에 같은 검사를 한 번 더 한다.
 function applyTrackingRows(rows) {
-  rows.forEach((row) => {
+  const { ok, bad } = reviewTracking(rows);
+  ok.forEach((row) => {
     const order = orders.find((item) => item.id === row.id);
     if (!order) return;
     order.carrier = row.carrier;
@@ -1433,6 +1440,7 @@ function applyTrackingRows(rows) {
     order.shippedOn = new Date().toISOString().slice(0, 10);
   });
   saveOrders();
+  return { applied: ok.length, skipped: bad };
 }
 
 function orderFilterBar() {
@@ -1582,6 +1590,9 @@ function bulkShipPanel(list) {
           <option value="">선택</option>
           ${["CJ대한통운", "우체국", "DHL", "FedEx", "UPS", "EMS", "기타"].map((name) => `<option ${bulkCarrier === name ? "selected" : ""}>${name}</option>`).join("")}
         </select>
+      </label>
+      <label class="carrier-name${bulkCarrier === "기타" ? "" : " is-hidden"}">배송회사명
+        <input id="bulk-carrier-name" value="${escapeAttr(bulkCarrierName)}" placeholder="기타일 때 직접 입력" />
       </label>
       <div class="otracks">
         ${list.map((order) => `
@@ -2734,9 +2745,9 @@ document.body.addEventListener("click", (event) => {
     return;
   }
   if (event.target.id === "tracking-download") {
-    const { list } = trackingTargets();
+    const { list, fromPick } = trackingTargets();
     if (!list.length) {
-      toast("송장을 넣을 주문이 없어요");
+      toast(fromPick ? "체크한 주문 중 발송할 수 있는 주문이 없어요" : "송장을 넣을 주문이 없어요");
       return;
     }
     downloadText("photocard-tracking.csv", "text/csv", trackingCsv(list));
@@ -2748,6 +2759,10 @@ document.body.addEventListener("click", (event) => {
       toast("배송회사를 고른 뒤에 발송처리해요");
       return;
     }
+    if (bulkCarrier === "기타" && !bulkCarrierName.trim()) {
+      toast("기타를 골랐으면 배송회사명을 적어요");
+      return;
+    }
     const picked = pickedOrders().filter((order) => order.status === "preparing" && !isHeld(order));
     const missing = picked.filter((order) => !(bulkTracks[order.id] || "").trim());
     if (!picked.length || missing.length) {
@@ -2756,7 +2771,7 @@ document.body.addEventListener("click", (event) => {
     }
     picked.forEach((order) => {
       order.carrier = bulkCarrier;
-      order.carrierName = "";
+      order.carrierName = bulkCarrier === "기타" ? bulkCarrierName.trim() : "";
       order.tracking = bulkTracks[order.id].trim();
       order.status = "shipped";
       order.shippedOn = new Date().toISOString().slice(0, 10);
@@ -2771,10 +2786,12 @@ document.body.addEventListener("click", (event) => {
   if (event.target.id === "apply-upload") {
     const { inside, outside } = uploadGroups();
     const rows = uploadIncludeOutside ? [...inside, ...outside] : inside;
-    applyTrackingRows(rows);
+    const { applied, skipped } = applyTrackingRows(rows);
     uploadPreview = null;
     uploadIncludeOutside = false;
-    toast(`${rows.length}건을 발송처리했어요`);
+    toast(skipped.length
+      ? `${applied}건을 발송처리했어요. ${skipped.length}건은 검토 뒤 상태가 바뀌어 뺐어요 (${skipped.map((row) => `${row.id} ${row.reason}`).join(", ")})`
+      : `${applied}건을 발송처리했어요`);
     render();
     return;
   }
@@ -3019,6 +3036,11 @@ document.body.addEventListener("change", (event) => {
   }
   if (target.id === "carrier-input") {
     document.querySelector(".carrier-name")?.classList.toggle("is-hidden", target.value !== "기타");
+    return;
+  }
+  if (target.id === "bulk-carrier") {
+    captureBulkDraft();
+    render();
     return;
   }
   if (target.id === "upload-include-outside") {
