@@ -1135,7 +1135,7 @@ function categoryOf(artistId) {
 }
 
 const PROFILE_PHOTOS = {
-  blackpink: "/assets/profiles/blackpink.png",
+  blackpink: "/assets/profiles/blackpink.jpg",
   ive: "/assets/profiles/ive.jpg",
   bts: "/assets/profiles/bts.jpg",
   rose: "/assets/profiles/rose.jpg",
@@ -2937,7 +2937,7 @@ function sealedPack() {
   return `
     ${openBar(count > 1 ? `${count}장 뽑기` : "")}
     <div class="open-stage tear-${TEAR_METHOD}" data-open-stage>
-      <video class="open-fire-src" data-fireworks data-src="fx/fireworks.mp4?v=4" muted loop playsinline preload="none"></video>
+      <video class="open-fire-src" data-fireworks data-src="fx/fireworks.mp4?v=5" muted loop playsinline preload="none"></video>
       <div class="open-stack">
         <div class="env-back"></div>
         ${cardLayer}
@@ -2961,7 +2961,7 @@ function sealedPack() {
       <div class="fly-card">
         <div class="fly-spin">${frontFace}<span class="prism" aria-hidden="true"></span>${backFace}</div>
       </div>
-      <video class="open-burst" data-open-burst data-src="fx/splash.mp4?v=1" muted playsinline preload="none"></video>
+      <video class="open-burst" data-open-burst data-src="fx/splash.mp4?v=2" muted playsinline preload="none"></video>
       <p class="open-guide">손가락으로 밀어 열어보세요.</p>
       <p class="open-turn"><span class="open-turn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="12" rx="1.4"></rect><path d="M4 19h16"></path><path d="M7 16.5 4 19l3 2.5"></path><path d="M17 16.5 20 19l-3 2.5"></path></svg></span>드래그하여 앞뒤로 돌려보세요.</p>
       <button class="primary open-ok" type="button" data-open-ok>OK</button>
@@ -5936,7 +5936,7 @@ function splash() {
         <div class="mys-stars a"></div>
         <div class="mys-stars b"></div>
         <div class="mys-stars c"></div>
-        <img class="mys-orbit" src="/assets/splash/orbit.png?v=1" alt="" draggable="false" decoding="async" fetchpriority="low" />
+        <img class="mys-orbit" src="/assets/splash/orbit.png?v=2" alt="" draggable="false" decoding="async" fetchpriority="low" />
         ${mystery("c3 far")}
         ${mystery("c4 far")}
         ${silhouette("c1", "f")}
@@ -5944,7 +5944,7 @@ function splash() {
         ${silhouette("c5", "m")}
         <div class="mys-pack"><div class="mys-pack-float"><img class="mys-pack-front" src="${DECK_PACK}" alt="" draggable="false" decoding="async" /><img class="mys-pack-back" src="${DECK_BACK}" alt="" draggable="false" decoding="async" fetchpriority="low" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" decoding="async" fetchpriority="low" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" decoding="async" fetchpriority="low" /><i class="mys-gloss"></i></div></div>
         ${sparks}
-        <img class="mys-emblem" src="/assets/splash/emblem-chrome.png?v=1" alt="TOMATOK PHOTOCARD" draggable="false" decoding="async" />
+        <img class="mys-emblem" src="/assets/splash/emblem-chrome.png?v=2" alt="TOMATOK PHOTOCARD" draggable="false" decoding="async" />
         <i class="mys-emblem-shine"></i>
       </div>
       <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>

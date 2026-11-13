@@ -10,7 +10,7 @@ const ARTISTS = [
 const HOLDING_ID = "holding";
 
 const PROFILE_PHOTOS = {
-  blackpink: "/assets/profiles/blackpink.png",
+  blackpink: "/assets/profiles/blackpink.jpg",
   ive: "/assets/profiles/ive.jpg",
   bts: "/assets/profiles/bts.jpg",
   rose: "/assets/profiles/rose.jpg",
