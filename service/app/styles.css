@@ -1531,6 +1531,13 @@ button:disabled { opacity: 0.4; }
   row-gap: 8px;
   padding: 8px 16px 24px;
 }
+.owned > figure,
+.owned > .pick-card,
+.shelf-wrap .tile,
+.album-grid .tile {
+  content-visibility: auto;
+  contain-intrinsic-size: 120px 180px;
+}
 
 .owned figure { margin: 0; }
 .ship-add {
@@ -3738,7 +3745,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* ---- 스플래시: 미스터리 포토카드 우주 장면 ---- */
 .splash-mystery { background: #000; }
 /* 배경: 홀로그램 카드 소환진 이미지(2026-10-26). 그려 넣던 별·궤도 이미지는 이 배경에 이미 있으니 숨긴다. */
-.mys-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; perspective: 900px; background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.25) 22%, transparent 36%), #000 url("/assets/splash/bg-summon.png?v=1") center / cover no-repeat; }
+.mys-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; perspective: 900px; background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.25) 22%, transparent 36%), #000 url("/assets/splash/bg-summon.jpg?v=2") center / cover no-repeat; }
 /* 배경에 물음표 카드 4장이 이미 있으니 앱이 그리던 떠다니는 카드도 숨긴다. 포장·타이틀·반짝임만 남긴다. */
 .mys-stars, .mys-orbit, .mys-card { display: none; }
 /* 배경 카드가 포장과 경쟁하지 않게 25% 어둡게 깔아 둔다(포장·타이틀은 z-index 2라 그 위에 뜬다). */
@@ -3797,7 +3804,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   position: absolute; left: 7%; top: 14%; width: 86%; aspect-ratio: 1821 / 864; z-index: 9;
   background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%);
   background-size: 260% 100%; background-position: 120% 0;
-  -webkit-mask: url("/assets/splash/emblem-chrome.png?v=1") center / contain no-repeat; mask: url("/assets/splash/emblem-chrome.png?v=1") center / contain no-repeat;
+  -webkit-mask: url("/assets/splash/emblem-chrome.png?v=2") center / contain no-repeat; mask: url("/assets/splash/emblem-chrome.png?v=2") center / contain no-repeat;
   opacity: 0; animation: mys-shine 5.5s ease-in-out 2.2s infinite;
 }
 .mys-pack {

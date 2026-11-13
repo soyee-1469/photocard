@@ -1135,7 +1135,7 @@ function categoryOf(artistId) {
 }
 
 const PROFILE_PHOTOS = {
-  blackpink: "/assets/profiles/blackpink.png",
+  blackpink: "/assets/profiles/blackpink.jpg",
   ive: "/assets/profiles/ive.jpg",
   bts: "/assets/profiles/bts.jpg",
   rose: "/assets/profiles/rose.jpg",
@@ -1447,7 +1447,7 @@ function storedCopies(card) {
 }
 
 function cardShot(card) {
-  return `<img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />`;
+  return `<img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" decoding="async" loading="lazy" />`;
 }
 
 function sameText(left, right) {
@@ -2831,7 +2831,8 @@ function tearSparks(stage, frame, hit) {
   if (!frame || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const stack = stage.querySelector(".open-stack");
   const ink = hit?.ink || tearInk(stage, frame);
-  if (!stack || !ink || stack.querySelectorAll(".tear-spark").length > 120) return;
+  // 스파크 DOM이 너무 많으면 저사양·해외망에서 끊김이 커져서 상한을 낮춘다.
+  if (!stack || !ink || stack.querySelectorAll(".tear-spark").length > 36) return;
   const fromRight = stage.classList.contains("is-rtl");
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const addSpark = (x, top, hot, reach) => {
@@ -2851,7 +2852,7 @@ function tearSparks(stage, frame, hit) {
     spark.addEventListener("animationend", () => spark.remove(), { once: true });
     stack.appendChild(spark);
   };
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 3; index += 1) {
     addSpark(
       ink.x0 + Math.random() * (ink.x1 - ink.x0),
       ink.y0 + Math.random() * (ink.y1 - ink.y0),
@@ -2859,7 +2860,7 @@ function tearSparks(stage, frame, hit) {
       `${46 + Math.random() * 94}px`
     );
   }
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 3; index += 1) {
     addSpark(
       ink.x0 + Math.random() * (ink.x1 - ink.x0),
       ink.y0 + Math.random() * (ink.y1 - ink.y0),
@@ -2868,7 +2869,7 @@ function tearSparks(stage, frame, hit) {
     );
   }
   if (!hit) return;
-  for (let index = 0; index < 10; index += 1) {
+  for (let index = 0; index < 4; index += 1) {
     addSpark(
       hit.x + (Math.random() - 0.5) * 0.04,
       hit.y + (Math.random() - 0.5) * 0.02,
@@ -2891,12 +2892,12 @@ function keepTearSparks(stage) {
     if (!stage.isConnected || stage.dataset.sparkStop) return;
     const frame = visibleTear(stage);
     if (!frame) {
-      window.setTimeout(tick, 69);
+      window.setTimeout(tick, 110);
       return;
     }
     const hit = stage.classList.contains("is-touching") ? fingerOnTear(stage, frame) : null;
     tearSparks(stage, frame, hit);
-    window.setTimeout(tick, 69);
+    window.setTimeout(tick, 110);
   };
   tick();
 }
@@ -2936,7 +2937,7 @@ function sealedPack() {
   return `
     ${openBar(count > 1 ? `${count}장 뽑기` : "")}
     <div class="open-stage tear-${TEAR_METHOD}" data-open-stage>
-      <video class="open-fire-src" data-fireworks src="fx/fireworks.mp4?v=4" muted loop playsinline preload="auto"></video>
+      <video class="open-fire-src" data-fireworks data-src="fx/fireworks.mp4?v=5" muted loop playsinline preload="none"></video>
       <div class="open-stack">
         <div class="env-back"></div>
         ${cardLayer}
@@ -2960,7 +2961,7 @@ function sealedPack() {
       <div class="fly-card">
         <div class="fly-spin">${frontFace}<span class="prism" aria-hidden="true"></span>${backFace}</div>
       </div>
-      <video class="open-burst" data-open-burst src="fx/splash.mp4?v=1" muted playsinline preload="auto"></video>
+      <video class="open-burst" data-open-burst data-src="fx/splash.mp4?v=2" muted playsinline preload="none"></video>
       <p class="open-guide">손가락으로 밀어 열어보세요.</p>
       <p class="open-turn"><span class="open-turn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="12" rx="1.4"></rect><path d="M4 19h16"></path><path d="M7 16.5 4 19l3 2.5"></path><path d="M17 16.5 20 19l-3 2.5"></path></svg></span>드래그하여 앞뒤로 돌려보세요.</p>
       <button class="primary open-ok" type="button" data-open-ok>OK</button>
@@ -3612,65 +3613,143 @@ function showPack() {
   ready.then(go, go);
 }
 
+const blurCache = new Map();
+const protectCache = new Map();
+
+function scheduleIdle(fn) {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(fn, { timeout: 400 });
+    return;
+  }
+  window.setTimeout(fn, 0);
+}
+
 function blurFronts() {
-  document.querySelectorAll("[data-front]").forEach((img) => {
-    const sourceUrl = img.dataset.front;
-    img.removeAttribute("data-front");
-    const source = new Image();
-    source.onload = () => {
-      if (!img.isConnected) return;
-      const width = 180;
-      const height = Math.round((width * 85) / 55);
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      const pad = 16;
-      ctx.filter = "blur(8px)";
-      ctx.drawImage(source, -pad, -pad, width + pad * 2, height + pad * 2);
-      ctx.filter = "none";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
-      ctx.fillRect(0, 0, width, height);
-      img.src = canvas.toDataURL("image/jpeg", 0.82);
-    };
-    source.src = sourceUrl;
-  });
+  const jobs = [...document.querySelectorAll("[data-front]")];
+  if (!jobs.length) return;
+  let index = 0;
+  const step = () => {
+    const end = Math.min(index + 2, jobs.length);
+    for (; index < end; index += 1) {
+      const img = jobs[index];
+      if (!img.isConnected) continue;
+      const sourceUrl = img.dataset.front;
+      if (!sourceUrl) continue;
+      img.removeAttribute("data-front");
+      const cached = blurCache.get(sourceUrl);
+      if (cached) {
+        img.src = cached;
+        continue;
+      }
+      const source = new Image();
+      source.decoding = "async";
+      source.onload = () => {
+        if (!img.isConnected) return;
+        const width = 180;
+        const height = Math.round((width * 85) / 55);
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        const pad = 16;
+        ctx.filter = "blur(8px)";
+        ctx.drawImage(source, -pad, -pad, width + pad * 2, height + pad * 2);
+        ctx.filter = "none";
+        ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
+        ctx.fillRect(0, 0, width, height);
+        const data = canvas.toDataURL("image/jpeg", 0.78);
+        blurCache.set(sourceUrl, data);
+        img.src = data;
+      };
+      source.src = sourceUrl;
+    }
+    if (index < jobs.length) scheduleIdle(step);
+  };
+  scheduleIdle(step);
 }
 
 function protectFronts() {
-  document.querySelectorAll("[data-protect]").forEach((img) => {
-    const sourceUrl = img.dataset.protect;
-    const mark = img.dataset.mark || "TOMATOK";
-    img.removeAttribute("data-protect");
-    const source = new Image();
-    source.onload = () => {
-      if (!img.isConnected) return;
-      const width = 540;
-      const height = Math.max(1, Math.round(width * (source.naturalHeight / source.naturalWidth)));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(source, 0, 0, width, height);
-      ctx.save();
-      ctx.translate(width / 2, height / 2);
-      ctx.rotate(-0.45);
-      ctx.textAlign = "center";
-      ctx.font = "600 28px sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.34)";
-      for (let y = -height; y <= height; y += 120) {
-        for (let x = -width; x <= width; x += 220) {
-          ctx.fillText("TOMATOK", x, y);
-          ctx.font = "500 16px sans-serif";
-          ctx.fillText(mark, x, y + 24);
-          ctx.font = "600 28px sans-serif";
-        }
+  const jobs = [...document.querySelectorAll("[data-protect]")];
+  if (!jobs.length) return;
+  let index = 0;
+  const step = () => {
+    const end = Math.min(index + 2, jobs.length);
+    for (; index < end; index += 1) {
+      const img = jobs[index];
+      if (!img.isConnected) continue;
+      const sourceUrl = img.dataset.protect;
+      const mark = img.dataset.mark || "TOMATOK";
+      if (!sourceUrl) continue;
+      img.removeAttribute("data-protect");
+      // 목록 썸네일은 작게, 상세·개봉만 더 선명하게
+      const wide = img.classList.contains("reveal-face")
+        || img.classList.contains("fly-face")
+        || img.classList.contains("spread-face")
+        || img.closest(".owned-detail, .reveal-flip, .fly-card, .spread-card");
+      const width = wide ? 420 : 240;
+      const key = `${sourceUrl}|${mark}|${width}`;
+      const cached = protectCache.get(key);
+      if (cached) {
+        img.src = cached;
+        continue;
       }
-      ctx.restore();
-      img.src = canvas.toDataURL("image/jpeg", 0.82);
-    };
-    source.src = sourceUrl;
-  });
+      const source = new Image();
+      source.decoding = "async";
+      source.onload = () => {
+        if (!img.isConnected) return;
+        const height = Math.max(1, Math.round(width * (source.naturalHeight / source.naturalWidth)));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(source, 0, 0, width, height);
+        ctx.save();
+        ctx.translate(width / 2, height / 2);
+        ctx.rotate(-0.45);
+        ctx.textAlign = "center";
+        const big = Math.max(14, Math.round(width * 0.052));
+        const small = Math.max(10, Math.round(width * 0.03));
+        ctx.font = `600 ${big}px sans-serif`;
+        ctx.fillStyle = "rgba(255,255,255,0.34)";
+        const gapY = Math.round(width * 0.22);
+        const gapX = Math.round(width * 0.4);
+        for (let y = -height; y <= height; y += gapY) {
+          for (let x = -width; x <= width; x += gapX) {
+            ctx.fillText("TOMATOK", x, y);
+            ctx.font = `500 ${small}px sans-serif`;
+            ctx.fillText(mark, x, y + Math.round(big * 0.85));
+            ctx.font = `600 ${big}px sans-serif`;
+          }
+        }
+        ctx.restore();
+        const data = canvas.toDataURL("image/jpeg", 0.78);
+        protectCache.set(key, data);
+        img.src = data;
+      };
+      source.src = sourceUrl;
+    }
+    if (index < jobs.length) scheduleIdle(step);
+  };
+  scheduleIdle(step);
+}
+
+function armOpenMedia(stage) {
+  if (!stage) return;
+  // 작은 불꽃 영상만 미리 받고, 2.7MB splash는 터질 때 받는다.
+  const fire = stage.querySelector("[data-fireworks][data-src]");
+  if (fire && !fire.getAttribute("src")) {
+    fire.preload = "metadata";
+    fire.src = fire.dataset.src;
+  }
+}
+
+function ensureVideoSrc(video) {
+  if (!video) return false;
+  if (!video.getAttribute("src") && video.dataset.src) {
+    video.preload = "auto";
+    video.src = video.dataset.src;
+  }
+  return Boolean(video.getAttribute("src"));
 }
 
 function shieldFronts(hidden) {
@@ -3919,6 +3998,7 @@ function playFireworks(stage) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const video = stage.querySelector("[data-fireworks]");
   if (!video || stage.dataset.fire) return;
+  if (!ensureVideoSrc(video)) return;
   stage.dataset.fire = "1";
   stage.classList.add("is-fire");
   video.loop = true;
@@ -3944,6 +4024,10 @@ function playBurst(stage, done) {
     done();
   };
   if (!video || !stage.isConnected) {
+    window.setTimeout(finish, 1000);
+    return;
+  }
+  if (!ensureVideoSrc(video)) {
     window.setTimeout(finish, 1000);
     return;
   }
@@ -3977,7 +4061,7 @@ function crackSparks(stage, burst) {
     (t) => [0.16 + t * 0.7, 0.24],
     (t) => [0.1 + t * 0.82, 0.62],
   ];
-  const count = burst ? 28 : 14;
+  const count = burst ? 14 : 8;
   for (let index = 0; index < count; index += 1) {
     const [x, y] = seams[index % seams.length](Math.random());
     const spark = document.createElement("i");
@@ -4326,6 +4410,7 @@ function armOpenCut() {
   const stage = document.querySelector("[data-open-stage]");
   if (!stage || stage.dataset.bound) return;
   stage.dataset.bound = "1";
+  armOpenMedia(stage);
   openCutListen?.abort();
   openCutListen = new AbortController();
   const signal = openCutListen.signal;
@@ -5851,15 +5936,15 @@ function splash() {
         <div class="mys-stars a"></div>
         <div class="mys-stars b"></div>
         <div class="mys-stars c"></div>
-        <img class="mys-orbit" src="/assets/splash/orbit.png?v=1" alt="" draggable="false" />
+        <img class="mys-orbit" src="/assets/splash/orbit.png?v=2" alt="" draggable="false" decoding="async" fetchpriority="low" />
         ${mystery("c3 far")}
         ${mystery("c4 far")}
         ${silhouette("c1", "f")}
         ${mystery("c2")}
         ${silhouette("c5", "m")}
-        <div class="mys-pack"><div class="mys-pack-float"><img class="mys-pack-front" src="${DECK_PACK}" alt="" draggable="false" /><img class="mys-pack-back" src="${DECK_BACK}" alt="" draggable="false" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" /><i class="mys-gloss"></i></div></div>
+        <div class="mys-pack"><div class="mys-pack-float"><img class="mys-pack-front" src="${DECK_PACK}" alt="" draggable="false" decoding="async" /><img class="mys-pack-back" src="${DECK_BACK}" alt="" draggable="false" decoding="async" fetchpriority="low" /><img class="mys-tear t1" src="tears/method-1/over-1.png?v=1" alt="" draggable="false" decoding="async" fetchpriority="low" /><img class="mys-tear t2" src="tears/method-1/over-2.png?v=1" alt="" draggable="false" decoding="async" fetchpriority="low" /><i class="mys-gloss"></i></div></div>
         ${sparks}
-        <img class="mys-emblem" src="/assets/splash/emblem-chrome.png?v=1" alt="TOMATOK PHOTOCARD" draggable="false" />
+        <img class="mys-emblem" src="/assets/splash/emblem-chrome.png?v=2" alt="TOMATOK PHOTOCARD" draggable="false" decoding="async" />
         <i class="mys-emblem-shine"></i>
       </div>
       <button class="primary splash-go" type="button" data-boot-next="push">시작하기</button>
