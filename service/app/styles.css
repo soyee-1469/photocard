@@ -1531,6 +1531,13 @@ button:disabled { opacity: 0.4; }
   row-gap: 8px;
   padding: 8px 16px 24px;
 }
+.owned > figure,
+.owned > .pick-card,
+.shelf-wrap .tile,
+.album-grid .tile {
+  content-visibility: auto;
+  contain-intrinsic-size: 120px 180px;
+}
 
 .owned figure { margin: 0; }
 .ship-add {
