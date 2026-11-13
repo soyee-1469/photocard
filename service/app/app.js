@@ -1416,7 +1416,7 @@ function guideBanner() {
   return `
     <section class="guide-banner-wrap">
       <button type="button" class="guide-banner" data-nav="guide">
-        <img src="pack_closed.png" alt="" />
+        <img src="pack_closed.webp?v=1" alt="" />
         <span class="guide-banner-copy">
           <small>이용 방법 안내</small>
           <strong>포토카드, 이렇게 뽑아요</strong>
@@ -2974,7 +2974,7 @@ function openMotion() {
     <div class="motion" aria-label="Photocard Open">
       <span class="motion-ring"></span>
       <span class="motion-flash"></span>
-      <img class="motion-pack" src="pack_closed.png" alt="" />
+      <img class="motion-pack" src="pack_closed.webp?v=1" alt="" />
     </div>
   `;
 }
