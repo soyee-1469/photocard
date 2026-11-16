@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "포토카드 서비스",
+    "slug": "photocard-service",
+    "version": "1.0.0",
+    "scheme": "photocard",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#14100E",
+      "resizeMode": "contain"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "backgroundColor": "#14100E"
+    },
+    "experiments": {
+      "baseUrl": "/photocard/service/pr-7"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

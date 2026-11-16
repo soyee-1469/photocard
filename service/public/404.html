@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>포토카드 서비스</title>
+  <script>
+    // SPA 라우팅을 위한 404 fallback
+    const path = window.location.pathname;
+    const search = window.location.search;
+    const hash = window.location.hash;
+
+    // baseUrl에 맞게 조정
+    const baseUrl = '/photocard/service';
+
+    // 현재 경로가 baseUrl로 시작하는 경우에만 리다이렉트
+    if (path.startsWith(baseUrl)) {
+      const newPath = path.substring(baseUrl.length) || '/';
+      window.location.replace(baseUrl + '/' + '?redirect=' + encodeURIComponent(newPath + search + hash));
+    } else {
+      window.location.replace(baseUrl + '/');
+    }
+  </script>
+</head>
+<body>
+  <p>Loading...</p>
+</body>
+</html>
