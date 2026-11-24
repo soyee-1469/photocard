@@ -788,7 +788,26 @@ function productName(item) {
 function lineup(count, drawable) {
   const base = `${count}종 중 랜덤 1장`;
   if (drawable == null || drawable >= count) return base;
+  if (drawable < MIN_DRAWABLE_KINDS) return `${base} · 뽑을 수 있는 종류가 ${drawable}종뿐이라 판매를 멈췄어요`;
   return `${base} · 지금 ${drawable}종 뽑기 가능`;
+}
+
+// 공식 라인업 대비 보유. 유닛의 officialKinds(재고표 `공식종수` 열)가 있을 때만.
+function officialNote(unit, have) {
+  const official = Number(unit?.officialKinds) || 0;
+  if (!official || official <= have) return "";
+  return `공식 ${official}종 중 ${have}종 보유`;
+}
+
+// 공식 라인업에는 있지만 우리가 안 가진 카드 자리. 공식 이미지는 쓰지 않는다.
+function missingSlots(unit, have) {
+  const official = Number(unit?.officialKinds) || 0;
+  const missing = Math.max(0, official - have);
+  return Array.from({ length: missing }, () => `
+      <div class="slot pair is-missing">
+        <div class="pair-imgs"><span class="face blank"></span><span class="face blank"></span></div>
+        <small>미보유</small>
+      </div>`).join("");
 }
 
 // 포토카드 결제 단위는 TP다. TOTT는 토마톡 지갑에서 TP로 바꿔 쓴다.
@@ -873,6 +892,15 @@ function listed(item) {
 
 const SALE_WORD = { on: "", out: "품절", soon: "입고예정", stop: "판매중지", draft: "등록중" };
 
+// 뽑을 수 있는 종류가 이 수보다 적으면 자동 판매중지(2026-11-24 결정). 랜덤이 성립하지 않기 때문.
+const MIN_DRAWABLE_KINDS = 2;
+
+function autoStopped(item) {
+  const cards = packCards(item);
+  if (!cards.length || !cards.some(stockTracked)) return false;
+  return drawableCards(item).length < MIN_DRAWABLE_KINDS;
+}
+
 function saleOf(item) {
   if (!item) return "on";
   const pack = registerPack(item.id);
@@ -881,7 +909,8 @@ function saleOf(item) {
     if (pack.home) return "out";
   }
   if (item.sale === "soon") return "soon";
-  return item.sale === "out" ? "out" : "on";
+  if (item.sale === "out") return "out";
+  return autoStopped(item) ? "stop" : "on";
 }
 
 function stockTracked(card) {
@@ -1124,7 +1153,8 @@ function albumLines(group, cls) {
 }
 
 function shelfMeta(group) {
-  return `${group.kinds}종 랜덤`;
+  const word = saleWord(product(group.id));
+  return word ? `<em class="shelf-stop">${esc(word)}</em>` : `${group.kinds}종 랜덤`;
 }
 
 // 목록 가격은 결제 단위인 TP로만 적는다(TP는 원화 1:1). 원화·달러 환산은 상세의 가격 블록에만.
@@ -1153,7 +1183,7 @@ function shelfCopy(group) {
 
 function artistRandomTile(group) {
     return `
-    <button type="button" class="artist-random-tile" data-open="${esc(group.id)}" data-hero="artist">
+    <button type="button" class="artist-random-tile${saleWord(product(group.id)) ? " sold" : ""}" data-open="${esc(group.id)}" data-hero="artist">
       <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
       <span class="artist-random-fade" aria-hidden="true"></span>
       <span class="artist-random-copy">
@@ -1203,7 +1233,7 @@ function flowStage(group) {
 
 function shelfFlowRow(group) {
   return `
-    <div class="flow-row sflow-row">
+    <div class="flow-row sflow-row${saleWord(product(group.id)) ? " sold" : ""}">
       <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="sflow">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
@@ -2690,7 +2720,8 @@ function unitGroupHtml(group) {
   const slots = group.cards.map(cardSlot).join("");
   if (!unit) return `<div class="slots">${slots}</div>`;
   const badge = unit.badge ? `<em class="unit-badge">${esc(unit.badge)}</em>` : "";
-  const sub = [unit.eventName, `${group.cards.length}종`].filter(Boolean).join(" · ");
+  const have = group.cards.length;
+  const sub = [unit.eventName, officialNote(unit, have) || `${have}종`].filter(Boolean).join(" · ");
   return `
       <div class="unit-group">
         <header class="unit-head">
@@ -2699,7 +2730,7 @@ function unitGroupHtml(group) {
             <small>${esc(sub)}</small>
           </div>
         </header>
-        <div class="slots">${slots}</div>
+        <div class="slots">${slots}${missingSlots(unit, have)}</div>
       </div>`;
 }
 

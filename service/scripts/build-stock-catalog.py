@@ -208,6 +208,8 @@ def build_catalog() -> None:
                 # 등급: 재고표 `등급` 열(NORMAL/RARE/SPECIAL). 비어 있으면 특전은 SPECIAL, 나머지는 NORMAL.
                 "rarity": (row.get("등급") or "").strip().upper() or ("SPECIAL" if unit["eventType"] == "pob" else "NORMAL"),
                 "album": clean_name(row.get("앨범/버전")),
+                # 공식 종수: 재고표 `공식종수` 열(앨범/버전의 공식 포토카드 전체 종수). 같은 유닛의 어느 줄에 적어도 된다.
+                "officialKinds": int(str(row.get("공식종수") or "").strip() or 0),
                 "qty": qty,
                 "front": front,
                 "back": back,
@@ -239,8 +241,12 @@ def build_catalog() -> None:
             unit = c["unit"]
             if unit["id"] not in unit_ids:
                 unit_ids.append(unit["id"])
-                album_units.append({"artistId": meta["artistId"], **unit, "cardCount": 0})
+                album_units.append({"artistId": meta["artistId"], **unit, "cardCount": 0, "officialKinds": 0})
             unit_count[unit["id"]] = unit_count.get(unit["id"], 0) + 1
+            if c["officialKinds"]:
+                for u in album_units:
+                    if u["id"] == unit["id"]:
+                        u["officialKinds"] = max(u["officialKinds"], c["officialKinds"])
             referenced.update(x for x in (c["front"], c["back"]) if x)
             pack_cards.append(
                 {

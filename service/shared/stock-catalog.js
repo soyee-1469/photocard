@@ -126,7 +126,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg"
     ],
-    "cardCount": 11
+    "cardCount": 11,
+    "officialKinds": 0
   },
   {
     "artistId": "cortis",
@@ -138,7 +139,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg"
     ],
-    "cardCount": 2
+    "cardCount": 2,
+    "officialKinds": 0
   },
   {
     "artistId": "seventeen",
@@ -160,7 +162,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg"
     ],
-    "cardCount": 19
+    "cardCount": 19,
+    "officialKinds": 0
   },
   {
     "artistId": "seventeen",
@@ -172,7 +175,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg"
     ],
-    "cardCount": 15
+    "cardCount": 15,
+    "officialKinds": 0
   },
   {
     "artistId": "seventeen",
@@ -184,7 +188,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/SEVENTEEN/04_SEVENTEEN_CARAT_LAND_poster.jpg"
     ],
-    "cardCount": 7
+    "cardCount": 7,
+    "officialKinds": 0
   },
   {
     "artistId": "twice",
@@ -216,7 +221,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg"
     ],
-    "cardCount": 16
+    "cardCount": 16,
+    "officialKinds": 0
   },
   {
     "artistId": "twice",
@@ -228,7 +234,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/TWICE/06_TWICE_THIS_IS_FOR_TOUR_poster.jpg"
     ],
-    "cardCount": 18
+    "cardCount": 18,
+    "officialKinds": 0
   },
   {
     "artistId": "blackpink",
@@ -272,7 +279,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg"
     ],
-    "cardCount": 12
+    "cardCount": 12,
+    "officialKinds": 0
   },
   {
     "artistId": "bts",
@@ -294,7 +302,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"
     ],
-    "cardCount": 7
+    "cardCount": 7,
+    "officialKinds": 0
   },
   {
     "artistId": "bts",
@@ -306,7 +315,8 @@ const ALBUM_UNITS = [
     "covers": [
       "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg"
     ],
-    "cardCount": 7
+    "cardCount": 7,
+    "officialKinds": 0
   },
   {
     "artistId": "bts",
@@ -316,7 +326,8 @@ const ALBUM_UNITS = [
     "badge": "콜라보",
     "eventName": "VT코스메틱",
     "covers": [],
-    "cardCount": 6
+    "cardCount": 6,
+    "officialKinds": 0
   }
 ];
 const STOCK_PRODUCTS = [

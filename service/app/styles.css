@@ -1032,6 +1032,13 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   background: #111;
   border: 1px solid var(--line);
 }
+/* 미보유 자리(공식 라인업에만 있는 카드): 점선 빈 칸 */
+.slot.is-missing .pair-imgs .face.blank { aspect-ratio: 55 / 85; border: 1px dashed #3a3a40; border-radius: 6px; background: #141416; }
+.slot.is-missing small { color: #6f6f76; }
+/* 판매중지 상품: 홈 줄과 배너를 가라앉히고 글자로 알린다 */
+.shelf-stop { font-style: normal; color: #ff7676; font-weight: 700; }
+.sflow-row.sold .flow-scene, .sflow-row.sold .flow-mystery { opacity: 0.45; filter: grayscale(1); }
+.artist-random-tile.sold .artist-random-photo, .artist-random-tile.sold .artist-random-mystery { opacity: 0.45; filter: grayscale(1); }
 /* 품절 카드: 흑백으로 가라앉히고 가운데에 큰 도장. 글자도 흐리게. */
 .slot.is-soldout .pair-imgs { opacity: 0.32; filter: grayscale(1); }
 .slot.is-soldout small { color: #6f6f76; }
@@ -1041,14 +1048,15 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   top: 42%;
   z-index: 2;
   transform: translate(-50%, -50%) rotate(-10deg);
-  padding: 5px 12px;
+  padding: 4px 9px;
   border: 2px solid #ff5b5b;
   border-radius: 6px;
   background: rgba(20, 10, 10, 0.78);
   color: #ff7676;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
+  white-space: nowrap; /* 좁은 칸에서도 '품절'이 한 줄 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 .slot.pair { position: relative; }
