@@ -81,9 +81,7 @@ const SHELF_GROUPS = [
       "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
       "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg"
     ],
-    "extra": [
-      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg"
-    ]
+    "extra": []
   }
 ];
 const SHELF_PRODUCT_IDS = new Set(SHELF_GROUPS.map((group) => group.id));
@@ -306,7 +304,7 @@ const ALBUM_UNITS = [
     "badge": "",
     "eventName": "",
     "covers": [
-      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg"
+      "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg"
     ],
     "cardCount": 7
   },

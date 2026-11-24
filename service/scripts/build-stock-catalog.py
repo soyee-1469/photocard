@@ -47,7 +47,7 @@ UNIT_RULES = {
     "BTS": [
         ("사운드웨이브 예판 특전", dict(id="bts-arirang-soundwave-pob", name="ARIRANG 예판 특전", eventType="pob", badge="예판특전", eventName="사운드웨이브", covers=[])),
         ("검정 뒷면", dict(id="bts-arirang-rooted-in-music", name="ARIRANG (Rooted in Music ver.)", eventType="album", badge="", eventName="", covers=[f"{COVERS}/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"])),
-        ("흰 뒷면", dict(id="bts-arirang-gyeongbokgung", name="ARIRANG (경복궁 ver.)", eventType="album", badge="", eventName="", covers=[f"{COVERS}/BTS/09_BTS_ARIRANG_cover.jpg"])),
+        ("흰 뒷면", dict(id="bts-arirang-gyeongbokgung", name="ARIRANG (경복궁 ver.)", eventType="album", badge="", eventName="", covers=[f"{COVERS}/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg"])),
         ("VT x BTS", dict(id="bts-vt-collab", name="VT x BTS", eventType="unknown", badge="콜라보", eventName="VT코스메틱", covers=[])),
     ],
 }
@@ -144,7 +144,7 @@ GROUP_META = {
             "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
             "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg",
         ],
-        extra=["/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg"],
+        extra=[],
     ),
 }
 

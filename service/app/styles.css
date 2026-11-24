@@ -148,6 +148,7 @@ body.admin-board #admin-canvas { display: block; }
 .scroll {
   flex: 1;
   overflow: auto;
+  overflow-x: hidden; /* 캐러셀 앨범이 오른쪽으로 삐져나와도 화면이 옆으로 밀리지 않게 */
   scrollbar-width: none;
 }
 
@@ -3852,6 +3853,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   align-items: center;
   gap: 8px;
   padding: 4px 0 8px;
+  overflow: hidden; /* 오른쪽으로 나간 앨범은 줄 안에서 잘린다 */
 }
 .flow-row + .flow-row { border-top: 1px solid rgba(255, 255, 255, 0.08); }
 /* 캐러셀을 왼쪽으로 20% 당겨 글자 밑까지 들어가게. 글자가 위에 오고, 앨범은 흐려지며 그 뒤로 사라진다. */
