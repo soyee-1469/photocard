@@ -3924,7 +3924,6 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 상세 구성: 앨범/특전 유닛별 묶음 */
 .unit-group + .unit-group { margin-top: 20px; }
 .unit-head { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
-.unit-cover { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; flex: none; }
 .unit-copy { min-width: 0; }
 .unit-copy strong { display: block; font-size: 14px; line-height: 1.3; }
 .unit-copy small { display: block; margin-top: 2px; font-size: 12px; color: #b9a995; }
@@ -3955,51 +3954,37 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 캐러셀을 왼쪽으로 20% 당겨 글자 밑까지 들어가게. 글자가 위에 오고, 앨범은 흐려지며 그 뒤로 사라진다. */
 .flow-stage {
   position: relative;
+  z-index: 1; /* 앨범의 z-index가 글자(z-index 2) 위로 새지 않게 스택을 가둔다 */
   display: block;
   height: 160px;
   min-width: 0;
   margin-left: -20%;
   -webkit-tap-highlight-color: transparent;
 }
-.flow-scroll {
-  position: relative;
-  z-index: 1;
-  display: block;
-  height: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: contain;
+/* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
+.flow-scene {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 0;
+  height: 0;
+  touch-action: pan-y;
   cursor: grab;
 }
-.flow-scroll::-webkit-scrollbar { display: none; }
-/* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
-.flow-scroll.is-grab { cursor: grabbing; }
-.flow-stage.is-single .flow-scroll { overflow: hidden; cursor: pointer; }
-.flow-track {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  box-sizing: border-box;
-  width: max-content;
-  min-width: 100%;
-  height: 100%;
-  padding: 0 calc(50% - 48px) 10px;
-}
 .flow-item {
-  position: relative;
+  position: absolute;
+  left: 0;
+  bottom: 0;
   display: flex;
   align-items: flex-end;
-  flex: 0 0 auto;
   height: 118px;
-  scroll-snap-align: center;
+  translate: -50% 0;
   transform-origin: center bottom;
   transform-style: preserve-3d;
-  will-change: transform;
+  will-change: transform, opacity;
   --edge: 7px;
 }
+.flow-scene.is-snapping .flow-item { transition: transform 0.36s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.36s; }
 .flow-item img { max-width: 160px; max-height: 118px; }
 /* 물음표 카드는 캐러셀 시작 지점(첫 앨범 왼쪽 아래)에 걸쳐 둔다. */
 .flow-mystery {
@@ -4112,6 +4097,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 회전 진열대(반원). 무대 가운데 아래를 원의 중심으로 두고 앨범을 원 둘레에 세운다. */
 .ring-stage {
   position: relative;
+  z-index: 1;
   display: block;
   height: 160px;
   min-width: 0;

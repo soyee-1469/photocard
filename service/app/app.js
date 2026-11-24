@@ -1135,13 +1135,18 @@ function coverBox(src) {
   return `<span class="cover3d"><img src="${src}" alt="" draggable="false" /><i class="cover-edge l"></i><i class="cover-edge r"></i></span>`;
 }
 
+// 진열용 이미지 목록: 앨범 커버만. 카드 뒷면이나 가짜 자리표시로 채우지 않는다(2026-11-24 결정).
+function displayCovers(group, max = FLOW_MAX_COVERS) {
+  return (group.covers || []).slice(0, max);
+}
+
 function shelfBox(src, kind) {
   return `<span class="shelf-box shelf-box-${kind}">${coverBox(src)}</span>`;
 }
 
 function shelfStage(group) {
   // 있는 커버만 올린다. 부족분을 card_back으로 채우지 않는다.
-  const covers = (group.covers || []).slice(0, SHELF_SLOT_COUNT);
+  const covers = displayCovers(group, SHELF_SLOT_COUNT);
   const boxes = covers.map((src) => shelfBox(src, "cover"));
   const countClass = `n${Math.max(1, boxes.length)}`;
   return `
@@ -1207,14 +1212,12 @@ const FLOW_BASE_TILT = -8; // 가운데 앨범도 살짝 돌려 옆면(두께)�
 const FLOW_MAX_COVERS = 5;
 
 function flowStage(group) {
-  const covers = (group.covers || []).slice(0, FLOW_MAX_COVERS);
-  const items = covers
-    .map((src) => `<span class="flow-item">${coverBox(src)}</span>`)
-    .join("");
+  const covers = displayCovers(group, 3);
+  const items = covers.map((src) => `<span class="flow-item">${coverBox(src)}</span>`).join("");
   const single = covers.length < 2 ? " is-single" : "";
   return `
     <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="album">
-      <span class="flow-scroll" data-flow><span class="flow-track">${items}</span></span>
+      <span class="flow-scene" data-flow>${items}</span>
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
 }
@@ -1242,7 +1245,7 @@ const RING_STEP = 42;    // 앨범 사이 각도
 const RING_RADIUS = 118; // 원 반지름(px)
 
 function ringStage(group) {
-  const covers = (group.covers || []).slice(0, FLOW_MAX_COVERS);
+  const covers = displayCovers(group, 3);
   const items = covers.map((src) => `<span class="ring-item">${coverBox(src)}</span>`).join("");
   return `
     <span class="ring-stage" data-open="${esc(group.id)}" data-hero="album">
@@ -1317,80 +1320,81 @@ function armRings() {
   });
 }
 
-function paintFlow(scroller) {
-  const center = scroller.scrollLeft + scroller.clientWidth / 2;
-  scroller.querySelectorAll(".flow-item").forEach((item) => {
-    const mid = item.offsetLeft + item.offsetWidth / 2;
-    const d = Math.max(-2.5, Math.min(2.5, (mid - center) / FLOW_SPACING));
+// 순환 커버플로우. 정면 기준 칸 번호 d로 배치한다: 왼쪽 1칸(-1), 정면(0), 나머지는 오른쪽(1, 2…).
+// 왼쪽으로 밀려난 앨범은 보이지 않는 구간에서 오른쪽 끝으로 돌아간다. 2장이면 왼쪽 칸은 비운다.
+function flowSlot(index, pos, count) {
+  const lo = count >= 3 ? -1.5 : -1;
+  const d = index - pos;
+  return ((((d - lo) % count) + count) % count) + lo;
+}
+
+function paintFlow(scene, pos) {
+  const items = scene.querySelectorAll(".flow-item");
+  const count = items.length;
+  items.forEach((item, index) => {
+    const d = flowSlot(index, pos, count);
+    const last = Number(item.dataset.d);
+    // 반대편으로 순간 이동하는 프레임은 전환 없이 그린다(화면을 가로질러 날아가지 않게).
+    item.style.transition = Number.isFinite(last) && Math.abs(d - last) > count / 2 ? "none" : "";
+    item.dataset.d = String(d);
     const t = Math.min(1, Math.abs(d));
     const sign = d < 0 ? -1 : 1;
     const rot = FLOW_BASE_TILT - sign * t * 48;
-    const shift = -d * 30;
+    const x = d * (FLOW_SPACING - 30);
     const scale = 1 - t * 0.18;
-    item.style.transform = `translateX(${shift}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
-    // filter는 요소를 평면화해 3D 옆면을 없애므로, 어둡기는 변수로 넘겨 자식(img·옆면)에만 건다.
+    const fade = d < -1 ? Math.max(0, 1 - (-d - 1) * 2) : d > 2.2 ? Math.max(0, 1 - (d - 2.2) * 2) : 1;
+    item.style.transform = `translateX(${x}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
+    item.style.opacity = String(fade);
     item.style.setProperty("--dim", (1 - t * 0.42).toFixed(3));
     item.style.zIndex = String(10 - Math.round(Math.abs(d) * 2));
   });
 }
 
-// 스크롤 중·직후의 탭은 상세 진입으로 치지 않는다(data-drag). 마우스 드래그도 같은 규칙.
 function armCoverflows() {
-  document.querySelectorAll("[data-flow]").forEach((scroller) => {
-    // 처음엔 첫 번째 앨범을 정면에 둔다. 뒤 앨범들이 오른쪽에 기울어져 "더 있다"는 신호가 된다.
-    // 커버 폭은 이미지가 로드돼야 정해지므로, 사용자가 만지기 전까지는 로드될 때마다 다시 맞춘다.
-    const items = scroller.querySelectorAll(".flow-item");
-    const middle = items[0];
-    let touched = false;
-    const recenter = () => {
-      if (touched || !middle) return;
-      scroller.scrollLeft = middle.offsetLeft + middle.offsetWidth / 2 - scroller.clientWidth / 2;
-      paintFlow(scroller);
-    };
-    recenter();
-    scroller.querySelectorAll("img").forEach((img) => {
-      if (!img.complete) img.addEventListener("load", recenter, { once: true });
-    });
-    ["pointerdown", "touchstart", "wheel"].forEach((type) =>
-      scroller.addEventListener(type, () => { touched = true; }, { passive: true }),
-    );
-    let raf = 0;
-    let settle = 0;
-    const markDrag = () => {
-      scroller.dataset.drag = "1";
-      clearTimeout(settle);
-      settle = setTimeout(() => { delete scroller.dataset.drag; }, 180);
-    };
-    scroller.addEventListener("scroll", () => {
-      markDrag();
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; paintFlow(scroller); });
-    }, { passive: true });
+  document.querySelectorAll("[data-flow]").forEach((scene) => {
+    const stage = scene.parentElement;
+    const count = scene.querySelectorAll(".flow-item").length;
+    let pos = 0;
     let down = false;
     let startX = 0;
-    let startLeft = 0;
-    scroller.addEventListener("pointerdown", (event) => {
-      if (event.pointerType !== "mouse") return;
+    let startPos = 0;
+    let lastX = 0;
+    let lastT = 0;
+    let velocity = 0;
+    paintFlow(scene, pos);
+    if (count < 2) return;
+    scene.addEventListener("pointerdown", (event) => {
       down = true;
-      startX = event.clientX;
-      startLeft = scroller.scrollLeft;
+      startX = lastX = event.clientX;
+      lastT = performance.now();
+      velocity = 0;
+      startPos = pos;
+      scene.classList.remove("is-snapping");
+      try { scene.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
     });
-    scroller.addEventListener("pointermove", (event) => {
+    scene.addEventListener("pointermove", (event) => {
       if (!down) return;
       const dx = event.clientX - startX;
-      if (Math.abs(dx) < 4) return;
-      scroller.classList.add("is-grab");
-      scroller.style.scrollSnapType = "none";
-      scroller.scrollLeft = startLeft - dx;
-      markDrag();
+      if (Math.abs(dx) > 5) stage.dataset.drag = "1";
+      const now = performance.now();
+      velocity = (event.clientX - lastX) / Math.max(1, now - lastT);
+      lastX = event.clientX;
+      lastT = now;
+      pos = startPos - dx / FLOW_SPACING;
+      paintFlow(scene, pos);
     });
     const release = () => {
       if (!down) return;
       down = false;
-      scroller.classList.remove("is-grab");
-      scroller.style.scrollSnapType = "";
+      // 빠르게 튕기면 한 칸 더 넘긴다(관성 대용).
+      const fling = Math.abs(velocity) > 0.45 ? (velocity < 0 ? 1 : -1) : 0;
+      pos = Math.round(pos + fling);
+      pos = ((pos % count) + count) % count;
+      scene.classList.add("is-snapping");
+      paintFlow(scene, pos);
+      setTimeout(() => { delete stage.dataset.drag; }, 160);
     };
-    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => scroller.addEventListener(type, release));
+    ["pointerup", "pointercancel"].forEach((type) => scene.addEventListener(type, release));
   });
 }
 
@@ -2710,13 +2714,11 @@ function unitGroupHtml(group) {
   const unit = group.unit;
   const slots = group.cards.map(cardSlot).join("");
   if (!unit) return `<div class="slots">${slots}</div>`;
-  const cover = unit.covers?.[0] ? `<img class="unit-cover" src="${esc(unit.covers[0])}" alt="" />` : "";
   const badge = unit.badge ? `<em class="unit-badge">${esc(unit.badge)}</em>` : "";
   const sub = [unit.eventName, `${group.cards.length}종`].filter(Boolean).join(" · ");
   return `
       <div class="unit-group">
         <header class="unit-head">
-          ${cover}
           <div class="unit-copy">
             <strong>${esc(unit.name)}${badge}</strong>
             <small>${esc(sub)}</small>
