@@ -1256,10 +1256,10 @@ function paintFlow(scroller) {
 // 스크롤 중·직후의 탭은 상세 진입으로 치지 않는다(data-drag). 마우스 드래그도 같은 규칙.
 function armCoverflows() {
   document.querySelectorAll("[data-flow]").forEach((scroller) => {
-    // 처음엔 가운데 앨범을 정면에 둔다(3장이면 1-2-1). 양옆이 보여야 "더 있다"는 신호가 된다.
+    // 처음엔 첫 번째 앨범을 정면에 둔다. 뒤 앨범들이 오른쪽에 기울어져 "더 있다"는 신호가 된다.
     // 커버 폭은 이미지가 로드돼야 정해지므로, 사용자가 만지기 전까지는 로드될 때마다 다시 맞춘다.
     const items = scroller.querySelectorAll(".flow-item");
-    const middle = items[Math.floor((items.length - 1) / 2)];
+    const middle = items[0];
     let touched = false;
     const recenter = () => {
       if (touched || !middle) return;
