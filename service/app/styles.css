@@ -579,9 +579,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .detail-hero.album-hero {
   padding: 18px 16px 8px;
-  background:
-    radial-gradient(120% 70% at 50% 0%, rgba(90, 58, 32, 0.28), transparent 55%),
-    linear-gradient(180deg, #1a1412 0%, #120e0c 100%);
 }
 .detail-hero.album-hero .shelf-stage {
   min-height: 150px;
@@ -705,19 +702,20 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
   pointer-events: none;
 }
+/* 선반 널빤지: 검정, 얇게. */
 .shelf-ledge {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 12px;
+  height: 7px;
   border-radius: 2px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 40%),
-    linear-gradient(90deg, #6b4424 0%, #a56b35 22%, #7a4c28 55%, #4e3118 100%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 45%),
+    linear-gradient(90deg, #2b2b2f 0%, #3a3a3f 30%, #232326 70%, #141416 100%);
   box-shadow:
-    0 5px 10px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(255, 230, 190, 0.28);
+    0 4px 10px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
 .tile {
