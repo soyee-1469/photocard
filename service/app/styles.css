@@ -3933,7 +3933,6 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   position: relative;
   display: block;
   height: 168px;
-  margin: 0 -16px;
   -webkit-tap-highlight-color: transparent;
 }
 .flow-scroll {
@@ -3950,6 +3949,11 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   cursor: grab;
 }
 .flow-scroll::-webkit-scrollbar { display: none; }
+/* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
+.flow-scroll {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
 .flow-scroll.is-grab { cursor: grabbing; }
 .flow-stage.is-single .flow-scroll { overflow: hidden; cursor: pointer; }
 .flow-track {
