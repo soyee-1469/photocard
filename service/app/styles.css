@@ -529,7 +529,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   pointer-events: none;
 }
 .artist-random-copy strong {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -647,7 +647,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .shelf-artist {
   color: #f4f1ea;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.02em;
@@ -4083,13 +4083,14 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .shelf-albums {
   max-width: 100%;
   font-size: 12px;
+  font-weight: 300;
   line-height: 1.35;
-  color: #e6ddd2;
+  color: #cfc6ba;
   white-space: normal;
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
-.shelf-albums { margin-bottom: 2px; color: #d2c2ad; }
+.shelf-albums { margin-bottom: 2px; color: #b9ae9f; }
 .detail .compose-line {
   margin: 2px 0 6px;
   font-size: 13px;
