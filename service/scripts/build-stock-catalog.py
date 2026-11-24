@@ -249,7 +249,7 @@ def build_catalog() -> None:
                     "rarity": "NORMAL",
                     "stock": c["qty"],
                     "unitId": unit["id"],
-                    "album": c["album"],
+                    "album": unit["name"],  # 손님에게는 유닛 표시명(재고표 원문의 밑줄·괄호 없음)
                     "code": c["code"],
                     "stockFiles": c["stockFiles"],
                 }

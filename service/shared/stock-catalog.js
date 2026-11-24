@@ -494,7 +494,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "cortis-greengreen",
-        "album": "GREENGREEN (회색 로고 뒷면, 다른 버전/특전 가능)",
+        "album": "GREENGREEN",
         "code": "P012",
         "stockFiles": [
           "P012_CORTIS_GREENGREEN(추정)_Martin_01_1앞.jpg"
@@ -522,7 +522,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 4,
         "unitId": "cortis-greengreen-scratch",
-        "album": "GREENGREEN 스크래치 카드 (미개봉, 핑크 로고)",
+        "album": "GREENGREEN 스크래치 카드(미개봉)",
         "code": "P001",
         "stockFiles": [
           "P001_CORTIS_GREENGREEN_SCRATCH-PINK_01_1앞.jpg",
@@ -539,7 +539,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "cortis-greengreen-scratch",
-        "album": "GREENGREEN 스크래치 카드 (미개봉, 화이트 로고)",
+        "album": "GREENGREEN 스크래치 카드(미개봉)",
         "code": "P002",
         "stockFiles": [
           "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_01_1앞.jpg",
@@ -574,7 +574,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P022",
         "stockFiles": [
           "P022_SEVENTEEN_HAPPY_BURSTDAY_Vernon_v1_01_1앞.jpg"
@@ -588,7 +588,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P023",
         "stockFiles": [
           "P023_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v1_01_1앞.jpg"
@@ -602,7 +602,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P024",
         "stockFiles": [
           "P024_SEVENTEEN_HAPPY_BURSTDAY_Woozi_v1_01_1앞.jpg",
@@ -617,7 +617,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P025",
         "stockFiles": [
           "P025_SEVENTEEN_HAPPY_BURSTDAY_DK_01_1앞.jpg"
@@ -631,7 +631,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P026",
         "stockFiles": [
           "P026_SEVENTEEN_HAPPY_BURSTDAY_Vernon_v2_01_1앞.jpg",
@@ -646,7 +646,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P027",
         "stockFiles": [
           "P027_SEVENTEEN_HAPPY_BURSTDAY_S.Coups_01_1앞.jpg",
@@ -661,7 +661,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P028",
         "stockFiles": [
           "P028_SEVENTEEN_HAPPY_BURSTDAY_Woozi_v2_01_1앞.jpg"
@@ -675,7 +675,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P029",
         "stockFiles": [
           "P029_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v1_01_1앞.jpg"
@@ -689,7 +689,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P030",
         "stockFiles": [
           "P030_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v2_01_1앞.jpg"
@@ -703,7 +703,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P031",
         "stockFiles": [
           "P031_SEVENTEEN_HAPPY_BURSTDAY_Joshua_01_1앞.jpg"
@@ -717,7 +717,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P032",
         "stockFiles": [
           "P032_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v3_01_1앞.jpg"
@@ -731,7 +731,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P033",
         "stockFiles": [
           "P033_SEVENTEEN_HAPPY_BURSTDAY_Jun_v1_01_1앞.jpg"
@@ -745,7 +745,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P034",
         "stockFiles": [
           "P034_SEVENTEEN_HAPPY_BURSTDAY_Seungkwan_v1_01_1앞.jpg"
@@ -759,7 +759,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P035",
         "stockFiles": [
           "P035_SEVENTEEN_HAPPY_BURSTDAY_Hoshi_01_1앞.jpg"
@@ -773,7 +773,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P036",
         "stockFiles": [
           "P036_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v4_01_1앞.jpg"
@@ -787,7 +787,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P037",
         "stockFiles": [
           "P037_SEVENTEEN_HAPPY_BURSTDAY_Jun_v2_01_1앞.jpg"
@@ -801,7 +801,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P038",
         "stockFiles": [
           "P038_SEVENTEEN_HAPPY_BURSTDAY_Seungkwan_v2_01_1앞.jpg"
@@ -815,7 +815,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P048",
         "stockFiles": [
           "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_1앞.jpg"
@@ -829,7 +829,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
-        "album": "HAPPY_BURSTDAY (정규5집)",
+        "album": "HAPPY BURSTDAY",
         "code": "P049",
         "stockFiles": [
           "P049_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v2_01_1앞.jpg"
@@ -843,7 +843,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P045",
         "stockFiles": [
           "P045_SEVENTEEN_WORLD_TOUR_NEW_Mingyu_01_1앞.jpg"
@@ -857,7 +857,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P046",
         "stockFiles": [
           "P046_SEVENTEEN_WORLD_TOUR_NEW_DK_01_1앞.jpg"
@@ -871,7 +871,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P050",
         "stockFiles": [
           "P050_SEVENTEEN_WORLD_TOUR_NEW_Joshua_01_1앞.jpg",
@@ -886,7 +886,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P051",
         "stockFiles": [
           "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_1앞.jpg"
@@ -900,7 +900,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P052",
         "stockFiles": [
           "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_1앞.jpg"
@@ -914,7 +914,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P053",
         "stockFiles": [
           "P053_SEVENTEEN_WORLD_TOUR_NEW_S.Coups_01_1앞.jpg"
@@ -928,7 +928,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P054",
         "stockFiles": [
           "P054_SEVENTEEN_WORLD_TOUR_NEW_Vernon_01_1앞.jpg"
@@ -942,7 +942,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P055",
         "stockFiles": [
           "P055_SEVENTEEN_WORLD_TOUR_NEW_Dino_01_1앞.jpg"
@@ -956,7 +956,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P056",
         "stockFiles": [
           "P056_SEVENTEEN_WORLD_TOUR_NEW_Jun_01_1앞.jpg"
@@ -970,7 +970,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P057",
         "stockFiles": [
           "P057_SEVENTEEN_WORLD_TOUR_NEW_The8_v1_01_1앞.jpg"
@@ -984,7 +984,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P058",
         "stockFiles": [
           "P058_SEVENTEEN_WORLD_TOUR_NEW_Mingyu_v2_01_1앞.jpg"
@@ -998,7 +998,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P059",
         "stockFiles": [
           "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_1앞.jpg"
@@ -1012,7 +1012,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P060",
         "stockFiles": [
           "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_1앞.jpg"
@@ -1026,7 +1026,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P061",
         "stockFiles": [
           "P061_SEVENTEEN_WORLD_TOUR_NEW_DK_v2_01_1앞.jpg"
@@ -1040,7 +1040,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
-        "album": "WORLD TOUR [NEW_]",
+        "album": "WORLD TOUR [NEW]",
         "code": "P062",
         "stockFiles": [
           "P062_SEVENTEEN_WORLD_TOUR_NEW_The8_v2_01_1앞.jpg"
@@ -1054,7 +1054,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P039",
         "stockFiles": [
           "P039_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Woozi_01_1앞.jpg"
@@ -1068,7 +1068,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P040",
         "stockFiles": [
           "P040_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_The8_01_1앞.jpg"
@@ -1082,7 +1082,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P041",
         "stockFiles": [
           "P041_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Joshua_01_1앞.jpg"
@@ -1096,7 +1096,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P042",
         "stockFiles": [
           "P042_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Jun_01_1앞.jpg"
@@ -1110,7 +1110,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P043",
         "stockFiles": [
           "P043_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Hoshi_01_1앞.jpg"
@@ -1124,7 +1124,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P044",
         "stockFiles": [
           "P044_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Wonwoo_01_1앞.jpg"
@@ -1138,7 +1138,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
-        "album": "SEVENTEEN in CARAT LAND 2025 (9th 팬미팅)",
+        "album": "SEVENTEEN in CARAT LAND 2025",
         "code": "P047",
         "stockFiles": [
           "P047_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_DK_01_1앞.jpg"
@@ -1170,7 +1170,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P086",
         "stockFiles": [
           "P086_TWICE_THIS_IS_FOR_Jeongyeon_v1_01_1앞.jpg",
@@ -1186,7 +1186,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P087",
         "stockFiles": [
           "P087_TWICE_THIS_IS_FOR_Tzuyu_v1_01_1앞.jpg"
@@ -1200,7 +1200,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P088",
         "stockFiles": [
           "P088_TWICE_THIS_IS_FOR_Sana_v1_01_1앞.jpg"
@@ -1214,7 +1214,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P089",
         "stockFiles": [
           "P089_TWICE_THIS_IS_FOR_Jihyo_01_1앞.jpg"
@@ -1228,7 +1228,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P090",
         "stockFiles": [
           "P090_TWICE_THIS_IS_FOR_Chaeyoung_v1_01_1앞.jpg"
@@ -1242,7 +1242,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P091",
         "stockFiles": [
           "P091_TWICE_THIS_IS_FOR_Jeongyeon_v2_01_1앞.jpg"
@@ -1256,7 +1256,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P092",
         "stockFiles": [
           "P092_TWICE_THIS_IS_FOR_Tzuyu_v2_01_1앞.jpg"
@@ -1270,7 +1270,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P093",
         "stockFiles": [
           "P093_TWICE_THIS_IS_FOR_Jeongyeon_v3_01_1앞.jpg"
@@ -1284,7 +1284,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P094",
         "stockFiles": [
           "P094_TWICE_THIS_IS_FOR_Sana_v2_01_1앞.jpg"
@@ -1298,7 +1298,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P095",
         "stockFiles": [
           "P095_TWICE_THIS_IS_FOR_Momo_01_1앞.jpg"
@@ -1312,7 +1312,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P096",
         "stockFiles": [
           "P096_TWICE_THIS_IS_FOR_Chaeyoung_v2_01_1앞.jpg"
@@ -1326,7 +1326,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P097",
         "stockFiles": [
           "P097_TWICE_THIS_IS_FOR_Dahyun_01_1앞.jpg",
@@ -1341,7 +1341,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P098",
         "stockFiles": [
           "P098_TWICE_THIS_IS_FOR_Tzuyu_v3_01_1앞.jpg"
@@ -1355,7 +1355,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P099",
         "stockFiles": [
           "P099_TWICE_THIS_IS_FOR_Mina_01_1앞.jpg"
@@ -1369,7 +1369,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P100",
         "stockFiles": [
           "P100_TWICE_THIS_IS_FOR_Chaeyoung_v3_01_1앞.jpg"
@@ -1383,7 +1383,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "twice-this-is-for",
-        "album": "THIS IS FOR (정규4집)",
+        "album": "THIS IS FOR",
         "code": "P101",
         "stockFiles": [
           "P101_TWICE_THIS_IS_FOR_Sana_v3_01_1앞.jpg"
@@ -1666,7 +1666,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P115",
         "stockFiles": [
           "P115_BLACKPINK_DEADLINE_Lisa_v1_01_1앞.jpg",
@@ -1681,7 +1681,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P116",
         "stockFiles": [
           "P116_BLACKPINK_DEADLINE_Lisa_v2_01_1앞.jpg",
@@ -1696,7 +1696,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P117",
         "stockFiles": [
           "P117_BLACKPINK_DEADLINE_Lisa_v3_01_1앞.jpg",
@@ -1711,7 +1711,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P118",
         "stockFiles": [
           "P118_BLACKPINK_DEADLINE_Jennie_v1_01_1앞.jpg",
@@ -1726,7 +1726,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P119",
         "stockFiles": [
           "P119_BLACKPINK_DEADLINE_Jennie_v2_01_1앞.jpg",
@@ -1741,7 +1741,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P120",
         "stockFiles": [
           "P120_BLACKPINK_DEADLINE_Jennie_v3_01_1앞.jpg",
@@ -1756,7 +1756,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P121",
         "stockFiles": [
           "P121_BLACKPINK_DEADLINE_Rosé_v1_01_1앞.jpg",
@@ -1771,7 +1771,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P122",
         "stockFiles": [
           "P122_BLACKPINK_DEADLINE_Rosé_v2_01_1앞.jpg",
@@ -1786,7 +1786,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P123",
         "stockFiles": [
           "P123_BLACKPINK_DEADLINE_Rosé_v3_01_1앞.jpg",
@@ -1801,7 +1801,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P124",
         "stockFiles": [
           "P124_BLACKPINK_DEADLINE_Jisoo_v1_01_1앞.jpg"
@@ -1815,7 +1815,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P125",
         "stockFiles": [
           "P125_BLACKPINK_DEADLINE_Jisoo_v2_01_1앞.jpg"
@@ -1829,7 +1829,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "blackpink-deadline",
-        "album": "DEADLINE (3rd 미니, 2026.02.27) 셀피 포카",
+        "album": "DEADLINE",
         "code": "P126",
         "stockFiles": [
           "P126_BLACKPINK_DEADLINE_Jisoo_v3_01_1앞.jpg"
@@ -1862,7 +1862,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P143",
         "stockFiles": [
           "P143_BTS_ARIRANG_BK_Jungkook_01_1앞.jpg",
@@ -1878,7 +1878,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P144",
         "stockFiles": [
           "P144_BTS_ARIRANG_BK_V_01_1앞.jpg",
@@ -1894,7 +1894,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P145",
         "stockFiles": [
           "P145_BTS_ARIRANG_BK_Jimin_01_1앞.jpg",
@@ -1910,7 +1910,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P146",
         "stockFiles": [
           "P146_BTS_ARIRANG_BK_J-Hope_01_1앞.jpg",
@@ -1926,7 +1926,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P147",
         "stockFiles": [
           "P147_BTS_ARIRANG_BK_Suga_01_1앞.jpg",
@@ -1942,7 +1942,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P148",
         "stockFiles": [
           "P148_BTS_ARIRANG_BK_Jin_01_1앞.jpg",
@@ -1958,7 +1958,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
-        "album": "ARIRANG (정규5집) 검정 뒷면·스튜디오 셀카 (Rooted in Music ver.로 추정: \"music ver\"·타겟 매물과 같은 사진)",
+        "album": "ARIRANG (Rooted in Music ver.)",
         "code": "P149",
         "stockFiles": [
           "P149_BTS_ARIRANG_BK_RM_01_1앞.jpg",
@@ -1974,7 +1974,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P150",
         "stockFiles": [
           "P150_BTS_ARIRANG_WH_Jungkook_01_1앞.jpg",
@@ -1989,7 +1989,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P151",
         "stockFiles": [
           "P151_BTS_ARIRANG_WH_V_01_1앞.jpg",
@@ -2004,7 +2004,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P152",
         "stockFiles": [
           "P152_BTS_ARIRANG_WH_Jimin_01_1앞.jpg",
@@ -2019,7 +2019,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P153",
         "stockFiles": [
           "P153_BTS_ARIRANG_WH_J-Hope_01_1앞.jpg",
@@ -2034,7 +2034,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P154",
         "stockFiles": [
           "P154_BTS_ARIRANG_WH_Suga_01_1앞.jpg",
@@ -2049,7 +2049,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P155",
         "stockFiles": [
           "P155_BTS_ARIRANG_WH_Jin_01_1앞.jpg",
@@ -2064,7 +2064,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-arirang-gyeongbokgung",
-        "album": "ARIRANG (정규5집) 흰 뒷면·경복궁 셀카 (매물 표기 \"경복궁 버전\")",
+        "album": "ARIRANG (경복궁 ver.)",
         "code": "P156",
         "stockFiles": [
           "P156_BTS_ARIRANG_WH_RM_01_1앞.jpg",
@@ -2079,7 +2079,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P137",
         "stockFiles": [
           "P137_BTS_VT_x_BTS_Jin_01_1앞.jpg"
@@ -2093,7 +2093,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P138",
         "stockFiles": [
           "P138_BTS_VT_x_BTS_J-Hope_01_1앞.jpg",
@@ -2108,7 +2108,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P139",
         "stockFiles": [
           "P139_BTS_VT_x_BTS_Suga_01_1앞.jpg",
@@ -2123,7 +2123,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P140",
         "stockFiles": [
           "P140_BTS_VT_x_BTS_V_01_1앞.jpg",
@@ -2138,7 +2138,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 2,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P141",
         "stockFiles": [
           "P141_BTS_VT_x_BTS_Jimin_01_1앞.jpg",
@@ -2153,7 +2153,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "bts-vt-collab",
-        "album": "VT x BTS (VT코스메틱 콜라보)",
+        "album": "VT x BTS",
         "code": "P142",
         "stockFiles": [
           "P142_BTS_VT_x_BTS_Jungkook_01_1앞.jpg"
