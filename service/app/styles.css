@@ -1018,10 +1018,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   background: #111;
 }
 .pair-imgs .face img { border: 0; border-radius: 0; }
-.pair-imgs .face.front img {
-  filter: blur(2px);
-  transform: scale(1.06);
-}
 
 .slot img {
   width: 100%;
@@ -1179,6 +1175,12 @@ figure[data-card] { cursor: pointer; }
 .owned-faces figure { margin: 0; }
 .owned-detail .owned-faces img { width: 100%; margin: 0; }
 .owned-faces figcaption { margin-top: 6px; color: var(--muted); font-size: 12px; }
+/* 스캔 가장자리 보정: 카드 바깥(스캐너 바탕)이 1~2px 같이 찍히므로 테두리를 1.5%씩 잘라내고 그만큼 키운다 */
+.owned-detail .owned-faces img { clip-path: inset(1.5% round 14px); transform: scale(1.031); }
+.owned .shot.pair .face img { transform: scale(1.03); }
+.pair-imgs .face img { transform: scale(1.03); }
+.purchase .thumb.cards i img { transform: scale(1.03); }
+.pair-imgs .face.front img { filter: blur(2px); transform: scale(1.06); }
 .owned-detail .facts-box { margin-top: 16px; text-align: left; }
 .other-cards h3 { margin: 20px 16px 0; font-size: 14px; font-weight: 700; text-align: left; }
 .other-cards .owned { padding-top: 12px; }
