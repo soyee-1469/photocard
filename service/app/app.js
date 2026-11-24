@@ -1211,13 +1211,17 @@ const FLOW_SPACING = 92; // 한 칸 기준 거리(px). 기울기 계산 단위.
 const FLOW_BASE_TILT = -8; // 가운데 앨범도 살짝 돌려 옆면(두께)이 보이게 한다.
 const FLOW_MAX_COVERS = 5;
 
-function flowStage(group) {
+// onShelf: 같은 캐러셀을 검정 널빤지·받침대 위에 올린다(선반형의 모양 + 커버플로우의 동작).
+function flowStage(group, onShelf = false) {
   const covers = displayCovers(group, 3);
   const items = covers.map((src) => `<span class="flow-item">${coverBox(src)}</span>`).join("");
   const single = covers.length < 2 ? " is-single" : "";
+  const shelf = onShelf ? " on-shelf" : "";
+  const ledge = onShelf ? `<span class="shelf-ledge" aria-hidden="true"></span>` : "";
   return `
-    <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="flow">
+    <span class="flow-stage${single}${shelf}" data-open="${esc(group.id)}" data-hero="${onShelf ? "sflow" : "flow"}">
       <span class="flow-scene" data-flow>${items}</span>
+      ${ledge}
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
 }
@@ -1237,6 +1241,22 @@ function flowRow(group) {
 
 function homeFlowRows(query) {
   return homeShelfGroups(query).map(flowRow).join("");
+}
+
+function shelfFlowRow(group) {
+  return `
+    <div class="flow-row sflow-row">
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="sflow">
+        <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-meta">${shelfMeta(group)}</span>
+        <span class="shelf-price">${wonText(group.price)}</span>
+      </button>
+      ${flowStage(group, true)}
+    </div>`;
+}
+
+function homeShelfFlowRows(query) {
+  return homeShelfGroups(query).map(shelfFlowRow).join("");
 }
 
 // ── 회전 진열대(반원) ──
@@ -1529,6 +1549,10 @@ function home() {
       <section class="home-section album-section flow-section ring-section">
         <h2>앨범별 랜덤 · 회전 진열대</h2>
         ${groups.length ? `<div class="flow rows">${homeRingRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
+      </section>
+      <section class="home-section album-section flow-section sflow-section">
+        <h2>앨범별 랜덤 · 선반 커버플로우</h2>
+        ${groups.length ? `<div class="flow rows">${homeShelfFlowRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
       </section>`;
   const header = state.searchOpen
     ? `
@@ -2796,6 +2820,8 @@ function detail(item) {
     hero = `<div class="detail-hero flow-hero">${flowStage(group)}</div>`;
   } else if (state.detailHero === "ring" && group) {
     hero = `<div class="detail-hero ring-hero">${ringStage(group)}</div>`;
+  } else if (state.detailHero === "sflow" && group) {
+    hero = `<div class="detail-hero flow-hero sflow-hero">${flowStage(group, true)}</div>`;
   }
   return `
     <header class="bar">
@@ -6203,7 +6229,7 @@ app.addEventListener("click", (event) => {
     }
     state.productId = open.dataset.open;
     state.productFrom = state.screen;
-    state.detailHero = ["artist", "album", "flow", "ring"].includes(open.dataset.hero) ? open.dataset.hero : "";
+    state.detailHero = ["artist", "album", "flow", "ring", "sflow"].includes(open.dataset.hero) ? open.dataset.hero : "";
     state.screen = "detail";
     state.tab = "home";
     state.sheet = null;

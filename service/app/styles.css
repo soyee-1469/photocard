@@ -4147,3 +4147,16 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .detail-hero.flow-hero .flow-stage.is-single .flow-item img { max-width: 220px; max-height: 170px; }
 .detail-hero.flow-hero .flow-mystery,
 .detail-hero.ring-hero .ring-mystery { left: 10%; height: 90px; }
+
+/* 선반 커버플로우: 캐러셀 바닥에 검정 널빤지 + 받침대. 앨범 바닥을 널빤지 윗면에 맞춘다. */
+.flow-stage.on-shelf { height: 176px; }
+.flow-stage.on-shelf .flow-scene { bottom: 23px; }
+.flow-stage.on-shelf .shelf-ledge {
+  left: 6%;
+  right: 2%;
+  bottom: 16px;
+  z-index: 0;
+}
+.flow-stage.on-shelf .flow-mystery { bottom: 24px; }
+.detail-hero.sflow-hero .flow-stage.on-shelf { height: 212px; }
+.detail-hero.sflow-hero .shelf-ledge { left: 2%; right: 2%; }
