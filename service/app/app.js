@@ -1127,7 +1127,8 @@ function shelfMeta(group) {
 }
 
 // 목록 가격은 결제 단위인 TP로만 적는다(TP는 원화 1:1). 원화·달러 환산은 상세의 가격 블록에만.
-function wonText(amount) {
+// (지갑 쪽 wonText(krw)와 이름이 겹치지 않게 tpText)
+function tpText(amount) {
   return `${Number(amount || 0).toLocaleString("ko-KR")} TP`;
 }
 
@@ -1162,7 +1163,7 @@ function shelfCopy(group) {
   return `
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
-        <span class="shelf-price">${wonText(group.price)}</span>
+        <span class="shelf-price">${tpText(group.price)}</span>
         ${albumLines(group, "shelf-albums")}`;
 }
 
@@ -1182,7 +1183,7 @@ function artistRandomTile(group) {
       <span class="artist-random-copy">
         <strong>${esc(group.artist)}</strong>
         <span>${shelfMeta(group)}</span>
-        <span class="artist-random-price">${wonText(group.price)}</span>
+        <span class="artist-random-price">${tpText(group.price)}</span>
         ${albumLines(group, "artist-random-albums")}
       </span>
       <img class="artist-random-mystery" src="${CARD_FRONT_FX}" alt="" />
@@ -1234,7 +1235,7 @@ function flowRow(group) {
       <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="flow">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${group.kinds}종 랜덤</span>
-        <span class="shelf-price">${wonText(group.price)}</span>
+        <span class="shelf-price">${tpText(group.price)}</span>
       </button>
       ${flowStage(group)}
     </div>`;
@@ -1250,7 +1251,7 @@ function shelfFlowRow(group) {
       <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="sflow">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
-        <span class="shelf-price">${wonText(group.price)}</span>
+        <span class="shelf-price">${tpText(group.price)}</span>
       </button>
       ${flowStage(group, true)}
     </div>`;
@@ -1281,7 +1282,7 @@ function ringRow(group) {
       <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="ring">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
-        <span class="shelf-price">${wonText(group.price)}</span>
+        <span class="shelf-price">${tpText(group.price)}</span>
       </button>
       ${ringStage(group)}
     </div>`;
