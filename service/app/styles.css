@@ -302,7 +302,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   width: 64px;
   height: 64px;
   margin: 0 auto;
-  border-radius: 14px;
+  border-radius: 50%; /* 다른 프로필과 같은 원형 */
   display: grid;
   place-items: center;
   background: transparent;
@@ -577,21 +577,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .detail-hero.artist-hero .artist-random-fade {
   background: linear-gradient(180deg, transparent 40%, rgba(10, 8, 6, 0.35) 100%);
 }
-.detail-hero.album-hero {
-  padding: 18px 16px 8px;
-}
-.detail-hero.album-hero .shelf-stage {
-  min-height: 150px;
-  padding: 0 36px 22px 8px;
-  justify-content: center;
-}
-.detail-hero.album-hero .shelf-box { height: 112px; }
-.detail-hero.album-hero .shelf-box img { max-width: 84px; max-height: 112px; }
-.detail-hero.album-hero .shelf-mystery {
-  height: 96px;
-  bottom: 24px;
-  right: 8px;
-}
 .shelf {
   display: grid;
   grid-auto-flow: column;
@@ -602,46 +587,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   scrollbar-width: none;
 }
 .shelf::-webkit-scrollbar { display: none; }
-/* 홈 앨범별 랜덤: 1열 선반. 커버는 높이 고정·비율 유지(잘림 없음) */
-.shelf.rows {
-  display: flex;
-  flex-direction: column;
-  grid-auto-flow: row;
-  grid-auto-columns: auto;
-  gap: 0;
-  overflow: visible;
-  scroll-snap-type: none;
-}
-.shelf.rows.album .shelf-artist { color: #f4f1ea; }
-/* 앨범별 랜덤 한 줄: 글자는 왼쪽 위, 선반은 오른쪽 아래. 줄 높이를 키워 배너처럼 보인다. */
-.shelf-row {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  min-height: 216px;
-  width: 100%;
-  margin: 0;
-  padding: 16px 0 30px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.shelf-row .shelf-stage {
-  align-self: flex-end;
-  width: 80%;
-  margin-top: auto;
-}
 
-.shelf-row:active { opacity: 0.92; }
-.shelf-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-left: 2px;
-}
 .shelf-artist {
   color: #f4f1ea;
   font-size: 22px;
@@ -657,49 +603,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   line-height: 1.35;
 }
 .shelf-price { color: #fff; font-weight: 600; }
-.shelf-stage {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  min-height: 128px;
-  padding: 0 34px 7px 0;
-  overflow: visible;
-}
-.shelf-boxes {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 5px;
-  max-width: 100%;
-}
-.shelf-box {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  flex: 0 0 auto;
-  height: 98px;
-  transform: perspective(600px) rotateY(-6deg);
-  transform-origin: left bottom;
-  transform-style: preserve-3d;
-  --edge: 5px;
-}
-.shelf-box img { max-width: 70px; max-height: 98px; }
-.shelf-mystery {
-  position: absolute;
-  right: 0;
-  bottom: 9px;
-  z-index: 2;
-  height: 84px;
-  width: auto;
-  aspect-ratio: 55 / 85;
-  object-fit: contain;
-  transform: rotate(7deg);
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
-  pointer-events: none;
-}
 /* 선반 널빤지: 검정, 얇게. */
 .shelf-ledge {
   position: absolute;
@@ -3946,7 +3849,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 넓은 폰에서도 캐러셀이 글자 옆에 붙어 있도록 폭 상한을 둔다. */
 .flow-row {
   display: grid;
-  grid-template-columns: minmax(96px, 32%) minmax(0, 300px);
+  grid-template-columns: minmax(120px, 40%) minmax(0, 300px);
   align-items: center;
   gap: 8px;
   padding: 4px 0 8px;
@@ -4076,6 +3979,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   overflow-wrap: anywhere;
 }
 .shelf-albums { margin-top: 6px; color: #b9ae9f; }
+.flow-copy .shelf-albums { margin-top: 8px; }
 .artist-random-albums { margin-top: 4px; }
 .detail .compose-line {
   margin: 2px 0 6px;
@@ -4090,63 +3994,16 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .shelf-albums > span::before,
 .artist-random-albums > span::before,
 .detail .compose-line > span::before { content: "· "; opacity: 0.6; }
-/* 커버가 1장뿐이면 20% 키워 자리를 채운다(선반형·커버플로우 공통). */
-.shelf-boxes .shelf-box:only-child { height: 118px; }
-.shelf-boxes .shelf-box:only-child img { max-width: 84px; max-height: 118px; }
 .flow-stage.is-single .flow-item { height: 142px; }
 .flow-stage.is-single .flow-item img { max-width: 192px; max-height: 142px; }
 
-/* 회전 진열대(반원). 무대 가운데 아래를 원의 중심으로 두고 앨범을 원 둘레에 세운다. */
-.ring-stage {
-  position: relative;
-  z-index: 1;
-  display: block;
-  height: 160px;
-  min-width: 0;
-  margin-left: -20%;
-  perspective: 720px;
-  -webkit-tap-highlight-color: transparent;
-}
-.ring-scene {
-  position: absolute;
-  z-index: 1;
-  left: 44%;
-  top: calc(100% - 12px);
-  width: 0;
-  height: 0;
-  transform-style: preserve-3d;
-  transform: translateZ(-118px);
-  touch-action: pan-y;
-  cursor: grab;
-}
-.ring-item {
-  position: absolute;
-  left: 0;
-  top: 0;
-  translate: -50% -100%;
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
-  --edge: 7px;
-}
-.ring-scene.is-snapping .ring-item { transition: transform 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.38s; }
-.ring-item img { max-width: 150px; max-height: 112px; }
-.ring-mystery { left: 12%; }
-
-/* 상세 히어로: 진입한 목록(선반·캐러셀·회전)과 같은 부품을 더 크게. 1종이면 커버를 한 번 더 키운다. */
-.detail-hero.album-hero .shelf-boxes .shelf-box:only-child { height: 150px; }
-.detail-hero.album-hero .shelf-boxes .shelf-box:only-child img { max-width: 118px; max-height: 150px; }
-.detail-hero.flow-hero,
-.detail-hero.ring-hero { padding: 14px 16px 6px; }
-.detail-hero.flow-hero .flow-stage,
-.detail-hero.ring-hero .ring-stage { margin-left: 0; height: 196px; }
+.detail-hero.flow-hero { padding: 14px 16px 6px; }
+.detail-hero.flow-hero .flow-stage { margin-left: 0; height: 196px; }
 .detail-hero.flow-hero .flow-scene { left: 50%; }
-.detail-hero.ring-hero .ring-scene { left: 50%; }
 .detail-hero.flow-hero .flow-item { height: 150px; }
-.detail-hero.flow-hero .flow-item img,
-.detail-hero.ring-hero .ring-item img { max-width: 200px; max-height: 150px; }
+.detail-hero.flow-hero .flow-item img { max-width: 200px; max-height: 150px; }
 .detail-hero.flow-hero .flow-stage.is-single .flow-item img { max-width: 220px; max-height: 170px; }
-.detail-hero.flow-hero .flow-mystery,
-.detail-hero.ring-hero .ring-mystery { left: 10%; height: 90px; }
+.detail-hero.flow-hero .flow-mystery { left: 10%; height: 90px; }
 
 /* 선반 커버플로우: 캐러셀 바닥에 검정 널빤지 + 받침대. 앨범 바닥을 널빤지 윗면에 맞춘다. */
 .flow-stage.on-shelf { height: 176px; }

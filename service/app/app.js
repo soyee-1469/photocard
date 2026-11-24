@@ -1142,37 +1142,12 @@ function displayCovers(group, max = FLOW_MAX_COVERS) {
   return (group.covers || []).slice(0, max);
 }
 
-function shelfBox(src, kind) {
-  return `<span class="shelf-box shelf-box-${kind}">${coverBox(src)}</span>`;
-}
-
-function shelfStage(group) {
-  // 있는 커버만 올린다. 부족분을 card_back으로 채우지 않는다.
-  const covers = displayCovers(group, SHELF_SLOT_COUNT);
-  const boxes = covers.map((src) => shelfBox(src, "cover"));
-  const countClass = `n${Math.max(1, boxes.length)}`;
-  return `
-    <span class="shelf-stage ${countClass}" aria-hidden="true">
-      <span class="shelf-boxes">${boxes.join("")}</span>
-      <img class="shelf-mystery" src="${CARD_FRONT_FX}" alt="" />
-      <span class="shelf-ledge"></span>
-    </span>`;
-}
-
 function shelfCopy(group) {
   return `
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${listPrice(group.price)}</span>
         ${albumLines(group, "shelf-albums")}`;
-}
-
-function shelfRow(group) {
-  return `
-    <button type="button" class="shelf-row" data-open="${esc(group.id)}" data-hero="album">
-      <span class="shelf-copy">${shelfCopy(group)}</span>
-      ${shelfStage(group)}
-    </button>`;
 }
 
 function artistRandomTile(group) {
@@ -1202,10 +1177,6 @@ function homeArtistTiles(query) {
   return homeShelfGroups(query).map(artistRandomTile).join("");
 }
 
-function homeShelfRows(query) {
-  return homeShelfGroups(query).map(shelfRow).join("");
-}
-
 // ── 커버플로우 진열(선반형과 비교용) ──
 // 가로 스크롤 스냅이 드래그·관성·정지를 맡고, 스크롤 위치로 기울기·크기·밝기만 계산한다.
 // 커버는 높이 고정·폭은 원본 비율. 가로로 긴 앨범도 세로로 긴 앨범도 바닥을 맞춰 선다.
@@ -1213,36 +1184,20 @@ const FLOW_SPACING = 92; // 한 칸 기준 거리(px). 기울기 계산 단위.
 const FLOW_BASE_TILT = -8; // 가운데 앨범도 살짝 돌려 옆면(두께)이 보이게 한다.
 const FLOW_MAX_COVERS = 5;
 
-// onShelf: 같은 캐러셀을 검정 널빤지·받침대 위에 올린다(선반형의 모양 + 커버플로우의 동작).
-function flowStage(group, onShelf = false) {
-  const covers = displayCovers(group, 3);
+// 선반 커버플로우: 검정 널빤지·받침대 위에서 순환 캐러셀이 돈다(2026-11-24 확정 진열).
+function flowStage(group) {
+  const real = displayCovers(group, 3);
+  // 1~2장이면 같은 커버를 돌려 써서 3장 이상처럼 양옆을 채운다(순환이라 자연스럽다). 종수는 글줄에 적혀 있다.
+  const covers = [];
+  while (real.length && covers.length < (real.length === 1 ? 3 : 4)) covers.push(real[covers.length % real.length]);
   const items = covers.map((src) => `<span class="flow-item">${coverBox(src)}</span>`).join("");
-  const single = covers.length < 2 ? " is-single" : "";
-  const shelf = onShelf ? " on-shelf" : "";
-  const ledge = onShelf ? `<span class="shelf-ledge" aria-hidden="true"></span>` : "";
+  const single = real.length < 2 ? " is-single" : "";
   return `
-    <span class="flow-stage${single}${shelf}" data-open="${esc(group.id)}" data-hero="${onShelf ? "sflow" : "flow"}">
+    <span class="flow-stage on-shelf${single}" data-open="${esc(group.id)}" data-hero="sflow">
       <span class="flow-scene" data-flow>${items}</span>
-      ${ledge}
+      <span class="shelf-ledge" aria-hidden="true"></span>
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
-}
-
-// 커버플로우 줄: 왼쪽 글(그룹명·종수·가격), 오른쪽 캐러셀. 왼쪽으로 끌려간 앨범은 어두워지며 사라진다.
-function flowRow(group) {
-  return `
-    <div class="flow-row">
-      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="flow">
-        <strong class="shelf-artist">${esc(group.artist)}</strong>
-        <span class="shelf-meta">${group.kinds}종 랜덤</span>
-        <span class="shelf-price">${listPrice(group.price)}</span>
-      </button>
-      ${flowStage(group)}
-    </div>`;
-}
-
-function homeFlowRows(query) {
-  return homeShelfGroups(query).map(flowRow).join("");
 }
 
 function shelfFlowRow(group) {
@@ -1252,108 +1207,14 @@ function shelfFlowRow(group) {
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${listPrice(group.price)}</span>
+        ${albumLines(group, "shelf-albums")}
       </button>
-      ${flowStage(group, true)}
+      ${flowStage(group)}
     </div>`;
 }
 
 function homeShelfFlowRows(query) {
   return homeShelfGroups(query).map(shelfFlowRow).join("");
-}
-
-// ── 회전 진열대(반원) ──
-// 앨범을 원 둘레(앞쪽 180도)에 세우고 드래그로 원을 돌린다. 뒤로 간 앨범은 어두워지며 사라진다.
-const RING_STEP = 42;    // 앨범 사이 각도
-const RING_RADIUS = 118; // 원 반지름(px)
-
-function ringStage(group) {
-  const covers = displayCovers(group, 3);
-  const items = covers.map((src) => `<span class="ring-item">${coverBox(src)}</span>`).join("");
-  return `
-    <span class="ring-stage" data-open="${esc(group.id)}" data-hero="ring">
-      <span class="ring-scene" data-ring>${items}</span>
-      <img class="flow-mystery ring-mystery" src="${CARD_FRONT_FX}" alt="" />
-    </span>`;
-}
-
-function ringRow(group) {
-  return `
-    <div class="flow-row ring-row">
-      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="ring">
-        <strong class="shelf-artist">${esc(group.artist)}</strong>
-        <span class="shelf-meta">${shelfMeta(group)}</span>
-        <span class="shelf-price">${listPrice(group.price)}</span>
-      </button>
-      ${ringStage(group)}
-    </div>`;
-}
-
-function homeRingRows(query) {
-  return homeShelfGroups(query).map(ringRow).join("");
-}
-
-// 앨범 사이 각도: 이웃 앨범의 현(chord)이 가장 넓은 커버 폭 + 여유보다 커지게. 가로형 커버면 더 벌어진다.
-function ringStep(scene) {
-  const widest = widestItem(scene, ".cover3d img");
-  if (!widest) return RING_STEP;
-  const chord = Math.min(2 * RING_RADIUS * 0.98, widest + 10);
-  const step = (2 * Math.asin(chord / (2 * RING_RADIUS)) * 180) / Math.PI;
-  return Math.max(RING_STEP, Math.min(88, Math.round(step)));
-}
-
-function paintRing(scene, rot) {
-  const step = ringStep(scene);
-  scene.dataset.step = String(step);
-  scene.querySelectorAll(".ring-item").forEach((item, index) => {
-    const angle = index * step - rot;
-    const t = Math.min(1, Math.abs(angle) / 90);
-    item.style.transform = `rotateY(${angle}deg) translateZ(${RING_RADIUS}px)`;
-    // 뒤로 돌수록 어둡고 흐려진다. 글자 밑으로 들어간 앨범이 글자를 방해하지 않게 세게 건다.
-    item.style.opacity = Math.abs(angle) >= 96 ? "0" : String(1 - t * 0.5);
-    item.style.setProperty("--dim", (1 - t * 0.7).toFixed(3));
-    item.style.zIndex = String(100 - Math.round(Math.abs(angle)));
-  });
-}
-
-function armRings() {
-  document.querySelectorAll("[data-ring]").forEach((scene) => {
-    const stage = scene.parentElement;
-    const count = scene.querySelectorAll(".ring-item").length;
-    const stepNow = () => Number(scene.dataset.step) || RING_STEP;
-    let rot = 0;
-    let down = false;
-    let startX = 0;
-    let startRot = 0;
-    paintRing(scene, rot);
-    repaintOnLoad(scene, () => paintRing(scene, rot));
-    if (count < 2) return;
-    scene.addEventListener("pointerdown", (event) => {
-      down = true;
-      startX = event.clientX;
-      startRot = rot;
-      scene.classList.remove("is-snapping");
-      try { scene.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
-    });
-    scene.addEventListener("pointermove", (event) => {
-      if (!down) return;
-      const dx = event.clientX - startX;
-      if (Math.abs(dx) > 5) stage.dataset.drag = "1";
-      // 왼쪽으로 끌면 다음 앨범이 앞으로 돈다. 끝에서는 살짝만 더 돌고 되돌아온다.
-      const max = (count - 1) * stepNow();
-      rot = Math.max(-18, Math.min(max + 18, startRot - dx * 0.42));
-      paintRing(scene, rot);
-    });
-    const release = () => {
-      if (!down) return;
-      down = false;
-      const step = stepNow();
-      rot = Math.max(0, Math.min((count - 1) * step, Math.round(rot / step) * step));
-      scene.classList.add("is-snapping");
-      paintRing(scene, rot);
-      setTimeout(() => { delete stage.dataset.drag; }, 160);
-    };
-    ["pointerup", "pointercancel"].forEach((type) => scene.addEventListener(type, release));
-  });
 }
 
 // 순환 커버플로우. 정면 기준 칸 번호 d로 배치한다: 왼쪽 1칸(-1), 정면(0), 나머지는 오른쪽(1, 2…).
@@ -1541,7 +1402,7 @@ function home() {
     ? `<div class="artist-random-grid">${homeArtistTiles(query)}</div>`
     : `<p class="empty">찾는 상품이 없어요.</p>`;
   const albumRows = groups.length
-    ? `<div class="shelf rows album">${homeShelfRows(query)}</div>`
+    ? `<div class="flow rows">${homeShelfFlowRows(query)}</div>`
     : "";
   const sections = state.searchOpen
     ? `<div class="home-sections">${artistGrid}${albumRows}</div>`
@@ -1550,20 +1411,8 @@ function home() {
         <h2>아티스트별 랜덤</h2>
         ${artistGrid}
       </section>
-      <section class="home-section album-section">
-        <h2>앨범별 랜덤</h2>
-        ${albumRows || `<p class="empty">찾는 상품이 없어요.</p>`}
-      </section>
-      <section class="home-section album-section flow-section">
-        <h2>앨범별 랜덤 · 커버플로우</h2>
-        ${groups.length ? `<div class="flow rows">${homeFlowRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
-      </section>
-      <section class="home-section album-section flow-section ring-section">
-        <h2>앨범별 랜덤 · 회전 진열대</h2>
-        ${groups.length ? `<div class="flow rows">${homeRingRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
-      </section>
       <section class="home-section album-section flow-section sflow-section">
-        <h2>앨범별 랜덤 · 선반 커버플로우</h2>
+        <h2>앨범별 랜덤</h2>
         ${groups.length ? `<div class="flow rows">${homeShelfFlowRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
       </section>`;
   const header = state.searchOpen
@@ -2825,15 +2674,8 @@ function detail(item) {
         <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
         <span class="artist-random-fade" aria-hidden="true"></span>
       </div>`;
-  } else if (state.detailHero === "album" && group) {
-    hero = `<div class="detail-hero album-hero">${shelfStage(group)}</div>`;
-  } else if (state.detailHero === "flow" && group) {
-    // 진입한 목록과 같은 모양으로 이어진다(캐러셀 → 캐러셀, 회전 → 회전).
-    hero = `<div class="detail-hero flow-hero">${flowStage(group)}</div>`;
-  } else if (state.detailHero === "ring" && group) {
-    hero = `<div class="detail-hero ring-hero">${ringStage(group)}</div>`;
   } else if (state.detailHero === "sflow" && group) {
-    hero = `<div class="detail-hero flow-hero sflow-hero">${flowStage(group, true)}</div>`;
+    hero = `<div class="detail-hero flow-hero sflow-hero">${flowStage(group)}</div>`;
   }
   return `
     <header class="bar">
@@ -5855,7 +5697,6 @@ function render() {
   startBanner();
   startMidBanner();
   armCoverflows();
-  armRings();
   mountPostcode();
   armDeck();
   armOpenCut();
@@ -6241,7 +6082,7 @@ app.addEventListener("click", (event) => {
     }
     state.productId = open.dataset.open;
     state.productFrom = state.screen;
-    state.detailHero = ["artist", "album", "flow", "ring", "sflow"].includes(open.dataset.hero) ? open.dataset.hero : "";
+    state.detailHero = ["artist", "sflow"].includes(open.dataset.hero) ? open.dataset.hero : "";
     state.screen = "detail";
     state.tab = "home";
     state.sheet = null;
