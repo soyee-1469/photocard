@@ -2275,8 +2275,6 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   top: 18%;
   bottom: 12%;
 }
-/* 5장 뽑기에서 이미 연 카드가 위에 놓이면 포장 고리를 아래로 내려 겹치지 않게 한다 */
-.deck-stage.has-opened .deck { top: 25%; bottom: 5%; }
 .deck-card {
   position: absolute;
   left: 50%;
@@ -2363,12 +2361,41 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 /* 이미 연 카드 수만큼의 포장과 위에 쌓인 연 카드 줄은 사라진다(펼침 화면에서 앞면으로 다시 선다) */
 .deck.is-fan.is-picked.is-spread .deck-card.is-gone { opacity: 0; transform: translate(-50%, -50%) translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r)) scale(0.9); }
-.deck-opened.is-gone { opacity: 0; transition: opacity 0.3s ease; }
 .deck.is-ring.is-shuffle .deck-card { transform: translate(-50%, -50%) translate(var(--x, 0px), var(--y, 0px)) rotate(0deg) scale(0.8); }
-/* 5장 뽑기: 이미 연 카드는 위에 작게 쌓인다 */
-.deck-opened { position: absolute; top: 140px; left: 0; right: 0; z-index: 5; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
-.deck-opened-card { width: 46px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 5px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6); animation: deck-opened-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-@keyframes deck-opened-in { from { opacity: 0; transform: translateY(14px) scale(0.8); } to { opacity: 1; transform: none; } }
+/* 5장 뽑기: 이미 연 카드는 그 포장 자리에 앞면으로 남는다. 섞기·고르기 연출에 끼지 않고 자리를 지킨다 */
+.deck .deck-card.is-taken,
+.deck.is-fan .deck-card.is-taken,
+.deck.is-shuffle .deck-card.is-taken {
+  opacity: 1;
+  pointer-events: none;
+  transition: none;
+  transform: translate(-50%, -50%) translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r));
+  animation: deck-taken-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+/* 다음 포장을 고르는 연출 동안은 다른 포장과 같이 밖으로 밀려나며 사라진다 */
+.deck.is-picked:not(.is-spread) .deck-card.is-taken {
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.45s ease 0.85s;
+  transform: translate(-50%, -50%) translate(var(--sx, 0px), var(--sy, 0px)) rotate(var(--fan-r)) scale(1.12);
+}
+.deck .deck-card.is-taken img {
+  width: 86%;
+  height: auto;
+  margin: 0 auto;
+  aspect-ratio: 55 / 85;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+}
+/* 바로 오픈하기: 연 카드도 2-1-2 자리로 같이 간다 */
+.deck.is-fan.is-picked.is-spread .deck-card.is-taken {
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transform: translate(-50%, -50%) translate(var(--sx, 0px), var(--sy, 0px)) rotate(0deg) scale(1.06);
+  animation: none;
+}
+@keyframes deck-taken-in { from { opacity: 0; } to { opacity: 1; } }
 /* 슬라이드 16 중간 연출: 고른 포장은 가운데서 커지며 두 바퀴 돌고, 나머지는 X자 네 방향으로 퍼진다 */
 .deck.is-picked .deck-card.is-choice {
   z-index: 8;

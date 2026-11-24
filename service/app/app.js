@@ -246,9 +246,9 @@ const state = {
 
 const ORDERS_KEY = "photocard-orders-v1";
 const ADDRESS_KEY = "photocard-addresses-v1";
-const WALLET_KEY = "photocard-wallet-v3";
+const WALLET_KEY = "photocard-wallet-v4";
 // mock 초기 TP. 저장된 지갑이 없을 때만 쓴다.
-const TP_SEED = 50000;
+const TP_SEED = 2000000; // 데모 잔액: 5장 뽑기(최고 19,500 TP)를 100번 넘게 할 수 있게
 const ONBOARD_KEY = "photocard-onboard-v1";
 
 // 지갑 목록 시드(디자인 2025-08 지갑 화면). 이름·순서·대표·연결·잔액은 localStorage에 남기고 NFT는 시드에서만 온다.
@@ -3346,6 +3346,7 @@ function draw(item, count) {
   persistWallet();
   state.reveal = picked;
   state.revealIndex = 0;
+  state.deckTaken = []; // 몇 번째 포장 자리에서 열었는지(5장 뽑기: 연 카드가 그 자리에 남는다)
   beginOpen();
 }
 
@@ -3395,25 +3396,33 @@ function cardDeck() {
   const count = state.reveal.length;
   const done = count > 1 ? Math.min(state.revealIndex, count) : 0;
   const remain = deckCount();
-  const opened = done
-    ? `<div class="deck-opened" aria-label="연 카드">${state.reveal.slice(0, done).map((card) => `<img class="deck-opened-card guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />`).join("")}</div>`
-    : "";
-  const packs = fanSpots(remain).map((spot, index) => `
+  // 이미 연 카드는 그 포장이 있던 자리에 앞면으로 남는다(위에 따로 줄을 만들지 않는다).
+  const taken = (state.deckTaken || []).slice(0, done);
+  const packs = fanSpots(remain).map((spot, index) => {
+    const order = taken.indexOf(index);
+    if (order >= 0 && state.reveal[order]) {
+      const card = state.reveal[order];
+      return `
+    <div class="deck-card is-taken" style="--i:${index};--fan-x:${spot.x}px;--fan-y:${spot.y}px;--fan-r:${spot.r}deg" aria-label="연 카드 ${order + 1}">
+      <img class="guard" data-protect="${photo(card.front)}" data-mark="${esc(card.id || "TOMATOK")}" alt="" draggable="false" />
+    </div>`;
+    }
+    return `
     <button type="button" class="deck-card" data-deck-pick="${index}" style="--i:${index};--fan-x:${spot.x}px;--fan-y:${spot.y}px;--fan-r:${spot.r}deg" aria-label="포장 ${index + 1}">
       <span class="deck-spin">
         <img class="deck-face" src="${DECK_PACK}" alt="" draggable="false" />
         <span class="prism" aria-hidden="true"></span>
         <img class="deck-face back" src="${DECK_BACK}" alt="" draggable="false" />
       </span>
-    </button>`).join("");
+    </button>`;
+  }).join("");
   return `
     ${openBar(count > 1 ? `${count}장 뽑기` : "")}
-    <div class="deck-stage${done ? " has-opened" : ""}" data-deck>
+    <div class="deck-stage" data-deck>
       <div class="deck-top">
         <p class="deck-hint" data-deck-hint>${count > 1 ? "포장을 골라 열어보세요" : "한 장을 선택하세요"}</p>
       </div>
       ${count > 1 ? `<p class="deck-note">${deckOrderNote(Math.min(done, count - 1), count)}</p>` : ""}
-      ${opened}
       <div class="deck${remain > DECK_FAN.length ? " is-ring" : ""}" data-deck-cards>${packs}</div>
       <span class="deck-ring" aria-hidden="true"></span>
       <span class="deck-flash" aria-hidden="true"></span>
@@ -3427,7 +3436,7 @@ function cardDeck() {
 }
 
 function deckCardAt(deck, clientX, clientY) {
-  const cards = [...deck.querySelectorAll(".deck-card")].sort((a, b) => {
+  const cards = [...deck.querySelectorAll(".deck-card:not(.is-taken)")].sort((a, b) => {
     const za = Number(getComputedStyle(a).zIndex) || 0;
     const zb = Number(getComputedStyle(b).zIndex) || 0;
     return zb - za;
@@ -3461,7 +3470,8 @@ function armDeck() {
   stage.dataset.bound = "1";
   const deck = stage.querySelector("[data-deck-cards]");
   const hint = stage.querySelector("[data-deck-hint]");
-  const cards = [...deck.querySelectorAll(".deck-card")];
+  const cards = [...deck.querySelectorAll(".deck-card:not(.is-taken)")];
+  const takenCards = [...deck.querySelectorAll(".deck-card.is-taken")];
   const count = state.reveal.length;
   const multi = count > 1;
   const pickHint = multi ? "포장을 골라 열어보세요" : "한 장을 선택하세요";
@@ -3547,10 +3557,12 @@ function armDeck() {
     if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
     deck.classList.add("is-picked");
     pick.classList.add("is-choice");
+    if (!Array.isArray(state.deckTaken)) state.deckTaken = [];
+    state.deckTaken[state.revealIndex] = Number(pick.dataset.deckPick);
     let seat = 0;
-    cards.forEach((card) => {
+    [...cards, ...takenCards].forEach((card) => {
       if (card === pick) return;
-      if (cards.length > 5) {
+      if (cards.length + takenCards.length > 5) {
         // 원형 배치: 각자 바깥쪽으로 밀려난다
         const fx = parseFloat(card.style.getPropertyValue("--fan-x")) || 0;
         const fy = parseFloat(card.style.getPropertyValue("--fan-y")) || 0;
@@ -3575,18 +3587,18 @@ function armDeck() {
   // 자리에 서면 펼침 화면(cardSpread)이 같은 자리에서 포장을 터뜨리고 카드를 뒤집는다.
   const spreadFromDeck = () => {
     deck.classList.add("is-picked", "is-spread");
-    // 이미 연 카드만큼은 포장이 필요 없다: 앞쪽 포장은 사라지고, 나머지가 남은 자리로 간다.
+    // 이미 연 카드는 2-1-2의 앞자리로, 남은 포장은 그 뒤 자리로 간다.
     const done = Math.min(state.revealIndex, count);
-    cards.forEach((card, index) => {
-      if (index < done) {
-        card.classList.add("is-gone");
-        return;
-      }
-      const spot = SPREAD_GRID[index];
+    takenCards.forEach((card, index) => {
+      const spot = SPREAD_GRID[Math.min(index, done - 1)] || SPREAD_GRID[0];
       card.style.setProperty("--sx", `${spot.x}px`);
       card.style.setProperty("--sy", `${spot.y}px`);
     });
-    stage.querySelector(".deck-opened")?.classList.add("is-gone");
+    cards.forEach((card, index) => {
+      const spot = SPREAD_GRID[done + index] || SPREAD_GRID[SPREAD_GRID.length - 1];
+      card.style.setProperty("--sx", `${spot.x}px`);
+      card.style.setProperty("--sy", `${spot.y}px`);
+    });
     if (hint) hint.textContent = "포장을 열어요";
     later(() => {
       if (stage.isConnected) showSpread();
@@ -3606,7 +3618,7 @@ function armDeck() {
     if (direct) {
       event.stopPropagation();
       if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
-      if (multi && cards.length === SPREAD_GRID.length) {
+      if (multi && cards.length + takenCards.length === SPREAD_GRID.length) {
         spreadFromDeck();
         return;
       }
