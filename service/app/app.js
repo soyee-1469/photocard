@@ -2578,13 +2578,23 @@ function purchases() {
       const got = (order.cards || []).map((card) => {
         if (card.front) return card;
         const owned = ownedById.get(card.id);
-        return owned && owned.artist === card.artist && owned.no === card.no ? owned : card;
+        if (owned && owned.artist === card.artist && owned.no === card.no) return owned;
+        // 파일명이 없는 예전 주문은 카탈로그에서 같은 가수·번호를 찾는다.
+        const found = catalog().filter((item) => item.artist === card.artist).flatMap((item) => item.cards).find((entry) => entry.no === card.no);
+        return found ? { ...card, front: found.front, back: found.back } : card;
       });
       const shots = got.filter((card) => card.front).slice(0, 3);
       const item = product(order.productId);
       const cover = item?.cover ? `<img src="${esc(item.cover)}" alt="" />` : `<span class="thumb-blank"></span>`;
-      const thumb = shots.length
-        ? `<span class="thumb cards n${shots.length}">${shots.map((card, index) => `<i class="c${index}">${cardShot(card)}</i>`).join("")}${got.length > 3 ? `<b>+${got.length - 3}</b>` : ""}</span>`
+      // 첫 카드의 앞면 위에 뒷면을 겹쳐 놓는다. 여러 장이면 뒷면 자리에 +N.
+      const first = shots[0];
+      const back = first ? ownedBackSrc(first) : "";
+      const thumb = first
+        ? `<span class="thumb cards">
+            <i class="c0">${cardShot(first)}</i>
+            ${back ? `<i class="c1"><img src="${esc(back)}" alt="" draggable="false" /></i>` : ""}
+            ${got.length > 1 ? `<b>+${got.length - 1}</b>` : ""}
+          </span>`
         : `<span class="thumb">${cover}</span>`;
       const members = got.map((card) => card.member).filter(Boolean).join(", ");
       const count = Number(order.count) || got.length;
