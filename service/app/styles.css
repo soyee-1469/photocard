@@ -3981,8 +3981,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
 /* 왼쪽(글자 쪽)은 넓게 흐려져 앨범이 글자에 닿기 전에 사라진다. */
 .flow-scroll {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 26%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 26%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.55) 5%, #000 14%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.55) 5%, #000 14%, #000 94%, transparent);
 }
 .flow-scroll.is-grab { cursor: grabbing; }
 .flow-stage.is-single .flow-scroll { overflow: hidden; cursor: pointer; }
