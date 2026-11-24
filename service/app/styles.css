@@ -3954,11 +3954,13 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   padding: 4px 0 8px;
 }
 .flow-row + .flow-row { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+/* 캐러셀을 왼쪽으로 20% 당겨 글자 밑까지 들어가게. 글자가 위에 오고, 앨범은 흐려지며 그 뒤로 사라진다. */
 .flow-stage {
   position: relative;
   display: block;
   height: 160px;
   min-width: 0;
+  margin-left: -20%;
   -webkit-tap-highlight-color: transparent;
 }
 .flow-scroll {
@@ -4021,6 +4023,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 /* 커버플로우 아래 글줄: 선반형과 같은 세로 쌓기(이름·구성·장수·가격) */
 .flow-copy {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 3px;
