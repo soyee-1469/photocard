@@ -3508,7 +3508,7 @@ function armDeck() {
     layout(new Set([first, second]));
     cards[first].style.zIndex = "9";
     cards[second].style.zIndex = "7";
-    later(() => layout(null), 340);
+    later(() => layout(null), 170);
   };
   const gather = () => {
     cards.forEach((card, index) => {
@@ -3535,14 +3535,15 @@ function armDeck() {
     });
     void deck.offsetWidth;
     deck.classList.add("is-shuffle");
-    [420, 940, 1460, 1980].forEach((ms) => later(swap, ms));
-    later(gather, 2460);
+    // 섞기는 2배속(2026-11-24): 자리 바꿈 4번 → 모으기 → 펼치기
+    [210, 470, 730, 990].forEach((ms) => later(swap, ms));
+    later(gather, 1230);
     later(() => {
       if (!stage.isConnected) return;
       clearInline();
       deck.classList.remove("is-shuffle");
       deck.classList.add("is-fan");
-    }, 2920);
+    }, 1460);
   };
   if (multi && state.revealIndex > 0) {
     // 두 번째 포장부터는 다시 섞지 않고 남은 포장을 바로 펼친다.

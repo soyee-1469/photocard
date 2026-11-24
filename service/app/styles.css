@@ -2316,7 +2316,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .deck.is-shuffle .deck-card {
   z-index: 1;
   animation: none;
-  transition: transform 0.34s cubic-bezier(0.22, 0.7, 0.2, 1);
+  transition: transform 0.17s cubic-bezier(0.22, 0.7, 0.2, 1);
   transform: translate(-50%, -50%) translate(var(--x, 0px), var(--y, 0px)) rotate(0deg) scale(0.66);
 }
 /* 슬라이드 11·15: 하단 [한 번 더 섞기 | 바로 오픈하기], 오른쪽 위 SKIP */
