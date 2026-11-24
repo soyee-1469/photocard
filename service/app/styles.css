@@ -543,8 +543,8 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .artist-random-copy .artist-random-price {
   font-size: 12px;
-  font-weight: 500;
-  color: #b3b3b8;
+  font-weight: 600;
+  color: #fff;
 }
 .artist-random-mystery {
   position: absolute;
@@ -613,7 +613,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   scroll-snap-type: none;
 }
 .shelf.rows.album .shelf-artist { color: #f4f1ea; }
-.shelf.rows.album .shelf-meta,
 /* 앨범별 랜덤 한 줄: 글자는 왼쪽 위, 선반은 오른쪽 아래. 줄 높이를 키워 배너처럼 보인다. */
 .shelf-row {
   display: flex;
@@ -657,8 +656,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   font-weight: 600;
   line-height: 1.35;
 }
-/* 가격은 옅은 회색으로 한 단계 낮춘다(그룹명이 주인공). */
-.shelf-price { color: #9a9a9f; font-weight: 500; }
+.shelf-price { color: #fff; font-weight: 600; }
 .shelf-stage {
   position: relative;
   display: flex;
