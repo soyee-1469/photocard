@@ -1108,11 +1108,18 @@ function productTile(item, compact = false) {
       <span class="tile-price">${priceBlock(item.price)}</span>
     </button>`;
 }
-// 구성 한 줄: 이 상품에 들어간 앨범 이름들. 특전은 랜덤 상품에 안 들어가므로 뺀다.
-function albumLine(group) {
-  if (!group) return "";
+
+// 구성 앨범 목록. 특전은 랜덤 상품에 안 들어가므로 뺀다.
+function albumNames(group) {
+  if (!group) return [];
   const units = (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).filter((unit) => unit.artistId === group.artistId);
-  return units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name).join(" · ");
+  return units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name);
+}
+
+// 앨범을 한 줄에 하나씩. 이어 쓰면 눈에 안 띄어서 줄로 나눈다.
+function albumLines(group, cls) {
+  const names = albumNames(group);
+  return names.length ? `<span class="${cls}">${names.map((name) => `<span>${esc(name)}</span>`).join("")}</span>` : "";
 }
 
 function shelfMeta(group) {
@@ -1148,7 +1155,7 @@ function shelfStage(group) {
 function shelfCopy(group) {
   return `
         <strong class="shelf-artist">${esc(group.artist)}</strong>
-        <span class="shelf-albums">${esc(albumLine(group))}</span>
+        ${albumLines(group, "shelf-albums")}
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${wonText(group.price)}</span>`;
 }
@@ -1168,7 +1175,7 @@ function artistRandomTile(group) {
       <span class="artist-random-fade" aria-hidden="true"></span>
       <span class="artist-random-copy">
         <strong>${esc(group.artist)}</strong>
-        <span class="artist-random-albums">${esc(albumLine(group))}</span>
+        ${albumLines(group, "artist-random-albums")}
         <span>${shelfMeta(group)}</span>
         <span class="artist-random-price">${wonText(group.price)}</span>
       </span>
@@ -2679,7 +2686,7 @@ function detail(item) {
           </span>
         </div>
         <h2>${esc(productName(item))}</h2>
-        ${albumLine(group) ? `<p class="compose-line">${esc(albumLine(group))}</p>` : ""}
+        ${albumNames(group).length ? `<p class="compose-line">${albumNames(group).map((name) => `<span>${esc(name)}</span>`).join("")}</p>` : ""}
         <p class="kind">${esc(summaryLine(item))}</p>
         <div class="detail-offer">
           <p class="lead">${lineup(item.cards.length, drawableCards(item).length)}</p>

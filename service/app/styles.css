@@ -4096,15 +4096,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   line-height: 1.4;
   color: #b9a995;
 }
-/* 글자 뒤 검정 그라데이션: 캐러셀이 글자 밑으로 들어와도 글자가 읽힌다. */
-.flow-copy::before {
-  content: "";
-  position: absolute;
-  top: -14px;
-  bottom: -14px;
-  left: -16px;
-  right: -56px;
-  z-index: -1;
-  background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 58%, transparent 100%);
-  pointer-events: none;
-}
+/* 구성 앨범: 한 줄에 하나씩 */
+.shelf-albums > span,
+.artist-random-albums > span,
+.detail .compose-line > span { display: block; }
+.shelf-albums > span::before,
+.artist-random-albums > span::before,
+.detail .compose-line > span::before { content: "· "; opacity: 0.6; }
