@@ -1270,9 +1270,20 @@ function homeRingRows(query) {
   return homeShelfGroups(query).map(ringRow).join("");
 }
 
+// 앨범 사이 각도: 현(chord)이 가장 넓은 커버의 85% 이상이 되게. 가로형 커버가 있으면 벌어진다.
+function ringStep(scene) {
+  const widest = widestItem(scene, ".cover3d img");
+  if (!widest) return RING_STEP;
+  const chord = Math.min(2 * RING_RADIUS * 0.95, widest * 0.85);
+  const step = (2 * Math.asin(chord / (2 * RING_RADIUS)) * 180) / Math.PI;
+  return Math.max(RING_STEP, Math.min(80, Math.round(step)));
+}
+
 function paintRing(scene, rot) {
+  const step = ringStep(scene);
+  scene.dataset.step = String(step);
   scene.querySelectorAll(".ring-item").forEach((item, index) => {
-    const angle = index * RING_STEP - rot;
+    const angle = index * step - rot;
     const t = Math.min(1, Math.abs(angle) / 90);
     item.style.transform = `rotateY(${angle}deg) translateZ(${RING_RADIUS}px)`;
     // 뒤로 돌수록 어둡고 흐려진다. 글자 밑으로 들어간 앨범이 글자를 방해하지 않게 세게 건다.
@@ -1286,12 +1297,13 @@ function armRings() {
   document.querySelectorAll("[data-ring]").forEach((scene) => {
     const stage = scene.parentElement;
     const count = scene.querySelectorAll(".ring-item").length;
-    const max = (count - 1) * RING_STEP;
+    const stepNow = () => Number(scene.dataset.step) || RING_STEP;
     let rot = 0;
     let down = false;
     let startX = 0;
     let startRot = 0;
     paintRing(scene, rot);
+    repaintOnLoad(scene, () => paintRing(scene, rot));
     if (count < 2) return;
     scene.addEventListener("pointerdown", (event) => {
       down = true;
@@ -1305,13 +1317,15 @@ function armRings() {
       const dx = event.clientX - startX;
       if (Math.abs(dx) > 5) stage.dataset.drag = "1";
       // 왼쪽으로 끌면 다음 앨범이 앞으로 돈다. 끝에서는 살짝만 더 돌고 되돌아온다.
+      const max = (count - 1) * stepNow();
       rot = Math.max(-18, Math.min(max + 18, startRot - dx * 0.42));
       paintRing(scene, rot);
     });
     const release = () => {
       if (!down) return;
       down = false;
-      rot = Math.max(0, Math.min(max, Math.round(rot / RING_STEP) * RING_STEP));
+      const step = stepNow();
+      rot = Math.max(0, Math.min((count - 1) * step, Math.round(rot / step) * step));
       scene.classList.add("is-snapping");
       paintRing(scene, rot);
       setTimeout(() => { delete stage.dataset.drag; }, 160);
@@ -1322,6 +1336,20 @@ function armRings() {
 
 // 순환 커버플로우. 정면 기준 칸 번호 d로 배치한다: 왼쪽 1칸(-1), 정면(0), 나머지는 오른쪽(1, 2…).
 // 왼쪽으로 밀려난 앨범은 보이지 않는 구간에서 오른쪽 끝으로 돌아간다. 2장이면 왼쪽 칸은 비운다.
+// 무대 안 가장 넓은 커버 폭. 이미지 로드 전엔 0이라 기본 간격을 쓴다.
+function widestItem(scene, selector) {
+  let width = 0;
+  scene.querySelectorAll(selector).forEach((item) => { width = Math.max(width, item.getBoundingClientRect().width); });
+  return width;
+}
+
+// 이미지가 다 뜨면 간격을 다시 계산해 그린다(가로형 커버가 겹치지 않게).
+function repaintOnLoad(scene, paint) {
+  scene.querySelectorAll("img").forEach((img) => {
+    if (!img.complete) img.addEventListener("load", paint, { once: true });
+  });
+}
+
 function flowSlot(index, pos, count) {
   const lo = count >= 3 ? -1.5 : -1;
   const d = index - pos;
@@ -1331,6 +1359,9 @@ function flowSlot(index, pos, count) {
 function paintFlow(scene, pos) {
   const items = scene.querySelectorAll(".flow-item");
   const count = items.length;
+  // 칸 간격: 가장 넓은 커버의 72% 이상(기울어진 옆 앨범이 정면 앨범을 가리지 않는 선).
+  const widest = widestItem(scene, ".cover3d img");
+  const spacing = Math.max(FLOW_SPACING - 30, Math.round(widest * 0.72) + 8);
   items.forEach((item, index) => {
     const d = flowSlot(index, pos, count);
     const last = Number(item.dataset.d);
@@ -1340,7 +1371,7 @@ function paintFlow(scene, pos) {
     const t = Math.min(1, Math.abs(d));
     const sign = d < 0 ? -1 : 1;
     const rot = FLOW_BASE_TILT - sign * t * 48;
-    const x = d * (FLOW_SPACING - 30);
+    const x = d * spacing;
     const scale = 1 - t * 0.18;
     const fade = d < -1 ? Math.max(0, 1 - (-d - 1) * 2) : d > 2.2 ? Math.max(0, 1 - (d - 2.2) * 2) : 1;
     item.style.transform = `translateX(${x}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
@@ -1362,6 +1393,7 @@ function armCoverflows() {
     let lastT = 0;
     let velocity = 0;
     paintFlow(scene, pos);
+    repaintOnLoad(scene, () => paintFlow(scene, pos));
     if (count < 2) return;
     scene.addEventListener("pointerdown", (event) => {
       down = true;
