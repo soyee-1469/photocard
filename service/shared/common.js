@@ -38,7 +38,11 @@ const ARTIST_I18N = {
   bts: { ko: "방탄소년단", en: "BTS", aliases: "방탄, BTS" },
 };
 
+// 프로필 사진. 전용 사진이 없는 그룹은 대표 앨범 커버를 쓴다(전체 아티스트·프로필 레일·관리자 공통).
 const PROFILE_PHOTOS = {
   blackpink: "/assets/profiles/blackpink.jpg",
   bts: "/assets/profiles/bts.jpg",
+  cortis: "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg",
+  seventeen: "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
+  twice: "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
 };
