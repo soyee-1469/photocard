@@ -624,7 +624,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   min-height: 216px;
   width: 100%;
   margin: 0;
-  padding: 16px 0 22px;
+  padding: 16px 0 30px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -722,6 +722,20 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
+/* 선반 받침대: 널빤지 아래 양쪽에 세로 브래킷. 벽에 단 선반처럼 보이게. */
+.shelf-ledge::before,
+.shelf-ledge::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  width: 7px;
+  height: 16px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, #3a3a3f 0%, #232326 60%, #151517 100%);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+}
+.shelf-ledge::before { left: 14%; }
+.shelf-ledge::after { right: 14%; }
 .tile {
   scroll-snap-align: start;
   display: flex;
