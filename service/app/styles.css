@@ -637,10 +637,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   width: 80%;
   margin-top: auto;
 }
-/* 가수 사이 구분: 얇은 선. 선반(아래)이 위 가수 것임이 분명해진다. */
-.shelf-row + .shelf-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
+
 .shelf-row:active { opacity: 0.92; }
 .shelf-copy {
   display: flex;
