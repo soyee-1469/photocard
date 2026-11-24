@@ -1207,7 +1207,6 @@ function shelfFlowRow(group) {
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${listPrice(group.price)}</span>
-        ${albumLines(group, "shelf-albums")}
       </button>
       ${flowStage(group)}
     </div>`;

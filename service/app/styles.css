@@ -3849,7 +3849,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 넓은 폰에서도 캐러셀이 글자 옆에 붙어 있도록 폭 상한을 둔다. */
 .flow-row {
   display: grid;
-  grid-template-columns: minmax(120px, 40%) minmax(0, 300px);
+  grid-template-columns: minmax(96px, 32%) minmax(0, 300px);
   align-items: center;
   gap: 8px;
   padding: 4px 0 8px;
