@@ -1287,6 +1287,107 @@ function homeShelfRows(query) {
   return homeShelfGroups(query).map(shelfRow).join("");
 }
 
+// ── 커버플로우 진열(선반형과 비교용) ──
+// 가로 스크롤 스냅이 드래그·관성·정지를 맡고, 스크롤 위치로 기울기·크기·밝기만 계산한다.
+// 커버는 높이 고정·폭은 원본 비율. 가로로 긴 앨범도 세로로 긴 앨범도 바닥을 맞춰 선다.
+const FLOW_SPACING = 104; // 한 칸 기준 거리(px). 기울기 계산 단위.
+const FLOW_MAX_COVERS = 5;
+
+function flowStage(group) {
+  const covers = (group.covers || []).slice(0, FLOW_MAX_COVERS);
+  const items = covers
+    .map((src) => `<span class="flow-item"><img src="${src}" alt="" draggable="false" /></span>`)
+    .join("");
+  const single = covers.length < 2 ? " is-single" : "";
+  return `
+    <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="album">
+      <span class="flow-scroll" data-flow><span class="flow-track">${items}</span></span>
+      <span class="flow-ledge" aria-hidden="true"></span>
+      <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
+    </span>`;
+}
+
+function flowRow(group) {
+  const price = Number(group.price || 0).toLocaleString("ko-KR");
+  return `
+    <div class="flow-row">
+      ${flowStage(group)}
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">
+        <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-meta">${group.sheets}장 · ${group.kinds}종 랜덤</span>
+        <span class="shelf-price">${price}원</span>
+      </button>
+    </div>`;
+}
+
+function homeFlowRows(query) {
+  return homeShelfGroups(query).map(flowRow).join("");
+}
+
+function paintFlow(scroller) {
+  const center = scroller.scrollLeft + scroller.clientWidth / 2;
+  scroller.querySelectorAll(".flow-item").forEach((item) => {
+    const mid = item.offsetLeft + item.offsetWidth / 2;
+    const d = Math.max(-2.5, Math.min(2.5, (mid - center) / FLOW_SPACING));
+    const t = Math.min(1, Math.abs(d));
+    const sign = d < 0 ? -1 : 1;
+    const rot = -sign * t * 48;
+    const shift = -d * 30;
+    const scale = 1 - t * 0.18;
+    item.style.transform = `translateX(${shift}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
+    item.style.filter = `brightness(${(1 - t * 0.42).toFixed(3)})`;
+    item.style.zIndex = String(10 - Math.round(Math.abs(d) * 2));
+  });
+}
+
+// 스크롤 중·직후의 탭은 상세 진입으로 치지 않는다(data-drag). 마우스 드래그도 같은 규칙.
+function armCoverflows() {
+  document.querySelectorAll("[data-flow]").forEach((scroller) => {
+    // 처음엔 가운데 앨범을 정면에 둔다(3장이면 1-2-1). 양옆이 보여야 "더 있다"는 신호가 된다.
+    const items = scroller.querySelectorAll(".flow-item");
+    const first = items[Math.floor((items.length - 1) / 2)];
+    if (first) scroller.scrollLeft = first.offsetLeft + first.offsetWidth / 2 - scroller.clientWidth / 2;
+    paintFlow(scroller);
+    let raf = 0;
+    let settle = 0;
+    const markDrag = () => {
+      scroller.dataset.drag = "1";
+      clearTimeout(settle);
+      settle = setTimeout(() => { delete scroller.dataset.drag; }, 180);
+    };
+    scroller.addEventListener("scroll", () => {
+      markDrag();
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; paintFlow(scroller); });
+    }, { passive: true });
+    let down = false;
+    let startX = 0;
+    let startLeft = 0;
+    scroller.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "mouse") return;
+      down = true;
+      startX = event.clientX;
+      startLeft = scroller.scrollLeft;
+    });
+    scroller.addEventListener("pointermove", (event) => {
+      if (!down) return;
+      const dx = event.clientX - startX;
+      if (Math.abs(dx) < 4) return;
+      scroller.classList.add("is-grab");
+      scroller.style.scrollSnapType = "none";
+      scroller.scrollLeft = startLeft - dx;
+      markDrag();
+    });
+    const release = () => {
+      if (!down) return;
+      down = false;
+      scroller.classList.remove("is-grab");
+      scroller.style.scrollSnapType = "";
+    };
+    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => scroller.addEventListener(type, release));
+  });
+}
+
 function artistsPage() {
   const rows = artistProfiles().map((profile) => {
     const src = profileImage(profile.id, { cover: false });
@@ -1392,6 +1493,10 @@ function home() {
       <section class="home-section album-section">
         <h2>앨범별 랜덤</h2>
         ${albumRows || `<p class="empty">찾는 상품이 없어요.</p>`}
+      </section>
+      <section class="home-section album-section flow-section">
+        <h2>앨범별 랜덤 · 커버플로우</h2>
+        ${groups.length ? `<div class="flow rows">${homeFlowRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
       </section>`;
   const header = state.searchOpen
     ? `
@@ -6175,6 +6280,7 @@ function render() {
   protectFronts();
   startBanner();
   startMidBanner();
+  armCoverflows();
   paintBoard();
   mountPostcode();
   armMotion();
@@ -6190,6 +6296,7 @@ function render() {
 
 app.addEventListener("click", (event) => {
   const open = event.target.closest("[data-open]");
+  if (open && open.querySelector("[data-flow]")?.dataset.drag === "1") return;
   const back = event.target.closest("[data-back]");
   const tab = event.target.closest("[data-tab]");
   const buy = event.target.closest("[data-buy]");
