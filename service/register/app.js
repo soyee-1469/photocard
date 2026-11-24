@@ -1,12 +1,5 @@
-const STORAGE_KEY = "photocard-register-v5";
+const STORAGE_KEY = REGISTER_KEY;
 const LEGACY_KEY = "photocard-register-v4";
-const STATUS = [
-  ["draft", "등록중"],
-  ["on", "판매중"],
-  ["out", "품절"],
-  ["soon", "입고예정"],
-];
-
 let packs = [];
 let banners = [];
 let artistEmblems = {};
@@ -55,12 +48,6 @@ const ORDER_STATUS = [
 const ORDER_BADGE_CLASS = { shipping_requested: "new", preparing: "prep", shipped: "ship", delivered: "done" };
 const CARRIERS_DOMESTIC = ["CJ대한통운", "우체국", "기타"];
 const CARRIERS_OVERSEAS = ["DHL", "FedEx", "UPS", "EMS", "기타"];
-const ORDER_FILTERS = [
-  ["all", "전체"],
-  ...ORDER_STATUS,
-  ["problem", "취소 / 문제 주문"],
-];
-
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -145,17 +132,6 @@ function attachCategories(data) {
     } else if (!album.cover && pack.cover) album.cover = pack.cover;
     if (album.cover) pack.cover = album.cover;
   });
-}
-
-function localizedName(ko, en, fallback) {
-  const korean = (document.documentElement.lang || "ko").toLowerCase().startsWith("ko");
-  const first = korean ? ko : en;
-  const second = korean ? en : ko;
-  return String(first || second || fallback || "").trim();
-}
-
-function aliasTokens(value) {
-  return String(value || "").split(/[,，]/).map((item) => item.trim()).filter(Boolean);
 }
 
 function artistSeed(id) {
@@ -255,9 +231,7 @@ function albumText(album) {
   return localizedName(album.nameKo, album.nameEn, album.name);
 }
 
-function eventText(item) {
-  return localizedName(item?.eventNameKo, item?.eventNameEn, item?.eventName);
-}
+const eventText = eventTitle;
 
 function albumsOf(artistId) {
   return listedNames(artistById(artistId)?.albums);
@@ -282,10 +256,6 @@ function albumSelect(item) {
   const extra = missing ? `<option value="${escapeAttr(item.album)}" selected>${escapeAttr(item.album)}</option>` : "";
   const empty = !albums.length && !missing ? `<option value="">앨범 없음</option>` : "";
   return `<select data-field="album" ${albums.length || missing ? "" : "disabled"}>${empty}${options}${extra}</select>`;
-}
-
-function labelOf(list, id) {
-  return list.find((item) => item.id === id)?.label || id;
 }
 
 function setListed(item, on) {
@@ -343,9 +313,7 @@ function trashedPacks() {
 }
 
 function dayLabel(value) {
-  const [year, month, day] = String(value || "").split("-");
-  if (!day) return "없음";
-  return `${year}. ${month}. ${day}.`;
+  return formatDate(value) || "없음";
 }
 
 function saveRegister() {
@@ -687,19 +655,20 @@ function renderPackInfo(item) {
     </section>`;
 }
 
-function renderPackCards(item) {
-  const rows = item.cards
-    .map(
-      (card, index) => `<tr>
+// 상품 구성 표 행. 상품 화면과 카드 화면이 같은 표를 쓴다.
+function composeRows(pack) {
+  return pack.cards.map((card, index) => `<tr>
         <td>${escapeAttr(card.code || card.no)}</td>
         <td class="faces">${faceThumb(card.front)}${faceThumb(card.back)}</td>
-        <td><select data-card="${index}" data-card-field="member">${memberOptions(item.artistId, card.member)}</select></td>
+        <td><select data-card="${index}" data-card-field="member">${memberOptions(pack.artistId, card.member)}</select></td>
         <td><select data-card="${index}" data-card-field="rarity">${RARITIES.map((rarity) => `<option ${rarity === card.rarity ? "selected" : ""}>${rarity}</option>`).join("")}</select></td>
         <td><input data-card="${index}" data-card-field="stock" type="number" min="0" value="${escapeAttr(String(card.stock))}" placeholder="수량" /></td>
         <td><button class="text-btn" type="button" data-remove-card="${index}">빼기</button></td>
-      </tr>`,
-    )
-    .join("");
+      </tr>`).join("");
+}
+
+function renderPackCards(item) {
+  const rows = composeRows(item);
   return `
     ${packTabs(item)}
     <div class="card-head">
@@ -1043,23 +1012,7 @@ function applyProfileName(category) {
   if (draft?.artistId === category.id) draft.artistName = name;
 }
 
-function coverThumb(item) {
-  if (!item.cover) return `<span class="row-thumb is-empty">없음</span>`;
-  return `<img class="row-thumb" src="${escapeAttr(item.cover)}" alt="" />`;
-}
-
-function escapeAttr(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;");
-}
-
-function renderModes() {
-  document.getElementById("mode-pack").classList.toggle("on", screen === "pack");
-  document.getElementById("mode-display").classList.toggle("on", screen === "display");
-  document.getElementById("mode-orders").classList.toggle("on", screen === "orders");
-}
+const escapeAttr = esc;
 
 function orderStatusLabel(status) {
   return ORDER_STATUS.find(([id]) => id === status)?.[1] || status;
@@ -1119,20 +1072,12 @@ function loadOrderStore() {
   return [];
 }
 
-function orderDate(value) {
-  if (!value) return "없음";
-  const [year, month, day] = String(value).split("-");
-  if (!day) return value;
-  return `${year}. ${month}. ${day}.`;
-}
-
 function orderAmount(order) {
   if (order.kind === "purchase") return Number.isFinite(order.price) ? `${order.price} TP` : "—";
   return order.feeText || "미정";
 }
 
 const SHIP_STATUSES = ["shipping_requested", "preparing"];
-const TRACK_STATUSES = ["shipped", "delivered"];
 // 단계 탭 라벨. 배지·스테퍼에는 ORDER_STATUS의 이름을 쓴다.
 const STEP_LABEL = { shipping_requested: "신규 요청", preparing: "배송 준비", shipped: "배송중", delivered: "배송완료" };
 // 단계마다 관리자가 할 일. 단계 표 아래 안내줄과 상세의 '다음 할 일'에 쓴다.
@@ -1268,10 +1213,6 @@ function carrierText(order) {
 function shortDay(value) {
   const text = String(value || "");
   return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text.slice(2).replaceAll("-", ".") : (text || "—");
-}
-
-function shipOrdersIn(list) {
-  return list.filter(isShipOrder);
 }
 
 function captureBulkDraft() {
@@ -1996,15 +1937,6 @@ function allCards() {
   return activePacks().flatMap((item) => item.cards.map((card, index) => ({ item, card, index, key: `${item.id}:${index}` })));
 }
 
-function cardVisible(entry) {
-  const text = query.trim().toLowerCase();
-  if (text) {
-    const hay = [artistName(entry.item.artistId), entry.item.album, entry.item.eventName, entry.card.member, entry.card.no].join(" ").toLowerCase();
-    if (!hay.includes(text)) return false;
-  }
-  return true;
-}
-
 function renderCardSidebar() {
   const item = packs.find((pack) => pack.id === currentId);
   const rows = item ? item.cards.map((card, index) => ({ item, card, index, key: `${item.id}:${index}` })) : [];
@@ -2021,20 +1953,10 @@ function renderCardSidebar() {
       : `<p class="empty">카드가 없어요.</p>`}`;
 }
 
-function cardStrip(item) {
-  const faces = item.cards.slice(0, 6).map((card) => (
-    card.front ? `<img class="strip-face" alt="" src="${escapeAttr(card.front)}" />` : `<span class="strip-face"></span>`
-  )).join("");
-  const more = item.cards.length > 6 ? `<span class="strip-more">+${item.cards.length - 6}</span>` : "";
-  return `<span class="card-strip">${faces}${more}</span>`;
-}
-
 function ensureCardPick() {
   if (!categories.some((item) => item.id === cardArtistId)) cardArtistId = categories[0]?.id || "";
   const names = albumsOf(cardArtistId);
   if (!names.includes(cardAlbum)) cardAlbum = names[0] || "";
-  const events = activePacks().filter((pack) => pack.artistId === cardArtistId && pack.album === cardAlbum);
-  if (cardEvent && !events.some((pack) => (pack.eventName || "") === cardEvent) && !events.length) return;
 }
 
 function eventPacks() {
@@ -2095,14 +2017,7 @@ function renderCardList() {
     const on = pack && item.id === pack.id ? "on" : "";
     return `<button type="button" class="${on}" data-pick-event="${escapeAttr(item.eventName || "")}">${escapeAttr(label)}</button>`;
   }).join("");
-  const cards = pack ? pack.cards.map((card, index) => `<tr>
-        <td>${escapeAttr(card.code || card.no)}</td>
-        <td class="faces">${faceThumb(card.front)}${faceThumb(card.back)}</td>
-        <td><select data-card="${index}" data-card-field="member">${memberOptions(pack.artistId, card.member)}</select></td>
-        <td><select data-card="${index}" data-card-field="rarity">${RARITIES.map((rarity) => `<option ${rarity === card.rarity ? "selected" : ""}>${rarity}</option>`).join("")}</select></td>
-        <td><input data-card="${index}" data-card-field="stock" type="number" min="0" value="${escapeAttr(String(card.stock))}" placeholder="수량" /></td>
-        <td><button class="text-btn" type="button" data-remove-card="${index}">빼기</button></td>
-      </tr>`).join("") : "";
+  const cards = pack ? composeRows(pack) : "";
   const sale = pack ? `
     <div class="grid fields">
       <label>뽑기 가격
@@ -2452,20 +2367,34 @@ document.addEventListener("dragstart", (event) => {
   if (event.target.closest("img, video")) event.preventDefault();
 });
 
+// 메뉴 이름 → 화면. 클릭·URL ?menu=·미리보기 postMessage가 같은 표를 쓴다.
+// 배송(ship)·송장(track)은 주문 화면의 필터고, 팩(pack)은 카드 화면의 목록 보기다.
+function menuScreen(name) {
+  if (name === "album") return "category";
+  if (name === "pack") return "cards";
+  if (name === "ship" || name === "track") return "orders";
+  return name;
+}
+
+function menuFilter(name) {
+  return name === "ship" ? "outbound" : name === "track" ? "shipped" : "";
+}
+
+function openMenu(name) {
+  screen = menuScreen(name);
+  if (screen === "cards") cardView = "list";
+  if (screen === "orders") orderFilter = menuFilter(name) || "all";
+}
+
 document.body.addEventListener("click", (event) => {
   const menu = event.target.closest("[data-menu]");
   if (menu) {
-    screen = menu.dataset.menu;
-    if (screen === "album") screen = "category";
-    if (screen === "pack" || screen === "cards") {
-      if (screen === "pack") screen = "cards";
-      cardView = "list";
-    }
-    if (screen === "ship") { screen = "orders"; menu.dataset.filter = menu.dataset.filter || "outbound"; }
-    if (screen === "track") { screen = "orders"; menu.dataset.filter = menu.dataset.filter || "shipped"; }
+    const asked = menu.dataset.menu;
+    screen = menuScreen(asked);
+    if (screen === "cards") cardView = "list";
     if (screen === "orders") {
       orderView = "ship";
-      orderFilter = menu.dataset.filter || "all";
+      orderFilter = menu.dataset.filter || menuFilter(asked) || "all";
       shipPanel = false;
       uploadPreview = null;
       selectedOrderIds = new Set();
@@ -2699,12 +2628,6 @@ document.body.addEventListener("click", (event) => {
     render();
     return;
   }
-  const packButton = event.target.closest("[data-id]");
-  if (packButton) {
-    currentId = packButton.dataset.id;
-    render();
-    return;
-  }
   const orderButton = event.target.closest("[data-order]");
   if (orderButton && screen === "orders" && !event.target.closest("input, button, a, label")) {
     orderId = orderButton.dataset.order;
@@ -2856,12 +2779,6 @@ document.body.addEventListener("click", (event) => {
     render();
     return;
   }
-  if (event.target.dataset.home) {
-    const item = packs.find((pack) => pack.id === event.target.dataset.home);
-    setListed(item, event.target.dataset.homeOn === "1");
-    render();
-    return;
-  }
   if (event.target.id === "add-banner" || event.target.id === "add-mid-banner") {
     banners.push({
       id: crypto.randomUUID(),
@@ -2977,12 +2894,6 @@ document.body.addEventListener("click", (event) => {
     render();
     return;
   }
-  if (event.target.id === "clear-emblem") {
-    const item = packs.find((pack) => pack.id === currentId);
-    if (item?.artistId) delete artistEmblems[item.artistId];
-    render();
-    return;
-  }
   if (event.target.id === "clear-cover") {
     const item = activePack();
     if (!item) return;
@@ -3089,15 +3000,6 @@ document.body.addEventListener("change", (event) => {
     readCover(target.files[0], 480).then((image) => {
       category.profileImage = image;
       artistEmblems[category.id] = image;
-      render();
-    });
-    return;
-  }
-  if (target.id === "emblem-file" && target.files[0]) {
-    const pack = packs.find((entry) => entry.id === currentId);
-    if (!pack?.artistId || pack.artistId === HOLDING_ID) return;
-    readCover(target.files[0], 480).then((image) => {
-      artistEmblems[pack.artistId] = image;
       render();
     });
     return;
@@ -3271,14 +3173,13 @@ document.body.addEventListener("change", (event) => {
     const field = target.dataset.field;
     if (field === "listed") setListed(item, target.value === "1");
     else if (field === "selling") setSale(item, target.value);
-    else if (field === "home") item.home = target.checked;
     else item[field] = field === "price" ? Number(target.value) : target.value;
     if (field === "artistId") {
       const category = categories.find((entry) => entry.id === item.artistId);
       if (category?.kind) item.kind = category.kind;
     }
     item.artistName = artistName(item.artistId);
-    if (field === "artistId" || field === "kind") {
+    if (field === "artistId") {
       const albums = albumsOf(item.artistId);
       if (item.album && !albums.includes(item.album)) item.album = albums[0] || "";
       if (!item.album && albums[0]) item.album = albums[0];
@@ -3343,17 +3244,13 @@ currentId = packs[0].id;
 
 const adminMenus = ["dash", "category", "pack", "cards", "banner", "orders", "ship", "track", "policy", "notice"];
 const askedMenu = new URLSearchParams(location.search).get("menu");
-if (askedMenu === "pack" || askedMenu === "album") screen = askedMenu === "album" ? "category" : "cards";
-else if (adminMenus.includes(askedMenu)) screen = askedMenu;
+if (adminMenus.includes(askedMenu)) openMenu(askedMenu);
 window.addEventListener("message", (event) => {
-  let next = event.data && event.data.source === "photocard-preview" ? event.data.screen : "";
-  if (next === "album") next = "category";
-  if (!adminMenus.includes(next) || next === screen) return;
-  screen = next;
-  if (screen === "pack") {
-    packView = "list";
-    draft = null;
-  }
+  const asked = event.data && event.data.source === "photocard-preview" ? event.data.screen : "";
+  if (!adminMenus.includes(asked) || menuScreen(asked) === screen) return;
+  openMenu(asked);
+  packView = "list";
+  draft = null;
   query = "";
   render();
 });
