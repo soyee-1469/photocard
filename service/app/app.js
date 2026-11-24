@@ -1845,7 +1845,7 @@ function ownedDetail() {
             <tr><th>상품</th><td>${pack ? esc(productName(pack)) : esc(card.album)}</td></tr>
             ${member}
             <tr><th>번호</th><td>${esc(card.no)}</td></tr>
-            <tr><th>등급</th><td>${rarityBadge(card)}</td></tr>
+            ${SHOW_RARITY ? `<tr><th>등급</th><td>${rarityBadge(card)}</td></tr>` : ""}
             <tr><th>보유 수량</th><td>${copies.length}장</td></tr>
             <tr><th>보유 번호</th><td>${esc(card.id)}</td></tr>
           </table>
@@ -3035,8 +3035,11 @@ function openBar(note) {
     </header>`;
 }
 
-// 등급 뱃지. NORMAL도 표시한다(회색). RARE·SPECIAL은 색으로 구분.
+// 등급 뱃지. 등급(NORMAL/RARE/SPECIAL)은 데이터에 남기되 손님에게는 아직 보여주지 않는다(2026-11-24 결정).
+// 기준이 공식 한정·공개 규칙으로 정해지면 SHOW_RARITY를 켠다.
+const SHOW_RARITY = false;
 function rarityBadge(card) {
+  if (!SHOW_RARITY) return "";
   const grade = String(card.rarity || "NORMAL").toUpperCase();
   return `<em class="rarity r-${grade.toLowerCase()}">${esc(grade)}</em>`;
 }
@@ -3046,7 +3049,8 @@ function cardWho(card) {
 }
 
 function cardWhoHtml(card) {
-  return `${card.member ? `${esc(card.member)} · ` : ""}${rarityBadge(card)}`;
+  const badge = rarityBadge(card);
+  return `${esc(card.member || "")}${badge ? ` · ${badge}` : ""}`;
 }
 
 function revealSlide(card, index) {
