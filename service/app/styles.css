@@ -459,9 +459,6 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 /* 스크롤 영역엔 좌우 패딩이 없으므로 음수 마진을 주면 섹션 여백이 상쇄돼 0이 된다. 배경은 어차피 화면 폭. */
 .shelf-wrap.home-two {
   padding: 20px 0 8px;
-  background:
-    radial-gradient(120% 60% at 50% 0%, rgba(90, 58, 32, 0.22), transparent 58%),
-    linear-gradient(180deg, #1a1412 0%, #120e0c 100%);
 }
 .shelf-wrap.home-two .home-section {
   padding: 0 16px 22px;

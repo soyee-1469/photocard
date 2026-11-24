@@ -6238,9 +6238,20 @@ app.addEventListener("click", (event) => {
       state.profileFrom = "";
       state.screen = "artists";
     } else {
-      state.profileFrom = fromArtists ? "artists" : "";
-      state.profile = profile.dataset.profile;
-      state.screen = "artist";
+      // 가수 프로필은 그 가수 랜덤 상품 상세로 바로 간다(2026-11-24, 가수별 상품이라서).
+      // 상품이 없는 가수만 예전 앨범 목록 화면으로.
+      const group = SHELF_GROUPS.find((entry) => entry.artistId === profile.dataset.profile);
+      if (group) {
+        state.productId = group.id;
+        state.productFrom = state.screen;
+        state.detailHero = "artist";
+        state.screen = "detail";
+        state.sheet = null;
+      } else {
+        state.profileFrom = fromArtists ? "artists" : "";
+        state.profile = profile.dataset.profile;
+        state.screen = "artist";
+      }
     }
   } else if (searchOpenBtn) {
     state.searchOpen = true;
