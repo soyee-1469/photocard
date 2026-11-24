@@ -608,7 +608,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   flex-direction: column;
   grid-auto-flow: row;
   grid-auto-columns: auto;
-  gap: 10px;
+  gap: 0;
   overflow: visible;
   scroll-snap-type: none;
 }
@@ -624,7 +624,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   min-height: 216px;
   width: 100%;
   margin: 0;
-  padding: 14px 0 0;
+  padding: 16px 0 22px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -636,6 +636,10 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   align-self: flex-end;
   width: 80%;
   margin-top: auto;
+}
+/* 가수 사이 구분: 얇은 선. 선반(아래)이 위 가수 것임이 분명해진다. */
+.shelf-row + .shelf-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 .shelf-row:active { opacity: 0.92; }
 .shelf-copy {
@@ -665,7 +669,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   align-items: flex-end;
   justify-content: flex-end;
   min-height: 128px;
-  padding: 0 34px 16px 0;
+  padding: 0 34px 7px 0;
   overflow: visible;
 }
 .shelf-boxes {
@@ -692,7 +696,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-mystery {
   position: absolute;
   right: 0;
-  bottom: 18px;
+  bottom: 9px;
   z-index: 2;
   height: 84px;
   width: auto;
