@@ -102,6 +102,17 @@ function statusGlyph(status) {
   return "";
 }
 
+function shelfCard(no, member, front, back, stock) {
+  return {
+    no: String(no).padStart(2, "0"),
+    member,
+    front,
+    back,
+    rarity: "NORMAL",
+    stock,
+  };
+}
+
 const PRODUCTS = [
   {
     id: "blackpink-jump",
@@ -195,6 +206,139 @@ const PRODUCTS = [
       member: "로제",
       rarity: "NORMAL",
     })),
+  },
+  // 홈 NEW 5그룹 랜덤팩. 데모 상품은 유지하고 목록에서만 제외한다.
+  {
+    id: "cortis-random",
+    artist: "CORTIS",
+    artistId: "cortis",
+    album: "GREENGREEN",
+    displayName: "CORTIS Photocard",
+    eventType: "album",
+    cover: "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg",
+    price: 3500,
+    home: true,
+    cards: [
+      shelfCard(1, "Seonghyeon", "01.jpg", "06.jpg", 8),
+      shelfCard(2, "Keonho", "02.jpg", "06.jpg", 7),
+      shelfCard(3, "Martin", "03.jpg", "06.jpg", 0),
+      shelfCard(4, "James", "04.jpg", "06.jpg", 0),
+      shelfCard(5, "Juhoon", "05.jpg", "06.jpg", 0),
+      shelfCard(6, "Martin", "07.jpg", "06.jpg", 6),
+      shelfCard(7, "James", "08.jpg", "06.jpg", 5),
+      shelfCard(8, "Juhoon", "09.jpg", "06.jpg", 4),
+      shelfCard(9, "Seonghyeon", "10.jpg", "11.jpg", 0),
+      shelfCard(10, "Keonho", "12.jpg", "11.jpg", 3),
+    ],
+  },
+  {
+    id: "seventeen-random",
+    artist: "SEVENTEEN",
+    artistId: "seventeen",
+    album: "HAPPY BURSTDAY",
+    displayName: "SEVENTEEN Photocard",
+    eventType: "album",
+    cover: "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
+    price: 3900,
+    home: true,
+    cards: [
+      shelfCard(1, "S.Coups", "20.jpg", "19.jpg", 4),
+      shelfCard(2, "Jeonghan", "22.jpg", "19.jpg", 3),
+      shelfCard(3, "Joshua", "24.jpg", "19.jpg", 3),
+      shelfCard(4, "Jun", "26.jpg", "19.jpg", 3),
+      shelfCard(5, "Hoshi", "28.jpg", "19.jpg", 3),
+      shelfCard(6, "Wonwoo", "30.jpg", "19.jpg", 3),
+      shelfCard(7, "Woozi", "32.jpg", "19.jpg", 3),
+      shelfCard(8, "The8", "34.jpg", "19.jpg", 3),
+      shelfCard(9, "Mingyu", "36.jpg", "19.jpg", 3),
+      shelfCard(10, "DK", "38.jpg", "19.jpg", 3),
+      shelfCard(11, "Seungkwan", "40.jpg", "19.jpg", 3),
+      shelfCard(12, "Vernon", "42.jpg", "19.jpg", 3),
+      shelfCard(13, "Dino", "44.jpg", "19.jpg", 3),
+      shelfCard(14, "Jun", "46.jpg", "19.jpg", 0),
+      shelfCard(15, "Dino", "48.jpg", "19.jpg", 0),
+    ],
+  },
+  {
+    id: "twice-random",
+    artist: "TWICE",
+    artistId: "twice",
+    album: "THIS IS FOR",
+    displayName: "TWICE Photocard",
+    eventType: "album",
+    cover: "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
+    price: 3300,
+    home: true,
+    cards: [
+      shelfCard(1, "Nayeon", "50.jpg", "49.jpg", 4),
+      shelfCard(2, "Jeongyeon", "51.jpg", "49.jpg", 4),
+      shelfCard(3, "Momo", "52.jpg", "49.jpg", 4),
+      shelfCard(4, "Sana", "53.jpg", "49.jpg", 4),
+      shelfCard(5, "Jihyo", "54.jpg", "49.jpg", 4),
+      shelfCard(6, "Mina", "55.jpg", "49.jpg", 4),
+      shelfCard(7, "Dahyun", "56.jpg", "49.jpg", 4),
+      shelfCard(8, "Chaeyoung", "57.jpg", "49.jpg", 4),
+      shelfCard(9, "Tzuyu", "58.jpg", "49.jpg", 4),
+      shelfCard(10, "Nayeon", "59.jpg", "60.jpg", 0),
+      shelfCard(11, "Jeongyeon", "61.jpg", "62.jpg", 0),
+      shelfCard(12, "Momo", "63.jpg", "64.jpg", 0),
+      shelfCard(13, "Jihyo", "65.jpg", "66.jpg", 0),
+      shelfCard(14, "Chaeyoung", "67.jpg", "68.jpg", 0),
+      shelfCard(15, "Sana", "69.jpg", "68.jpg", 3),
+      shelfCard(16, "Mina", "71.jpg", "68.jpg", 3),
+      shelfCard(17, "Dahyun", "73.jpg", "68.jpg", 3),
+      shelfCard(18, "Tzuyu", "75.jpg", "68.jpg", 3),
+    ],
+  },
+  {
+    id: "blackpink-random",
+    artist: "BLACKPINK",
+    artistId: "blackpink",
+    album: "DEADLINE",
+    displayName: "BLACKPINK Photocard",
+    eventType: "album",
+    cover: "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
+    price: 8900,
+    home: true,
+    cards: [
+      shelfCard(1, "Jisoo", "80.jpg", "79.jpg", 6),
+      shelfCard(2, "Jennie", "81.jpg", "79.jpg", 6),
+      shelfCard(3, "Rosé", "82.jpg", "79.jpg", 6),
+      shelfCard(4, "Lisa", "83.jpg", "79.jpg", 6),
+      shelfCard(5, "Jisoo", "84.jpg", "79.jpg", 4),
+      shelfCard(6, "Rosé", "85.jpg", "79.jpg", 4),
+      shelfCard(7, "Jennie", "86.jpg", "79.jpg", 0),
+      shelfCard(8, "Lisa", "87.jpg", "79.jpg", 0),
+      shelfCard(9, "Jennie", "88.jpg", "79.jpg", 5),
+      shelfCard(10, "Jisoo", "89.jpg", "79.jpg", 5),
+    ],
+  },
+  {
+    id: "bts-random",
+    artist: "BTS",
+    artistId: "bts",
+    album: "ARIRANG",
+    displayName: "BTS Photocard",
+    eventType: "album",
+    cover: "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
+    price: 4000,
+    home: true,
+    cards: [
+      shelfCard(1, "RM", "90.jpg", "91.jpg", 0),
+      shelfCard(2, "Jin", "92.jpg", "91.jpg", 5),
+      shelfCard(3, "Suga", "93.jpg", "91.jpg", 5),
+      shelfCard(4, "J-Hope", "94.jpg", "91.jpg", 0),
+      shelfCard(5, "Jimin", "95.jpg", "91.jpg", 0),
+      shelfCard(6, "V", "96.jpg", "91.jpg", 5),
+      shelfCard(7, "Jungkook", "97.jpg", "91.jpg", 5),
+      shelfCard(8, "Jin", "98.jpg", "91.jpg", 4),
+      shelfCard(9, "Suga", "99.jpg", "91.jpg", 4),
+      shelfCard(10, "V", "100.jpg", "91.jpg", 4),
+      shelfCard(11, "Jungkook", "101.jpg", "91.jpg", 4),
+      shelfCard(12, "RM", "102.jpg", "91.jpg", 3),
+      shelfCard(13, "J-Hope", "103.jpg", "91.jpg", 3),
+      shelfCard(14, "Jimin", "104.jpg", "91.jpg", 3),
+    ],
   },
 ];
 
@@ -728,14 +872,96 @@ function ensurePurchases() {
 const app = document.querySelector("#app");
 
 const ARTIST_NAMES = {
+  cortis: "CORTIS",
+  seventeen: "SEVENTEEN",
+  twice: "TWICE",
   lesserafim: "LE SSERAFIM",
   ive: "IVE",
   blackpink: "BLACKPINK",
-  bts: "방탄소년단",
+  bts: "BTS",
   rose: "로제",
   jungkook: "전정국",
   holding: "미분류",
 };
+
+// 홈 NEW 1열 선반용 카탈로그(장수·종수·확정가 고정). extra는 데이터만 두고 선반에는 안 올린다.
+const CARD_FRONT_FX = "/assets/fx/card_front.png";
+const CARD_BACK_FX = "/assets/fx/card_back.png";
+const SHELF_SLOT_COUNT = 3;
+const SHELF_GROUPS = [
+  {
+    id: "cortis-random",
+    artistId: "cortis",
+    artist: "CORTIS",
+    sheets: 50,
+    kinds: 21,
+    price: 3500,
+    covers: ["/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg"],
+    extra: [],
+  },
+  {
+    id: "seventeen-random",
+    artistId: "seventeen",
+    artist: "SEVENTEEN",
+    sheets: 50,
+    kinds: 46,
+    price: 3900,
+    covers: [
+      "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
+      "/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg",
+      "/assets/covers/SEVENTEEN/04_SEVENTEEN_CARAT_LAND_poster.jpg",
+    ],
+    extra: ["/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_JAPAN_poster.jpg"],
+  },
+  {
+    id: "twice-random",
+    artistId: "twice",
+    artist: "TWICE",
+    sheets: 50,
+    kinds: 47,
+    price: 3300,
+    covers: [
+      "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
+      "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_DELUXE_cover.jpg",
+      "/assets/covers/TWICE/06_TWICE_THIS_IS_FOR_TOUR_poster.jpg",
+    ],
+    extra: [],
+  },
+  {
+    id: "blackpink-random",
+    artistId: "blackpink",
+    artist: "BLACKPINK",
+    sheets: 50,
+    kinds: 22,
+    price: 8900,
+    covers: [
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JENNIE_cover.jpg",
+      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg",
+    ],
+    extra: [
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg",
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JISOO_cover.jpg",
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_LISA_cover.jpg",
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_ROSE_cover.jpg",
+    ],
+  },
+  {
+    id: "bts-random",
+    artistId: "bts",
+    artist: "BTS",
+    sheets: 50,
+    kinds: 25,
+    price: 4000,
+    covers: [
+      "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
+      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
+      "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg",
+    ],
+    extra: ["/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"],
+  },
+];
+const SHELF_PRODUCT_IDS = new Set(SHELF_GROUPS.map((group) => group.id));
 
 const FACTS = {
   unit: "1장",
@@ -753,6 +979,7 @@ const GUIDES = {
   random: [
     "상품마다 구성된 포토카드 중 1장이 랜덤으로 제공돼요.",
     "동일한 카드가 다시 나올 수 있어요.",
+    "현재 재고 기준이며 품절 카드는 뽑히지 않아요.",
   ],
   photocard: [
     "뽑은 포토카드는 보유카드에서 확인이 가능해요.",
@@ -1009,25 +1236,48 @@ function saleOf(item) {
   return item.sale === "out" ? "out" : "on";
 }
 
+function stockTracked(card) {
+  return card && card.stock !== "" && card.stock != null;
+}
+
 function cardStock(card) {
-  if (card.stock === "" || card.stock == null) return 0;
+  if (!stockTracked(card)) return 0;
   const value = Number(card.stock);
   return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function packStock(item) {
-  if (!item) return 0;
+function isCardSoldOut(card) {
+  return stockTracked(card) && cardStock(card) <= 0;
+}
+
+function packCards(item) {
+  if (!item) return [];
   const pack = registerPack(item.id);
-  const cards = pack?.cards?.length ? pack.cards : item.cards;
-  return cards.reduce((sum, card) => sum + cardStock(card), 0);
+  return pack?.cards?.length ? pack.cards : item.cards || [];
+}
+
+function packStock(item) {
+  return packCards(item).reduce((sum, card) => sum + cardStock(card), 0);
+}
+
+// 재고를 추적하는 상품은 품절(0) 카드를 빼고 뽑는다. 재고 필드가 없으면 데모처럼 전체 대상.
+function drawableCards(item) {
+  const cards = packCards(item);
+  if (!cards.some(stockTracked)) return cards;
+  return cards.filter((card) => cardStock(card) > 0);
+}
+
+function consumeCardStock(card) {
+  if (!stockTracked(card)) return;
+  const next = Math.max(0, Number(card.stock) - 1);
+  card.stock = next;
 }
 
 // 재고를 하나도 정하지 않은 상품은 재고 제한 없이 연속 뽑기가 가능하다.
 function canDrawFive(item) {
   if (!item) return false;
-  const pack = registerPack(item.id);
-  const cards = pack?.cards?.length ? pack.cards : item.cards;
-  const tracked = cards.some((card) => card.stock !== "" && card.stock != null);
+  const cards = packCards(item);
+  const tracked = cards.some(stockTracked);
   return !tracked || packStock(item) >= 5;
 }
 
@@ -1154,6 +1404,9 @@ function profileImage(artistId, options = {}) {
 }
 
 const ARTIST_I18N = {
+  cortis: { ko: "코르티스", en: "CORTIS", aliases: "cortis, 코르티스" },
+  seventeen: { ko: "세븐틴", en: "SEVENTEEN", aliases: "세븐틴, svt" },
+  twice: { ko: "트와이스", en: "TWICE", aliases: "트와이스" },
   blackpink: { ko: "블랙핑크", en: "BLACKPINK", aliases: "블랙핑크" },
   lesserafim: { ko: "르세라핌", en: "LE SSERAFIM", aliases: "르세라핌" },
   ive: { ko: "아이브", en: "IVE", aliases: "아이브" },
@@ -1272,6 +1525,44 @@ function productTile(item, compact = false) {
     </button>`;
 }
 
+function shelfBox(src, kind) {
+  return `<span class="shelf-box shelf-box-${kind}"><img src="${src}" alt="" /></span>`;
+}
+
+function shelfStage(group) {
+  const covers = (group.covers || []).slice(0, SHELF_SLOT_COUNT);
+  const boxes = [];
+  covers.forEach((src) => boxes.push(shelfBox(src, "cover")));
+  while (boxes.length < SHELF_SLOT_COUNT) boxes.push(shelfBox(CARD_BACK_FX, "back"));
+  return `
+    <span class="shelf-stage" aria-hidden="true">
+      <span class="shelf-boxes">${boxes.join("")}</span>
+      <img class="shelf-mystery" src="${CARD_FRONT_FX}" alt="" />
+      <span class="shelf-ledge"></span>
+    </span>`;
+}
+
+function shelfRow(group) {
+  const price = Number(group.price || 0).toLocaleString("ko-KR");
+  return `
+    <button type="button" class="shelf-row" data-open="${esc(group.id)}">
+      <span class="shelf-copy">
+        <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-meta">${group.sheets}장 · ${group.kinds}종 랜덤</span>
+        <span class="shelf-price">${price}원</span>
+      </span>
+      ${shelfStage(group)}
+    </button>`;
+}
+
+function homeShelfRows(query) {
+  return SHELF_GROUPS.filter((group) => {
+    if (!query) return true;
+    const hay = `${group.artist} ${group.artistId} ${group.sheets}장 ${group.kinds}종`.toLowerCase();
+    return hay.includes(query);
+  }).map(shelfRow).join("");
+}
+
 function artistsPage() {
   const rows = artistProfiles().map((profile) => {
     const src = profileImage(profile.id, { cover: false });
@@ -1359,11 +1650,10 @@ function home() {
   const dots = banners.map(
     (_, index) => `<button type="button" data-dot="${index}" class="${index === state.bannerIndex ? "on" : ""}" aria-label="이벤트 ${index + 1}"></button>`,
   ).join("");
-  const cards = catalog().filter((item) => listed(item) && (!query || productHaystack(item).includes(query)))
-    .map((item) => productTile(item, true))
-    .join("");
+  // NEW는 5그룹 선반만. 데모 PRODUCTS는 데이터로 남기고 목록에서 뺀다.
+  const cards = homeShelfRows(query);
   const list = cards
-    ? `<div class="shelf">${cards}</div>`
+    ? `<div class="shelf rows">${cards}</div>`
     : `<p class="empty">찾는 상품이 없어요.</p>`;
   const header = state.searchOpen
     ? `
@@ -1377,7 +1667,10 @@ function home() {
       <h1>포토카드</h1>
       <span class="bar-tools">${searchButton()}${menuButton()}</span>
     </header>`;
-  const profiles = artistProfiles().map((profile) => `
+  const shelfArtists = new Set(SHELF_GROUPS.map((group) => group.artistId));
+  const profiles = artistProfiles()
+    .filter((profile) => shelfArtists.has(profile.id))
+    .map((profile) => `
     <button type="button" class="profile" data-profile="${esc(profile.id)}">
       <img src="${profile.image}" alt="" />
       <span>${esc(profile.name)}</span>
@@ -1387,7 +1680,7 @@ function home() {
       <i class="profile-all" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></i>
       <span>전체</span>
     </button>`;
-  // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다
+  // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다. NEW와 맞춰 5그룹만 레일에 둔다.
   const rail = state.searchOpen ? "" : `<div class="profiles">${allArtists}${profiles}</div>`;
   const banner = state.searchOpen
     ? ""
@@ -2599,19 +2892,23 @@ function wished() {
 function detail(item) {
   const slots = item.cards
     .map((card) => {
+      const sold = isCardSoldOut(card);
       const imgs = [
         card.front ? `<span class="face front"><img src="${photo(card.front)}" alt="" /></span>` : "",
         card.back ? `<span class="face"><img src="${photo(card.back)}" alt="" /></span>` : "",
       ].join("");
+      const who = [card.member, sold ? "품절" : ""].filter(Boolean).join(" · ");
       return `
-      <div class="slot pair">
+      <div class="slot pair${sold ? " is-soldout" : ""}">
         <div class="pair-imgs">${imgs}</div>
-        <small>${esc(card.no)}</small>
+        ${sold ? `<span class="slot-sold">품절</span>` : ""}
+        <small>${esc(card.no)}${who ? ` · ${esc(who)}` : ""}</small>
       </div>`;
     })
     .join("");
   // TP가 모자라도 버튼은 열어 둔다. 결제 시트가 부족분과 [TP 교환하기]를 보여 준다.
-  const canOne = true;
+  // 품절만 남은 상품은 뽑기 버튼을 막는다(행 전체 품절 표시는 하지 않음).
+  const canOne = drawableCards(item).length > 0;
   const stockForFive = canDrawFive(item);
   const canFive = stockForFive;
   const word = saleWord(item);
@@ -3214,7 +3511,10 @@ function moveStored(ids) {
 function draw(item, count) {
   const picked = [];
   for (let i = 0; i < count; i += 1) {
-    const card = item.cards[Math.floor(Math.random() * item.cards.length)];
+    const pool = drawableCards(item);
+    if (!pool.length) break;
+    const card = pool[Math.floor(Math.random() * pool.length)];
+    consumeCardStock(card);
     const owned = own({
       artist: item.artist,
       album: item.album,
@@ -3227,6 +3527,7 @@ function draw(item, count) {
     picked.push(owned);
     state.owned.push(owned);
   }
+  if (!picked.length) return;
   persistPurchase({
     id: `PU_${Date.now()}`,
     kind: "purchase",
@@ -6566,12 +6867,14 @@ app.addEventListener("click", (event) => {
     const buying = product(state.productId);
     const count = Number(buy.dataset.buy);
     if (saleWord(buying)) return;
+    if (!drawableCards(buying).length) return;
     if (count === 5 && !canDrawFive(buying)) return;
     state.sheet = count;
   } else if (pay) {
     const buying = product(state.productId);
     const count = Number(pay.dataset.pay);
     if (saleWord(buying)) return;
+    if (!drawableCards(buying).length) return;
     if (count === 5 && !canDrawFive(buying)) return;
     if (!state.walletConnected) return;
     if (state.tp < buying.price * count) {
