@@ -167,7 +167,7 @@ const ALBUM_UNITS = [
   {
     "artistId": "seventeen",
     "id": "seventeen-new-tour",
-    "name": "WORLD TOUR [NEW_]",
+    "name": "WORLD TOUR [NEW]",
     "eventType": "album",
     "badge": "",
     "eventName": "",
@@ -494,7 +494,7 @@ const STOCK_PRODUCTS = [
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "cortis-greengreen",
-        "album": "GREENGREEN? (회색 로고 뒷면, 다른 버전/특전 가능)",
+        "album": "GREENGREEN (회색 로고 뒷면, 다른 버전/특전 가능)",
         "code": "P012",
         "stockFiles": [
           "P012_CORTIS_GREENGREEN(추정)_Martin_01_1앞.jpg"
@@ -809,7 +809,7 @@ const STOCK_PRODUCTS = [
       },
       {
         "no": "18",
-        "member": "Joshua?",
+        "member": "Joshua",
         "front": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_1앞.jpg",
         "back": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_2뒤.jpg",
         "rarity": "NORMAL",
@@ -880,7 +880,7 @@ const STOCK_PRODUCTS = [
       },
       {
         "no": "23",
-        "member": "Vernon?",
+        "member": "Vernon",
         "front": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_1앞.jpg",
         "back": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_2뒤.jpg",
         "rarity": "NORMAL",
@@ -894,7 +894,7 @@ const STOCK_PRODUCTS = [
       },
       {
         "no": "24",
-        "member": "Seungkwan?",
+        "member": "Seungkwan",
         "front": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_1앞.jpg",
         "back": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_2뒤.jpg",
         "rarity": "NORMAL",
@@ -992,7 +992,7 @@ const STOCK_PRODUCTS = [
       },
       {
         "no": "31",
-        "member": "S.Coups?",
+        "member": "S.Coups",
         "front": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_1앞.jpg",
         "back": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_2뒤.jpg",
         "rarity": "NORMAL",
@@ -1006,7 +1006,7 @@ const STOCK_PRODUCTS = [
       },
       {
         "no": "32",
-        "member": "Dino?",
+        "member": "Dino",
         "front": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_1앞.jpg",
         "back": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_2뒤.jpg",
         "rarity": "NORMAL",

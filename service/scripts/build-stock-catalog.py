@@ -30,7 +30,7 @@ UNIT_RULES = {
         ("HAPPY BURSTDAY (정규5집) 특전", dict(id="seventeen-happy-burstday-pob", name="HAPPY BURSTDAY 특전", eventType="pob", badge="특전", eventName="판매처 미확인", covers=[])),
         ("HAPPY_BURSTDAY", dict(id="seventeen-happy-burstday", name="HAPPY BURSTDAY", eventType="album", badge="", eventName="", covers=[f"{COVERS}/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg"])),
         ("CARAT LAND", dict(id="seventeen-carat-land-2025", name="SEVENTEEN in CARAT LAND 2025", eventType="fansign", badge="팬미팅", eventName="", covers=[f"{COVERS}/SEVENTEEN/04_SEVENTEEN_CARAT_LAND_poster.jpg"])),
-        ("WORLD TOUR [NEW_]", dict(id="seventeen-new-tour", name="WORLD TOUR [NEW_]", eventType="album", badge="", eventName="", covers=[f"{COVERS}/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg"])),
+        ("WORLD TOUR [NEW_]", dict(id="seventeen-new-tour", name="WORLD TOUR [NEW]", eventType="album", badge="", eventName="", covers=[f"{COVERS}/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg"])),
     ],
     "TWICE": [
         ("IN INCHEON 특전", dict(id="twice-this-is-for-incheon-pob", name="THIS IS FOR WORLD TOUR IN INCHEON 특전", eventType="pob", badge="특전", eventName="팬즈샵", covers=[])),
@@ -51,6 +51,13 @@ UNIT_RULES = {
         ("VT x BTS", dict(id="bts-vt-collab", name="VT x BTS", eventType="unknown", badge="콜라보", eventName="VT코스메틱", covers=[])),
     ],
 }
+
+
+def clean_name(value) -> str:
+    """손님에게 보이는 이름에서 확신도 표시('?', '(추정)')를 뺀다. 재고표 원문은 그대로 둔다."""
+    text = str(value or "")
+    text = re.sub(r"\s*\(추정\)", "", text)
+    return text.replace("?", "").strip()
 
 
 def unit_for(group: str, album_text: str, is_pob: bool) -> tuple[int, dict]:
@@ -197,8 +204,8 @@ def build_catalog() -> None:
                 "unitOrder": unit_order,
                 "unit": unit,
                 "group": group,
-                "member": row.get("멤버") or "",
-                "album": row.get("앨범/버전") or "",
+                "member": clean_name(row.get("멤버")),
+                "album": clean_name(row.get("앨범/버전")),
                 "qty": qty,
                 "front": front,
                 "back": back,
