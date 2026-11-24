@@ -1296,16 +1296,7 @@ button:disabled { opacity: 0.4; }
   background: #3a3a3e;
 }
 
-.sheet-cover {
-  display: block;
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 10px;
-  border-radius: 14px;
-  object-fit: cover;
-  background: #000;
-}
-.sheet-who { display: flex; justify-content: center; margin: 0; }
+.sheet-who { margin-top: 10px; display: flex; justify-content: center; margin: 0; }
 .sheet h2 { margin: 12px 0 0; font-size: 20px; font-weight: 800; text-align: center; }
 .sheet-lineup { margin: 8px 0 0; color: #96969d; font-size: 13px; text-align: center; }
 .sheet-box {

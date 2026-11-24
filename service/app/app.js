@@ -3171,7 +3171,6 @@ function sheet() {
     <div class="sheet-bg">
       <div class="sheet">
         <span class="sheet-grab"></span>
-        <img class="sheet-cover" src="${item.cover}" alt="" />
         <div class="sheet-who">${artistMark(item)}</div>
         <h2>${esc(productName(item))}</h2>
         <p class="sheet-lineup">${esc(lineup(item.cards.length))}</p>
