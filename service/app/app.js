@@ -1585,6 +1585,13 @@ function sourceEvent(card) {
   return events.length === 1 ? events[0] : "";
 }
 
+// 출처의 가수 사진: 홈 프로필 레일과 같은 이미지. 상품을 못 찾는 카드(데모)는 가수 이름으로 찾는다.
+function sourceFace(card, pack) {
+  const item = pack || catalog().find((entry) => entry.artist === card.artist);
+  const src = artistImage(item);
+  return src ? `<img class="source-face" src="${esc(src)}" alt="" />` : "";
+}
+
 function cardSourceLine(card) {
   const event = sourceEvent(card);
   const extra = event ? ` · ${esc(event)}` : (card.no ? ` · <small>${esc(card.no)}</small>` : "");
@@ -1847,16 +1854,6 @@ function ownedBackSrc(card) {
   return loose ? photo(loose.back) : "";
 }
 
-function otherCards(card) {
-  const pool = state.owned.map((item) => ({ ...item, status: "stored" }));
-  const figures = groupCards(pool.filter((item) => item.id !== card.id)).map(cardFigure).join("");
-  if (!figures) return "";
-  return `
-    <section class="other-cards">
-      <h3>다른 카드</h3>
-      <div class="owned gallery">${figures}</div>
-    </section>`;
-}
 
 function ownedDetail() {
   const card = ownedCard();
@@ -1896,7 +1893,7 @@ function ownedDetail() {
         <section class="card-origin">
           <h3>출처</h3>
           <div class="source-row">
-            ${pack?.cover ? `<img src="${esc(pack.cover)}" alt="" />` : ""}
+            ${sourceFace(card, pack)}
             <div>
               <strong>${esc(card.album)}${sourceEvent(card) ? ` · ${esc(sourceEvent(card))}` : ""}</strong>
               <span>${esc(card.artist)}</span>
@@ -1904,7 +1901,6 @@ function ownedDetail() {
           </div>
         </section>
       </div>
-      ${otherCards(card)}
     </div>
     ${action ? `<div class="buy">${action}</div>` : ""}
   `;

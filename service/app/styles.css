@@ -1670,6 +1670,8 @@ button:disabled { opacity: 0.4; }
 .card-origin { margin-top: 20px; }
 .card-origin h3 { margin: 0 0 8px; color: var(--muted); font-size: 13px; font-weight: 600; }
 .source-row { display: flex; align-items: center; gap: 12px; text-align: left; }
+/* 출처의 가수 사진은 홈 프로필 레일과 같은 이미지, 같은 원형 */
+.source-row img.source-face, .owned-detail .source-row img.source-face { border-radius: 50%; }
 .source-row img {
   width: 48px;
   height: 48px;
