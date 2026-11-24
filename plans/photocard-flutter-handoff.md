@@ -254,6 +254,12 @@ Flutter에서는 Rive/Lottie로 다시 만들거나 짧은 영상으로 대체�
 
 ## 11. 2026-11-24 변경 요약 (브랜치 `feat/home-2sections`)
 
+### 전달 범위 (2026-11-24)
+- **사용자 앱만** 넘긴다. 관리자(`service/register/`)는 이번 전달에서 제외하고 별도로 정리한다.
+- 필요한 폴더: `service/app/`(화면), `service/shared/`(카탈로그 `stock-catalog.js` + 공용 `common.js`), `assets/`(covers · groups · photocards · profiles · fx · splash). `service/app/fx/`, `service/app/tears/`는 개봉 연출용 이미지·영상.
+- `service/shared/stock-catalog.js`는 생성 파일이다. 다시 만들려면 `service/scripts/build-stock-catalog.py`와 저장소 밖의 600dpi 스캔 원본 폴더(`포토카드 스캔/`, gitignore)가 필요하다. 전달본에는 결과물만 있으면 된다.
+- 로컬 확인: 저장소 루트에서 `python3 -m http.server 8080` → `http://127.0.0.1:8080/service/app/`.
+
 > 아래는 이날 `service/app/`(고객 목업)에 들어간 **동작·데이터·결정**이다. HTML/JS는 참고 구현이고, 아래 규칙대로 Flutter에서 다시 만들면 된다. 화면 모양은 같은 브랜치의 커밋 메시지와 이 문서로 판단한다.
 
 ### 데이터
