@@ -1192,7 +1192,7 @@ function homeShelfRows(query) {
 // ── 커버플로우 진열(선반형과 비교용) ──
 // 가로 스크롤 스냅이 드래그·관성·정지를 맡고, 스크롤 위치로 기울기·크기·밝기만 계산한다.
 // 커버는 높이 고정·폭은 원본 비율. 가로로 긴 앨범도 세로로 긴 앨범도 바닥을 맞춰 선다.
-const FLOW_SPACING = 104; // 한 칸 기준 거리(px). 기울기 계산 단위.
+const FLOW_SPACING = 92; // 한 칸 기준 거리(px). 기울기 계산 단위.
 const FLOW_BASE_TILT = -8; // 가운데 앨범도 살짝 돌려 옆면(두께)이 보이게 한다.
 const FLOW_MAX_COVERS = 5;
 
@@ -1209,11 +1209,16 @@ function flowStage(group) {
     </span>`;
 }
 
+// 커버플로우 줄: 왼쪽 글(그룹명·종수·가격), 오른쪽 캐러셀. 왼쪽으로 끌려간 앨범은 어두워지며 사라진다.
 function flowRow(group) {
   return `
     <div class="flow-row">
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">
+        <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-meta">${group.kinds}종 랜덤</span>
+        <span class="shelf-price">${wonText(group.price)}</span>
+      </button>
       ${flowStage(group)}
-      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">${shelfCopy(group)}</button>
     </div>`;
 }
 

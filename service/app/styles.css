@@ -3934,12 +3934,20 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 
 /* 커버플로우 진열(선반형과 비교용). 가운데 정면·양옆은 돌아서며 작고 어둡게 */
-.flow.rows { display: flex; flex-direction: column; gap: 4px; }
-.flow-row { padding: 4px 0 10px; }
+.flow.rows { display: flex; flex-direction: column; gap: 6px; }
+.flow-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 32%) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 8px;
+}
+.flow-row + .flow-row { border-top: 1px solid rgba(255, 255, 255, 0.08); }
 .flow-stage {
   position: relative;
   display: block;
-  height: 168px;
+  height: 160px;
+  min-width: 0;
   -webkit-tap-highlight-color: transparent;
 }
 .flow-scroll {
@@ -3957,9 +3965,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 .flow-scroll::-webkit-scrollbar { display: none; }
 /* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
+/* 왼쪽(글자 쪽)은 넓게 흐려져 앨범이 글자에 닿기 전에 사라진다. */
 .flow-scroll {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 26%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 26%, #000 92%, transparent);
 }
 .flow-scroll.is-grab { cursor: grabbing; }
 .flow-stage.is-single .flow-scroll { overflow: hidden; cursor: pointer; }
@@ -3971,7 +3980,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   width: max-content;
   min-width: 100%;
   height: 100%;
-  padding: 0 calc(50% - 52px) 10px;
+  padding: 0 calc(50% - 48px) 10px;
 }
 .flow-item {
   position: relative;
@@ -3988,8 +3997,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .flow-item img { max-width: 160px; max-height: 118px; }
 .flow-mystery {
   position: absolute;
-  right: 14px;
-  bottom: 22px;
+  right: 6px;
+  bottom: 12px;
   z-index: 3;
   height: 64px;
   width: auto;
@@ -4003,10 +4012,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .flow-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 100%;
-  margin: 6px 0 0;
-  padding: 0 2px;
+  gap: 3px;
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 0 2px;
   border: 0;
   background: transparent;
   color: inherit;
