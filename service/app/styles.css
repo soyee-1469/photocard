@@ -577,6 +577,147 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-wrap { padding: 32px 16px; }
 .shelf-wrap h2 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
 .shelf-wrap .empty { margin: 0; }
+.shelf-wrap.home-two {
+  margin-left: -16px;
+  margin-right: -16px;
+  padding: 20px 0 8px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(90, 58, 32, 0.22), transparent 58%),
+    linear-gradient(180deg, #1a1412 0%, #120e0c 100%);
+}
+.shelf-wrap.home-two .home-section {
+  padding: 0 16px 22px;
+}
+.shelf-wrap.home-two .home-section h2 {
+  margin: 0 0 12px;
+  color: #f4f1ea;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.shelf-wrap.home-two .album-section {
+  padding-bottom: 10px;
+}
+.artist-random-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.artist-random-tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #2a2018;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.artist-random-tile:active { opacity: 0.94; }
+.artist-random-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  filter: blur(2.4px);
+  transform: scale(1.06);
+}
+.artist-random-tile.crop-faces .artist-random-photo,
+.detail-hero.artist-hero.crop-faces .artist-random-photo {
+  object-position: center 22%;
+}
+.artist-random-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 8, 6, 0.08) 28%, rgba(10, 8, 6, 0.78) 100%);
+  pointer-events: none;
+}
+.artist-random-copy {
+  position: absolute;
+  left: 10px;
+  right: 46px;
+  bottom: 10px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none;
+}
+.artist-random-copy strong {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+.artist-random-copy span {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: rgba(255, 247, 236, 0.92);
+}
+.artist-random-copy .artist-random-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+.artist-random-mystery {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  height: 42px;
+  width: auto;
+  aspect-ratio: 55 / 85;
+  object-fit: contain;
+  transform: rotate(6deg);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.55));
+  pointer-events: none;
+}
+.detail-hero.artist-hero {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #1a1412;
+}
+.detail-hero.artist-hero .artist-random-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(2.4px);
+  transform: scale(1.06);
+}
+.detail-hero.artist-hero .artist-random-fade {
+  background: linear-gradient(180deg, transparent 40%, rgba(10, 8, 6, 0.35) 100%);
+}
+.detail-hero.album-hero {
+  padding: 18px 16px 8px;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(90, 58, 32, 0.28), transparent 55%),
+    linear-gradient(180deg, #1a1412 0%, #120e0c 100%);
+}
+.detail-hero.album-hero .shelf-stage {
+  min-height: 150px;
+  padding: 0 36px 22px 8px;
+  justify-content: center;
+}
+.detail-hero.album-hero .shelf-box { height: 112px; }
+.detail-hero.album-hero .shelf-box img { max-width: 84px; }
+.detail-hero.album-hero .shelf-box-back img { max-width: 62px; }
+.detail-hero.album-hero .shelf-mystery {
+  height: 96px;
+  bottom: 24px;
+  right: 8px;
+}
 .shelf {
   display: grid;
   grid-auto-flow: column;
@@ -587,7 +728,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   scrollbar-width: none;
 }
 .shelf::-webkit-scrollbar { display: none; }
-/* 홈 NEW: 1열 선반 배너. 커버는 높이 고정·비율 유지(잘림 없음) */
+/* 홈 앨범별 랜덤: 1열 선반. 커버는 높이 고정·비율 유지(잘림 없음) */
 .shelf.rows {
   display: flex;
   flex-direction: column;
@@ -597,6 +738,10 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   overflow: visible;
   scroll-snap-type: none;
 }
+.shelf.rows.album .shelf-artist { color: #f4f1ea; }
+.shelf.rows.album .shelf-meta,
+.shelf.rows.album .shelf-price { color: #d2c2ad; }
+.shelf.rows.album .shelf-price { color: #e8dccb; }
 .shelf-row {
   display: grid;
   grid-template-columns: minmax(108px, 0.34fr) minmax(0, 1fr);

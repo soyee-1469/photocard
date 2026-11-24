@@ -417,6 +417,7 @@ const state = {
   board: "service",
   adminScene: "",
   productId: "blackpink-jump",
+  detailHero: "", // artist | album | "" (기본 커버)
   sheet: null,
   focusStatus: null,
   albumArtist: "all",
@@ -896,6 +897,7 @@ const SHELF_GROUPS = [
     sheets: 50,
     kinds: 21,
     price: 3500,
+    groupPhoto: "/assets/groups/CORTIS_group.jpg",
     covers: ["/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg"],
     extra: [],
   },
@@ -906,6 +908,7 @@ const SHELF_GROUPS = [
     sheets: 50,
     kinds: 46,
     price: 3900,
+    groupPhoto: "/assets/groups/SEVENTEEN_group.jpg",
     covers: [
       "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
       "/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg",
@@ -920,6 +923,7 @@ const SHELF_GROUPS = [
     sheets: 50,
     kinds: 47,
     price: 3300,
+    groupPhoto: "/assets/groups/TWICE_group.jpg",
     covers: [
       "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
       "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_DELUXE_cover.jpg",
@@ -934,6 +938,7 @@ const SHELF_GROUPS = [
     sheets: 50,
     kinds: 22,
     price: 8900,
+    groupPhoto: "/assets/groups/BLACKPINK_group.jpg",
     covers: [
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JENNIE_cover.jpg",
@@ -953,6 +958,7 @@ const SHELF_GROUPS = [
     sheets: 50,
     kinds: 25,
     price: 4000,
+    groupPhoto: "/assets/groups/BTS_group.jpg",
     covers: [
       "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
       "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
@@ -962,6 +968,10 @@ const SHELF_GROUPS = [
   },
 ];
 const SHELF_PRODUCT_IDS = new Set(SHELF_GROUPS.map((group) => group.id));
+
+function shelfGroupOf(id) {
+  return SHELF_GROUPS.find((group) => group.id === id) || null;
+}
 
 const FACTS = {
   unit: "1장",
@@ -1545,7 +1555,7 @@ function shelfStage(group) {
 function shelfRow(group) {
   const price = Number(group.price || 0).toLocaleString("ko-KR");
   return `
-    <button type="button" class="shelf-row" data-open="${esc(group.id)}">
+    <button type="button" class="shelf-row" data-open="${esc(group.id)}" data-hero="album">
       <span class="shelf-copy">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${group.sheets}장 · ${group.kinds}종 랜덤</span>
@@ -1555,12 +1565,36 @@ function shelfRow(group) {
     </button>`;
 }
 
-function homeShelfRows(query) {
+function artistRandomTile(group) {
+  const price = Number(group.price || 0).toLocaleString("ko-KR");
+  const crop = group.artistId === "blackpink" ? " crop-faces" : "";
+  return `
+    <button type="button" class="artist-random-tile${crop}" data-open="${esc(group.id)}" data-hero="artist">
+      <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
+      <span class="artist-random-fade" aria-hidden="true"></span>
+      <span class="artist-random-copy">
+        <strong>${esc(group.artist)}</strong>
+        <span>${group.sheets}장 · ${group.kinds}종 랜덤</span>
+        <span class="artist-random-price">${price}원</span>
+      </span>
+      <img class="artist-random-mystery" src="${CARD_FRONT_FX}" alt="" />
+    </button>`;
+}
+
+function homeShelfGroups(query) {
   return SHELF_GROUPS.filter((group) => {
     if (!query) return true;
     const hay = `${group.artist} ${group.artistId} ${group.sheets}장 ${group.kinds}종`.toLowerCase();
     return hay.includes(query);
-  }).map(shelfRow).join("");
+  });
+}
+
+function homeArtistTiles(query) {
+  return homeShelfGroups(query).map(artistRandomTile).join("");
+}
+
+function homeShelfRows(query) {
+  return homeShelfGroups(query).map(shelfRow).join("");
 }
 
 function artistsPage() {
@@ -1650,11 +1684,25 @@ function home() {
   const dots = banners.map(
     (_, index) => `<button type="button" data-dot="${index}" class="${index === state.bannerIndex ? "on" : ""}" aria-label="이벤트 ${index + 1}"></button>`,
   ).join("");
-  // NEW는 5그룹 선반만. 데모 PRODUCTS는 데이터로 남기고 목록에서 뺀다.
-  const cards = homeShelfRows(query);
-  const list = cards
-    ? `<div class="shelf rows">${cards}</div>`
+  // 홈은 5그룹 두 섹션만. 데모 PRODUCTS는 데이터로 남기고 목록에서 뺀다.
+  const groups = homeShelfGroups(query);
+  const artistGrid = groups.length
+    ? `<div class="artist-random-grid">${homeArtistTiles(query)}</div>`
     : `<p class="empty">찾는 상품이 없어요.</p>`;
+  const albumRows = groups.length
+    ? `<div class="shelf rows album">${homeShelfRows(query)}</div>`
+    : "";
+  const sections = state.searchOpen
+    ? `<div class="home-sections">${artistGrid}${albumRows}</div>`
+    : `
+      <section class="home-section artist-section">
+        <h2>아티스트별 랜덤</h2>
+        ${artistGrid}
+      </section>
+      <section class="home-section album-section">
+        <h2>앨범별 랜덤</h2>
+        ${albumRows || `<p class="empty">찾는 상품이 없어요.</p>`}
+      </section>`;
   const header = state.searchOpen
     ? `
     <header class="bar">
@@ -1680,7 +1728,7 @@ function home() {
       <i class="profile-all" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></i>
       <span>전체</span>
     </button>`;
-  // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다. NEW와 맞춰 5그룹만 레일에 둔다.
+  // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다. 홈 5그룹만 레일에 둔다.
   const rail = state.searchOpen ? "" : `<div class="profiles">${allArtists}${profiles}</div>`;
   const banner = state.searchOpen
     ? ""
@@ -1691,7 +1739,7 @@ function home() {
         </div>
         <div class="banner-dots">${dots}</div>
       </div>`;
-  // 슬라이드 7 순서: 프로필 레일, 배너, NEW, 이용 방법 안내 배너. 관리자 중간 배너는 그 아래에 둔다.
+  // 슬라이드 7 순서: 프로필 레일, 배너, 두 섹션, 이용 방법 안내 배너. 관리자 중간 배너는 그 아래에 둔다.
   const below = state.searchOpen ? "" : `${guideBanner()}${midBanner()}`;
 
   return `
@@ -1699,7 +1747,7 @@ function home() {
     <div class="scroll">
       ${rail}
       ${banner}
-      <div class="shelf-wrap">${state.searchOpen ? "" : `<h2>NEW</h2>`}${list}</div>
+      <div class="shelf-wrap home-two">${sections}</div>
       ${below}
     </div>
   `;
@@ -2921,6 +2969,18 @@ function detail(item) {
         <button class="ghost" data-buy="5" ${canFive ? "" : "disabled"}>5장 연속 뽑기</button>
       </div>
       ${fiveNote}`;
+  const group = shelfGroupOf(item.id);
+  let hero = `<img class="cover" src="${item.cover}" alt="" />`;
+  if (state.detailHero === "artist" && group?.groupPhoto) {
+    const crop = group.artistId === "blackpink" ? " crop-faces" : "";
+    hero = `
+      <div class="detail-hero artist-hero${crop}">
+        <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
+        <span class="artist-random-fade" aria-hidden="true"></span>
+      </div>`;
+  } else if (state.detailHero === "album" && group) {
+    hero = `<div class="detail-hero album-hero">${shelfStage(group)}</div>`;
+  }
   return `
     <header class="bar">
       <button data-back="${state.productFrom === "artist" || state.productFrom === "artists" ? state.productFrom : ""}" aria-label="뒤로">←</button>
@@ -2928,7 +2988,7 @@ function detail(item) {
       ${menuButton()}
     </header>
     <div class="scroll">
-      <img class="cover" src="${item.cover}" alt="" />
+      ${hero}
       <div class="detail">
         <div class="artist-row">
           <button type="button" class="artist" data-profile="${esc(item.artistId)}" aria-label="${esc(item.artist)} 상품">${artistMark(item)}</button>
@@ -6816,6 +6876,9 @@ app.addEventListener("click", (event) => {
     }
     state.productId = open.dataset.open;
     state.productFrom = state.screen;
+    state.detailHero = open.dataset.hero === "artist" || open.dataset.hero === "album"
+      ? open.dataset.hero
+      : "";
     state.screen = "detail";
     state.tab = "home";
     state.sheet = null;
