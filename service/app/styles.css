@@ -4001,16 +4001,17 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   --edge: 7px;
 }
 .flow-item img { max-width: 160px; max-height: 118px; }
+/* 물음표 카드는 캐러셀 시작 지점(첫 앨범 왼쪽 아래)에 걸쳐 둔다. */
 .flow-mystery {
   position: absolute;
-  right: 6px;
-  bottom: 12px;
+  left: 21%;
+  bottom: 8px;
   z-index: 3;
   height: 64px;
   width: auto;
   aspect-ratio: 55 / 85;
   object-fit: contain;
-  transform: rotate(7deg);
+  transform: rotate(-8deg);
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
   pointer-events: none;
 }
