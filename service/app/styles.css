@@ -476,6 +476,12 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-wrap.home-two .album-section {
   padding-bottom: 10px;
 }
+/* 선반형과 커버플로우형 비교 구간: 사이를 넉넉히 띄우고 얇은 선으로 나눈다. */
+.shelf-wrap.home-two .flow-section {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
 /* 아티스트별 랜덤: 1열 사진 배너. 이름·장수·포함 앨범·가격을 왼쪽 아래에 겹친다. */
 .artist-random-grid {
   display: grid;
