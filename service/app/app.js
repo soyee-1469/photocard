@@ -2569,10 +2569,13 @@ function purchases() {
   `;
 }
 
+// 찜 목록: 홈의 앨범별 랜덤과 같은 선반 캐러셀 줄. 선반 정보가 없는 상품(등록 전 데모)은 예전 줄로.
 function wished() {
   const items = state.wished.map((id) => product(id)).filter(Boolean);
   const rows = items.length
     ? items.map((item) => {
+      const group = shelfGroupOf(item.id);
+      if (group) return shelfFlowRow(group);
       const word = saleWord(item);
       return `
       <button class="row${word ? " sold" : ""}" data-open="${item.id}">
@@ -2589,7 +2592,7 @@ function wished() {
     : `<p class="empty">찜한 상품이 없어요.</p>`;
   return `
     ${topBar(`찜 목록`)}
-    <div class="scroll"><div class="list">${rows}</div></div>
+    <div class="scroll"><div class="list flow rows">${rows}</div></div>
   `;
 }
 
@@ -5400,13 +5403,13 @@ function demoScene(kind) {
     .slice(0, 6);
   if (kind === "pick") {
     // 목록에서 앨범을 누르면 포장 5개가 부채꼴로 펼쳐지고, 그중 하나를 고른다.
-    const tiles = demoPacks.map((pack, index) =>
-      `<span class="demo-tile t${index + 1}"><img src="${pack.cover}" alt="" /><b>${esc(pack.artist)}</b><small>${Number(pack.price).toLocaleString("ko-KR")} TP</small></span>`).join("");
+    // 홈의 앨범별 랜덤(선반 캐러셀) 두 줄을 축소해서 보여준다.
+    const rows = (typeof SHELF_GROUPS !== "undefined" ? SHELF_GROUPS : []).slice(0, 2).map(shelfFlowRow).join("");
     return `
       <div class="demo demo-pick" aria-hidden="true">
         <div class="demo-screen demo-list">
-          <span class="demo-list-head">NEW</span>
-          <div class="demo-tiles">${tiles}</div>
+          <span class="demo-list-head">앨범별 랜덤</span>
+          <div class="demo-rows">${rows}</div>
         </div>
         <div class="demo-screen demo-deck">
           <span class="demo-deck-hint">한 장을 선택하세요</span>

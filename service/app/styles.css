@@ -3018,11 +3018,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 1. 앨범 고르기: 목록 → 상세 → 뽑기 */
 .demo-screen { position: absolute; inset: 0; }
 .demo-list-head { position: absolute; left: 16px; top: 12px; font-size: 11px; font-weight: 800; }
-.demo-tiles { position: absolute; left: 16px; right: 16px; top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.demo-tile { display: grid; gap: 3px; border-radius: 10px; transition: none; }
-.demo-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
-.demo-tile b { font-size: 11px; }
-.demo-tile small { color: var(--muted); font-size: 10px; }
+/* 가이드 목록 데모: 실제 선반 캐러셀 줄을 0.6배로 축소 */
+.demo-rows { position: absolute; left: 14px; right: 14px; top: 30px; zoom: 0.6; pointer-events: none; }
+.demo-rows .flow-row { padding: 2px 0 4px; }
+.demo-rows .flow-row + .flow-row { border-top: 0; }
 /* 포장 5개 부채꼴(실제 덱 화면의 DECK_FAN을 0.55배로 줄인 값) */
 .demo-deck { background: #121214; }
 .demo-deck-hint { position: absolute; left: 0; right: 0; top: 16px; text-align: center; font-size: 11px; font-weight: 700; }
