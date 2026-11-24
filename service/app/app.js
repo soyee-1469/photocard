@@ -1366,21 +1366,7 @@ function artistPage() {
 
 function home() {
   const query = state.query.trim().toLowerCase();
-  const banners = eventBanners();
-  const slide = (banner) => `
-      <button class="banner-slide" data-open="${banner.packId}">
-        <img src="${banner.image}" alt="" />
-        <span class="banner-copy">
-          <strong>${esc(banner.line1)}</strong>
-          <span>${esc(banner.line2)}</span>
-        </span>
-      </button>`;
-  const slides = banners.map(slide).join("");
-  const loop = banners.length > 1;
-  const trackSlides = loop ? `${slide(banners.at(-1))}${slides}${slide(banners[0])}` : slides;
-  const dots = banners.map(
-    (_, index) => `<button type="button" data-dot="${index}" class="${index === state.bannerIndex ? "on" : ""}" aria-label="이벤트 ${index + 1}"></button>`,
-  ).join("");
+  // 상단 이벤트 배너는 뺐다(2026-11-24). 중간 배너(midBanner)만 남긴다.
   // 홈은 5그룹 두 섹션만. 데모 PRODUCTS는 데이터로 남기고 목록에서 뺀다.
   const groups = homeShelfGroups(query);
   const artistGrid = groups.length
@@ -1431,23 +1417,12 @@ function home() {
     </button>`;
   // 전체 버튼은 레일 맨 앞(왼쪽)에 둔다. 홈 5그룹만 레일에 둔다.
   const rail = state.searchOpen ? "" : `<div class="profiles">${allArtists}${profiles}</div>`;
-  const banner = state.searchOpen
-    ? ""
-    : `
-      <div class="banner-wrap">
-        <div class="banner-viewport${loop ? "" : " is-single"}">
-          <div class="banner-track" style="transform:${bannerTransform(loop ? state.bannerIndex + 1 : 0)}">${trackSlides}</div>
-        </div>
-        <div class="banner-dots">${dots}</div>
-      </div>`;
-  // 슬라이드 7 순서: 프로필 레일, 배너, 두 섹션, 이용 방법 안내 배너. 관리자 중간 배너는 그 아래에 둔다.
   const below = state.searchOpen ? "" : `${guideBanner()}${midBanner()}`;
 
   return `
     ${header}
     <div class="scroll">
       ${rail}
-      ${banner}
       <div class="shelf-wrap home-two">${sections}</div>
       ${below}
     </div>
