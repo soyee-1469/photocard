@@ -586,7 +586,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   justify-content: center;
 }
 .detail-hero.album-hero .shelf-box { height: 112px; }
-.detail-hero.album-hero .shelf-box img { max-width: 84px; }
+.detail-hero.album-hero .shelf-box img { max-width: 84px; max-height: 112px; }
 .detail-hero.album-hero .shelf-mystery {
   height: 96px;
   bottom: 24px;
@@ -679,6 +679,8 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .shelf-box {
   position: relative;
+  display: flex;
+  align-items: flex-end;
   flex: 0 0 auto;
   height: 98px;
   transform: perspective(600px) rotateY(-6deg);
@@ -686,7 +688,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   transform-style: preserve-3d;
   --edge: 5px;
 }
-.shelf-box img { max-width: 70px; }
+.shelf-box img { max-width: 70px; max-height: 98px; }
 .shelf-mystery {
   position: absolute;
   right: 0;
@@ -3968,6 +3970,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 .flow-item {
   position: relative;
+  display: flex;
+  align-items: flex-end;
   flex: 0 0 auto;
   height: 118px;
   scroll-snap-align: center;
@@ -3976,7 +3980,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   will-change: transform;
   --edge: 7px;
 }
-.flow-item img { max-width: 160px; }
+.flow-item img { max-width: 160px; max-height: 118px; }
 .flow-mystery {
   position: absolute;
   right: 14px;
@@ -4010,18 +4014,17 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 두께 있는 커버 상자. 선반형·커버플로우·상세 히어로가 같이 쓴다.
    옆면은 좌우 둘 다 두고 backface-visibility로 카메라를 향한 쪽만 보인다.
    부모에 filter를 걸면 3D가 평면화되므로 그림자·어둡기는 img와 옆면에만 건다. */
+/* 상자는 이미지 크기에 꼭 맞게 줄어든다(위에 빈 배경이 남지 않도록). 크기 제한은 img의 max-*로. */
 .cover3d {
   position: relative;
   display: block;
-  height: 100%;
+  width: max-content;
   transform-style: preserve-3d;
 }
 .cover3d img {
   display: block;
-  height: 100%;
   width: auto;
-  object-fit: contain;
-  object-position: bottom center;
+  height: auto;
   border-radius: 2px;
   background: #111;
   pointer-events: none;
