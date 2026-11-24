@@ -1106,12 +1106,13 @@ function productTile(item, compact = false) {
     </button>`;
 }
 
-// 이 가수 랜덤에 묶인 앨범들. 수록 앨범 이름을 나열하고 특전은 개수만.
+// 목록용 앨범 요약 한 줄: 대표 앨범 + "외 N" + 특전 개수. 전체 목록은 상세의 앨범별 구성이 보여준다.
 function albumLine(group) {
   const units = (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).filter((unit) => unit.artistId === group.artistId);
   const albums = units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name);
   const pobs = units.filter((unit) => unit.eventType === "pob").length;
-  return [...albums, pobs ? `특전 ${pobs}종` : ""].filter(Boolean).join(" · ");
+  const lead = albums[0] ? `${albums[0]}${albums.length > 1 ? ` 외 ${albums.length - 1}` : ""}` : "";
+  return [lead, pobs ? `특전 ${pobs}종` : ""].filter(Boolean).join(" · ");
 }
 
 function shelfMeta(group) {
