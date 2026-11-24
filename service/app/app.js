@@ -783,8 +783,11 @@ function productName(item) {
   return `${which} Photocard`;
 }
 
-function lineup(count) {
-  return `${count}종 중 랜덤 1장`;
+// 구성 종수 기준으로 안내하고, 품절로 지금 뽑을 수 있는 종수가 줄었으면 그것도 같이 적는다.
+function lineup(count, drawable) {
+  const base = `${count}종 중 랜덤 1장`;
+  if (drawable == null || drawable >= count) return base;
+  return `${base} · 지금 ${drawable}종 뽑기 가능`;
 }
 
 // 포토카드 결제 단위는 TP다. TOTT는 토마톡 지갑에서 TP로 바꿔 쓴다.
@@ -1113,7 +1116,7 @@ function albumLine(group) {
 }
 
 function shelfMeta(group) {
-  return `${group.sheets}장 · ${group.kinds}종 랜덤`;
+  return `${group.kinds}종 랜덤`;
 }
 
 function wonText(amount) {
@@ -1176,7 +1179,7 @@ function artistRandomTile(group) {
 function homeShelfGroups(query) {
   return SHELF_GROUPS.filter((group) => {
     if (!query) return true;
-    const hay = `${group.artist} ${group.artistId} ${group.sheets}장 ${group.kinds}종`.toLowerCase();
+    const hay = `${group.artist} ${group.artistId} ${group.kinds}종`.toLowerCase();
     return hay.includes(query);
   });
 }
@@ -2679,7 +2682,7 @@ function detail(item) {
         ${albumLine(group) ? `<p class="compose-line">${esc(albumLine(group))}</p>` : ""}
         <p class="kind">${esc(summaryLine(item))}</p>
         <div class="detail-offer">
-          <p class="lead">${lineup(item.cards.length)}</p>
+          <p class="lead">${lineup(item.cards.length, drawableCards(item).length)}</p>
           <p class="lead">${priceBlock(item.price)}</p>
         </div>
         <p class="pay-note">TP로 결제해요 · TOTT는 토마톡 지갑에서 TP로 바꿔요</p>
