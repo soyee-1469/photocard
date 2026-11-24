@@ -1105,12 +1105,11 @@ function productTile(item, compact = false) {
       <span class="tile-price">${priceBlock(item.price)}</span>
     </button>`;
 }
-
-// 목록용 앨범 요약 한 줄: 대표 앨범 + "외 N". 특전은 랜덤 상품에 안 들어가므로 세지 않는다.
+// 구성 한 줄: 이 상품에 들어간 앨범 이름들. 특전은 랜덤 상품에 안 들어가므로 뺀다.
 function albumLine(group) {
+  if (!group) return "";
   const units = (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).filter((unit) => unit.artistId === group.artistId);
-  const albums = units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name);
-  return albums[0] ? `${albums[0]}${albums.length > 1 ? ` 외 ${albums.length - 1}` : ""}` : "";
+  return units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name).join(" · ");
 }
 
 function shelfMeta(group) {
@@ -1146,6 +1145,7 @@ function shelfStage(group) {
 function shelfCopy(group) {
   return `
         <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-albums">${esc(albumLine(group))}</span>
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${wonText(group.price)}</span>`;
 }
@@ -1165,8 +1165,8 @@ function artistRandomTile(group) {
       <span class="artist-random-fade" aria-hidden="true"></span>
       <span class="artist-random-copy">
         <strong>${esc(group.artist)}</strong>
-        <span>${shelfMeta(group)}</span>
         <span class="artist-random-albums">${esc(albumLine(group))}</span>
+        <span>${shelfMeta(group)}</span>
         <span class="artist-random-price">${wonText(group.price)}</span>
       </span>
       <img class="artist-random-mystery" src="${CARD_FRONT_FX}" alt="" />
@@ -2696,6 +2696,7 @@ function detail(item) {
           </span>
         </div>
         <h2>${esc(productName(item))}</h2>
+        ${albumLine(group) ? `<p class="compose-line">${esc(albumLine(group))}</p>` : ""}
         <p class="kind">${esc(summaryLine(item))}</p>
         <div class="detail-offer">
           <p class="lead">${lineup(item.cards.length)}</p>
