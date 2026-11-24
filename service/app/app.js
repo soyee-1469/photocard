@@ -1238,6 +1238,7 @@ function shelfStage(group) {
     <span class="shelf-stage ${countClass}" aria-hidden="true">
       <span class="shelf-boxes">${boxes.join("")}</span>
       <img class="shelf-mystery" src="${CARD_FRONT_FX}" alt="" />
+      <span class="shelf-ledge"></span>
     </span>`;
 }
 
@@ -1250,6 +1251,7 @@ function shelfRow(group) {
         <span class="shelf-meta">${group.sheets}장 · ${group.kinds}종 랜덤</span>
         <span class="shelf-price">${price}원</span>
       </span>
+      ${shelfStage(group)}
     </button>`;
 }
 
