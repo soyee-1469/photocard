@@ -622,7 +622,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  min-height: 200px;
+  min-height: 216px;
   width: 100%;
   margin: 0;
   padding: 14px 0 0;
@@ -635,7 +635,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .shelf-row .shelf-stage {
   align-self: flex-end;
-  width: 72%;
+  width: 80%;
   margin-top: auto;
 }
 .shelf-row:active { opacity: 0.92; }
@@ -665,8 +665,8 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  min-height: 108px;
-  padding: 0 28px 16px 0;
+  min-height: 128px;
+  padding: 0 34px 16px 0;
   overflow: visible;
 }
 .shelf-boxes {
@@ -681,19 +681,19 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-box {
   position: relative;
   flex: 0 0 auto;
-  height: 82px;
+  height: 98px;
   transform: perspective(600px) rotateY(-6deg);
   transform-origin: left bottom;
   transform-style: preserve-3d;
   --edge: 5px;
 }
-.shelf-box img { max-width: 58px; }
+.shelf-box img { max-width: 70px; }
 .shelf-mystery {
   position: absolute;
   right: 0;
   bottom: 18px;
   z-index: 2;
-  height: 70px;
+  height: 84px;
   width: auto;
   aspect-ratio: 55 / 85;
   object-fit: contain;
@@ -703,8 +703,8 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 }
 .shelf-ledge {
   position: absolute;
-  left: -12px;
-  right: -16px;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 12px;
   border-radius: 2px;
