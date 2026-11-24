@@ -1187,13 +1187,13 @@ const FLOW_MAX_COVERS = 5;
 // 선반 커버플로우: 검정 널빤지·받침대 위에서 순환 캐러셀이 돈다(2026-11-24 확정 진열).
 function flowStage(group) {
   const real = displayCovers(group, 3);
-  // 1~2장이면 같은 커버를 돌려 써서 3장 이상처럼 양옆을 채운다(순환이라 자연스럽다). 종수는 글줄에 적혀 있다.
+  // 1장이면 같은 커버 3장, 2장이면 번갈아 4장으로 채워 순환이 자연스럽게 보인다. 3장 이상은 복제하지 않는다.
+  const target = real.length === 1 ? 3 : real.length === 2 ? 4 : real.length;
   const covers = [];
-  while (real.length && covers.length < (real.length === 1 ? 3 : 4)) covers.push(real[covers.length % real.length]);
+  while (real.length && covers.length < target) covers.push(real[covers.length % real.length]);
   const items = covers.map((src) => `<span class="flow-item">${coverBox(src)}</span>`).join("");
-  const single = real.length < 2 ? " is-single" : "";
   return `
-    <span class="flow-stage on-shelf${single}" data-open="${esc(group.id)}" data-hero="sflow">
+    <span class="flow-stage on-shelf" data-open="${esc(group.id)}" data-hero="sflow">
       <span class="flow-scene" data-flow>${items}</span>
       <span class="shelf-ledge" aria-hidden="true"></span>
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
