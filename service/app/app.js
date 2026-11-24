@@ -2709,7 +2709,6 @@ function cardSlot(card) {
   return `
       <div class="slot pair${sold ? " is-soldout" : ""}">
         <div class="pair-imgs">${imgs}</div>
-        ${sold ? `<span class="slot-sold">품절</span>` : ""}
         <small>${esc(card.no)}${who ? ` · ${esc(who)}` : ""} ${rarityBadge(card)}</small>
       </div>`;
 }

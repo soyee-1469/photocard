@@ -1039,26 +1039,9 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-stop { font-style: normal; color: #ff7676; font-weight: 700; }
 .sflow-row.sold .flow-scene, .sflow-row.sold .flow-mystery { opacity: 0.45; filter: grayscale(1); }
 .artist-random-tile.sold .artist-random-photo, .artist-random-tile.sold .artist-random-mystery { opacity: 0.45; filter: grayscale(1); }
-/* 품절 카드: 흑백으로 가라앉히고 가운데에 큰 도장. 글자도 흐리게. */
+/* 품절 카드: 흑백으로 가라앉히고 이름 옆에 '품절'만. 도장은 뺐다(2026-11-24). */
 .slot.is-soldout .pair-imgs { opacity: 0.32; filter: grayscale(1); }
 .slot.is-soldout small { color: #6f6f76; }
-.slot-sold {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  z-index: 2;
-  transform: translate(-50%, -50%) rotate(-10deg);
-  padding: 4px 9px;
-  border: 2px solid #ff5b5b;
-  border-radius: 6px;
-  background: rgba(20, 10, 10, 0.78);
-  color: #ff7676;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  white-space: nowrap; /* 좁은 칸에서도 '품절'이 한 줄 */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
 .slot.pair { position: relative; }
 .slot small {
   display: block;
