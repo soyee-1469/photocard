@@ -1352,7 +1352,9 @@ function repaintOnLoad(scene, paint) {
 }
 
 function flowSlot(index, pos, count) {
-  const lo = count >= 3 ? -1.5 : -1;
+  if (count < 2) return 0;                 // 1장: 항상 정면
+  if (count === 2) return index - pos;     // 2장: 순환 없이 둘이 자리만 바꾼다(pos는 0~1)
+  const lo = -1.5;
   const d = index - pos;
   return ((((d - lo) % count) + count) % count) + lo;
 }
@@ -1414,6 +1416,7 @@ function armCoverflows() {
       lastX = event.clientX;
       lastT = now;
       pos = startPos - dx / FLOW_SPACING;
+      if (count === 2) pos = Math.max(-0.25, Math.min(1.25, pos)); // 2장은 끝에서 살짝만 더 가고 멈춘다
       paintFlow(scene, pos);
     });
     const release = () => {
@@ -1422,7 +1425,7 @@ function armCoverflows() {
       // 빠르게 튕기면 한 칸 더 넘긴다(관성 대용).
       const fling = Math.abs(velocity) > 0.45 ? (velocity < 0 ? 1 : -1) : 0;
       pos = Math.round(pos + fling);
-      pos = ((pos % count) + count) % count;
+      pos = count === 2 ? Math.max(0, Math.min(1, pos)) : ((pos % count) + count) % count;
       scene.classList.add("is-snapping");
       paintFlow(scene, pos);
       setTimeout(() => { delete stage.dataset.drag; }, 160);
