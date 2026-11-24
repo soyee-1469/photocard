@@ -59,10 +59,10 @@ const SHELF_GROUPS = [
     "covers": [
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JENNIE_cover.jpg",
-      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg"
+      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg"
     ],
     "extra": [
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg",
+      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg",
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JISOO_cover.jpg",
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_LISA_cover.jpg",
       "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_ROSE_cover.jpg"
@@ -77,12 +77,12 @@ const SHELF_GROUPS = [
     "price": 4000,
     "groupPhoto": "/assets/groups/BTS_group.jpg",
     "covers": [
+      "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg",
       "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
-      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
       "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg"
     ],
     "extra": [
-      "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"
+      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg"
     ]
   }
 ];
@@ -1845,7 +1845,7 @@ const STOCK_PRODUCTS = [
     "displayName": "BTS Photocard",
     "eventType": "album",
     "eventName": "",
-    "cover": "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
+    "cover": "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg",
     "price": 4000,
     "home": true,
     "albumIds": [

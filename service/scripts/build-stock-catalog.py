@@ -122,10 +122,10 @@ GROUP_META = {
         covers=[
             "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
             "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JENNIE_cover.jpg",
-            "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg",
+            "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg",
         ],
         extra=[
-            "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg",
+            "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg",  # 고양 MD 특전 포스터: 특전 유닛 전용
             "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JISOO_cover.jpg",
             "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_LISA_cover.jpg",
             "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_ROSE_cover.jpg",
@@ -140,11 +140,11 @@ GROUP_META = {
         kinds=25,
         price=4000,
         covers=[
+            "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg",
             "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
-            "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
             "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg",
         ],
-        extra=["/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"],
+        extra=["/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg"],
     ),
 }
 
