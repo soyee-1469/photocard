@@ -3964,6 +3964,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 양 끝에서 잘리는 앨범은 흐려지며 사라진다. 섹션 좌우 16px 여백은 그대로 둔다. */
 .flow-scene {
   position: absolute;
+  z-index: 1; /* 앨범들의 z-index를 이 안에 가둬 물음표 카드(z-index 3)가 항상 앞에 온다 */
   left: 50%;
   bottom: 10px;
   width: 0;
@@ -4107,6 +4108,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 .ring-scene {
   position: absolute;
+  z-index: 1;
   left: 44%;
   top: calc(100% - 12px);
   width: 0;
