@@ -224,9 +224,8 @@ const state = {
   openPhase: "pack",
   openCut: "idle",
   owned: seedOwned(),
-  // 포인트 교환(mock). TP와 교환 내역은 localStorage에 남긴다.
+  // TP 잔액은 결제용. TOTT→TP 교환 UI는 포토카드 앱에서 빼고 토마톡 지갑으로 둔다.
   tp: 0,
-  exchanges: [],
   fills: [], // 채우기(SOL → TOTT) 내역
   walletId: "",
   wallets: [],
@@ -235,11 +234,8 @@ const state = {
   renameText: "",
   historyWallet: "",
   historyPicker: false,
-  walletPick: false, // 교환·채우기 화면의 사용 지갑 드롭다운
-  exMode: "tott", // 교환 입력 기준: tott | tp
+  walletPick: false, // 채우기·받기 화면의 사용 지갑 드롭다운
   historyOpen: null,
-  exTott: "",
-  exTp: "",
   exDate: "",
   fillSol: "",
   // 첫 진입: splash → push → marketing → consent → guide → done
@@ -255,8 +251,6 @@ const WALLET_KEY = "photocard-wallet-v3";
 const TP_SEED = 50000;
 const ONBOARD_KEY = "photocard-onboard-v1";
 
-// 최소 교환 수량. 환율은 시세 모듈(rates)에서 온다: TP는 원화 1:1이라 1 TOTT = tottKrw TP.
-const EXCHANGE_MIN = 50;
 // 지갑 목록 시드(디자인 2025-08 지갑 화면). 이름·순서·대표·연결·잔액은 localStorage에 남기고 NFT는 시드에서만 온다.
 const WALLET_SEED = [
   { id: "phantom-1", name: "메인 지갑", full: "0x5961c3f0a8d14e7b92ab2485", balance: 123456.789123, sol: 3.25, main: true, connected: true, nfts: ["토마톡 링", "스테이킹"] },
@@ -288,7 +282,6 @@ function loadWallet() {
     const saved = JSON.parse(localStorage.getItem(WALLET_KEY) || "null");
     if (saved) {
       state.tp = Number(saved.tp) || 0;
-      state.exchanges = Array.isArray(saved.exchanges) ? saved.exchanges : [];
       state.fills = Array.isArray(saved.fills) ? saved.fills : [];
       if (Array.isArray(saved.wallets) && saved.wallets.length) {
         const seeded = new Map(state.wallets.map((item) => [item.id, item]));
@@ -319,7 +312,6 @@ function loadWallet() {
 function persistWallet() {
   localStorage.setItem(WALLET_KEY, JSON.stringify({
     tp: state.tp,
-    exchanges: state.exchanges,
     fills: state.fills,
     walletId: state.walletId,
     walletConnected: state.walletConnected,
@@ -2261,7 +2253,6 @@ function menuButton() {
 const TAB_ICONS = {
   home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5"></path><path d="M5.5 10v10h13V10"></path><path d="M10 20v-6h4v6"></path></svg>`,
   products: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L21 7H6.3"></path><circle cx="9.5" cy="19" r="1.4"></circle><circle cx="17" cy="19" r="1.4"></circle></svg>`,
-  exchange: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.5-4.6"></path><path d="M5 3v4.5h4.5"></path><path d="M4 13a8 8 0 0 0 14.5 4.6"></path><path d="M19 21v-4.5h-4.5"></path></svg>`,
   album: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="3" width="11" height="15" rx="1.6"></rect><path d="M5 7.5v11A1.5 1.5 0 0 0 6.5 20H15"></path></svg>`,
   mypage: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"></path></svg>`,
 };
@@ -2269,8 +2260,13 @@ const TAB_ICONS = {
 // 햄버거 드로어 = 마이페이지(슬라이드 19): 보유 카드 · 구매 내역 · 찜 목록 · 고객센터(드롭다운: 공지사항 · 이용자 가이드 · FAQ · 이용약관) · 이벤트.
 // 맨 위 홈과 맨 아래 환경설정은 기획 메뉴 밖이지만 진입점이 필요해 둔다. 지갑은 상품 상세·결제 시트에서 들어가므로 메뉴에 두지 않는다. SNS는 기획서에 "고민"으로만 있어 뺐다.
 // 묶음(라벨·구분선 없이 간격으로만): 홈·보유 카드·구매 내역·찜 목록 / 고객센터·이벤트 / 환경설정(맨 아래).
+function isWalletScreen(name = state.screen) {
+  return ["wallet", "wallet-manage", "exchange-history", "fill", "receive"].includes(name);
+}
+
 function drawer() {
-  if (!state.menuOpen) return "";
+  // 지갑 계열 화면에는 포토카드 마이페이지 드로어를 띄우지 않는다.
+  if (!state.menuOpen || isWalletScreen()) return "";
   const item = (name, label) => `<button type="button" class="nav-item" data-nav="${name}">${label}</button>`;
   const open = Boolean(state.menuGroups.support);
   return `
@@ -2351,8 +2347,8 @@ const FAQ_ITEMS = [
   { cat: "뽑기", q: "5장 연속 뽑기는 1장 뽑기와 뭐가 다른가요?", a: "한 번 결제로 다섯 장을 이어서 뽑아요. 포장을 하나씩 골라 열거나, 바로 오픈하기로 다섯 장을 한꺼번에 열 수 있어요. 결제 금액은 1장 가격의 5배예요." },
   { cat: "뽑기", q: "포장을 열다가 앱을 닫으면 카드는 어떻게 되나요?", a: "결제가 끝난 순간 카드는 이미 보유 카드에 들어가 있어요. 연출을 보지 못해도 카드는 사라지지 않아요." },
   { cat: "결제·TP", q: "결제는 어떻게 하나요?", a: "포토카드는 TP로만 결제해요. 1 TP는 1원 기준이고, 결제 시트에서 현재 가격과 보유 TP, 차감 후 잔액을 확인한 뒤 결제하기를 누르면 돼요." },
-  { cat: "결제·TP", q: "TP는 어디서 충전하나요?", a: "토마톡 지갑에서 TOTT를 TP로 교환해요. 결제 시트에서 TP가 모자라면 TP 교환하기 버튼으로 바로 지갑 교환 화면에 갈 수 있고, 교환이 끝나면 결제 시트로 돌아와요." },
-  { cat: "결제·TP", q: "지갑 연결이 꼭 필요한가요?", a: "네. TP 결제와 TOTT 교환은 토마톡 지갑이 연결돼 있어야 해요. 지갑이 연결되어 있지 않으면 결제 시트에서 먼저 연결을 안내해요." },
+  { cat: "결제·TP", q: "TP는 어디서 충전하나요?", a: "토마톡 지갑에서 TOTT를 TP로 교환해요. 포토카드 앱 안에서는 교환하지 않고, 토마톡 지갑에서 바꾼 TP로 결제해요." },
+  { cat: "결제·TP", q: "지갑 연결이 꼭 필요한가요?", a: "네. TP 결제는 토마톡 지갑이 연결돼 있어야 해요. 지갑이 연결되어 있지 않으면 결제 시트에서 먼저 연결을 안내해요." },
   { cat: "결제·TP", q: "교환한 TP를 다시 TOTT로 바꿀 수 있나요?", a: "아니요. 한번 교환된 TP는 다시 TOTT로 바꿀 수 없어요. 또 지갑에 있는 TP는 다른 지갑으로 옮길 수 없으니 교환 전에 지갑과 수량을 확인해 주세요." },
   { cat: "결제·TP", q: "뽑기를 취소하거나 환불받을 수 있나요?", a: "랜덤 상품 특성상 결제가 끝나고 카드가 확정된 뒤에는 취소·교환·환불이 되지 않아요. 결제 전에 상품과 장수를 꼭 확인해 주세요." },
   { cat: "보유 카드", q: "뽑은 카드는 어디서 보나요?", a: "메뉴의 보유 카드에서 언제든 볼 수 있어요. 전체 또는 가수별로 모아 보고, 카드를 누르면 앞뒤를 크게 볼 수 있어요." },
@@ -2736,7 +2732,7 @@ function unitGroupHtml(group) {
 
 function detail(item) {
   const composition = cardGroups(item.cards).map(unitGroupHtml).join("");
-  // TP가 모자라도 버튼은 열어 둔다. 결제 시트가 부족분과 [TP 교환하기]를 보여 준다.
+  // TP가 모자라도 버튼은 열어 둔다. 결제 시트에서 부족 안내 + 지갑 보기로 보낸다.
   // 품절만 남은 상품은 뽑기 버튼을 막는다(행 전체 품절 표시는 하지 않음).
   const canOne = drawableCards(item).length > 0;
   const stockForFive = canDrawFive(item);
@@ -3270,12 +3266,9 @@ function sheet() {
         </div>
         <p class="rate-note" data-rate-note>${esc(rateNote())}</p>
         ${state.tp < cost
-          ? (state.balance > 0
-            ? `<p class="sheet-short">토마톡 지갑에서 TOTT를 TP로 교환해요.</p>
-               <button class="primary" type="button" data-go-exchange>TP 교환하기</button>`
-            : `<p class="sheet-short">지갑에 TOTT가 없어요. TOTT를 받은 뒤 TP로 교환해요.</p>
-               <button class="primary" type="button" data-go-receive>TOTT 받기</button>`)
-            + `<button class="ghost" type="button" disabled>결제하기</button>`
+          ? `<p class="sheet-short">TP가 부족해요. TOTT → TP 교환은 토마톡 지갑에서 해요.</p>
+               <button class="primary" type="button" data-go-wallet>지갑 보기</button>
+               <button class="ghost" type="button" disabled>결제하기</button>`
           : `<div class="sheet-note">
                ${sheetNotes(item).map((line) => `<p>${esc(line)}</p>`).join("")}
              </div>
@@ -3415,7 +3408,7 @@ function cardDeck() {
     </button>`).join("");
   return `
     ${openBar(count > 1 ? `${count}장 뽑기` : "")}
-    <div class="deck-stage" data-deck>
+    <div class="deck-stage${done ? " has-opened" : ""}" data-deck>
       <div class="deck-top">
         <p class="deck-hint" data-deck-hint>${count > 1 ? "포장을 골라 열어보세요" : "한 장을 선택하세요"}</p>
       </div>
@@ -4570,8 +4563,8 @@ function toast(message) {
   }, 1600);
 }
 
-// ---- 포인트 교환 (슬라이드 19~21, mock) ----
-// 교환은 토마톡 지갑에서 하기로 결정돼(2026-10-23) 앱 안에는 진입점이 없다. 화면 코드는 참고용으로 남긴다.
+// ---- 지갑 공통(시각·환율 보조) ----
+// TOTT→TP 교환 화면은 포토카드 앱에서 제거. 채우기·받기·거래내역만 둔다.
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -4600,14 +4593,6 @@ function tpText(amount) {
 function tpPerTott() {
   const value = Number(rates().tottKrw);
   return value > 0 ? value : 1;
-}
-
-function tottToTp(tott) {
-  return Math.round((Number(tott) || 0) * tpPerTott());
-}
-
-function tpToTott(tp) {
-  return (Number(tp) || 0) / tpPerTott();
 }
 
 function usdText(krw) {
@@ -4645,14 +4630,11 @@ const WALLET_SVG = {
 
 const LEDGER_BADGE = { 검증완료: "verified", 진행중: "pending", 만료: "expired", 실패: "failed", 성공: "ok", 완료: "done" };
 
-// 지갑별 거래 내역: 그 지갑의 교환, 포토카드 결제(TP 사용·대표 지갑에만), mock 보내기·받기
+// 지갑별 거래 내역: 채우기, 포토카드 결제(TP 사용·대표 지갑에만), mock 보내기·받기
 function walletLedger(walletId = currentWallet().id) {
   const w = walletById(walletId);
   if (!w) return [];
   const rows = [];
-  state.exchanges
-    .filter((entry) => (entry.wallet || WALLET_SEED[0].id) === walletId)
-    .forEach((entry) => rows.push({ kind: "exchange", at: entry.at, label: "교환", tott: -entry.tott, tp: entry.tp, status: "완료" }));
   state.fills
     .filter((entry) => entry.wallet === walletId)
     .forEach((entry) => rows.push({ kind: "fill", at: entry.at, label: "채우기", sol: -entry.sol, tott: entry.tott, status: "완료" }));
@@ -4678,8 +4660,8 @@ function walletLedger(walletId = currentWallet().id) {
 }
 
 function ledgerRow(row) {
-  const glyph = row.kind === "exchange" ? "swap" : row.kind === "use" || row.kind === "fill" ? "coins" : row.kind === "receive" ? "arrowDown" : "arrowUp";
-  // 교환·채우기처럼 한 건에 두 통화가 걸리면 오른쪽에는 받은 쪽만 크게 쓰고, 쓴 쪽은 왼쪽 날짜 옆에 작게 적는다(세 줄 방지)
+  const glyph = row.kind === "use" || row.kind === "fill" ? "coins" : row.kind === "receive" ? "arrowDown" : "arrowUp";
+  // 채우기처럼 한 건에 두 통화가 걸리면 오른쪽에는 받은 쪽만 크게 쓰고, 쓴 쪽은 왼쪽 날짜 옆에 작게 적는다(세 줄 방지)
   const amount = (value, unitHtml, text) => `<strong class="${value < 0 ? "minus" : "plus"}">${value < 0 ? "- " : "+ "}${text(Math.abs(value))} ${unitHtml}</strong>`;
   const units = {
     sol: [`<small>SOL</small>`, solText, "SOL"],
@@ -4748,7 +4730,6 @@ function walletCard(w) {
       </div>
       <div class="wallet-tp">
         <span class="wallet-tp-body"><small>TP 포인트</small><strong>${tpText(state.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></span>
-        <button type="button" class="wallet-exchange" data-nav="exchange-form">교환하기 ${icon("caretRight")}</button>
       </div>
       <div class="wallet-actions">
         <button type="button" data-soon="보내기">${WALLET_SVG.actSend}<span>보내기</span></button>
@@ -4759,7 +4740,7 @@ function walletCard(w) {
     </article>`;
 }
 
-// 토마톡 지갑 mock. 디자인의 지갑 화면 구성(지갑 슬라이드 · 보유 NFT · 최근 거래내역 · 토큰 정보)에 TP 줄과 [교환하기]를 더했다.
+// 토마톡 지갑 mock. TOTT→TP 교환 UI는 여기 두지 않는다(토마톡 지갑 담당).
 function wallet() {
   const list = activeWallets();
   const w = currentWallet();
@@ -5040,7 +5021,7 @@ function exchangeHistory() {
   const list = activeWallets();
   const groups = historyGroups();
   const open = historyOpenDays(groups);
-  const chips = [["all", "전체"], ["exchange", "교환"], ["use", "사용"], ["move", "보내기·받기"]]
+  const chips = [["all", "전체"], ["use", "사용"], ["fill", "채우기"], ["move", "보내기·받기"]]
     .map(([id, label]) => `<button type="button" class="${id === state.ledgerFilter ? "on" : ""}" data-ledger-filter="${id}">${label}</button>`).join("");
   const picker = `
     <div class="hist-pick${state.historyPicker ? " open" : ""}">
@@ -5060,7 +5041,7 @@ function exchangeHistory() {
       }).join("")
     : `<div class="wallet-empty tall"><strong>${state.exDate ? "이 날짜의 거래 내역이 없어요." : "거래 내역이 없어요."}</strong></div>`;
   return `
-    ${topBar(`거래 내역`, { back: `wallet`, label: "지갑", cls: "light-bar center-bar" })}
+    ${topBar(`거래 내역`, { back: `wallet`, label: "지갑", right: `<span class="bar-spacer" aria-hidden="true"></span>`, cls: "light-bar center-bar" })}
     <div class="scroll light hist">
       ${picker}
       <div class="artist-tabs light-tabs hist-tabs">${chips}</div>
@@ -5072,31 +5053,6 @@ function exchangeHistory() {
       ${body}
     </div>
   `;
-}
-
-function exchangeAmounts() {
-  const tott = Number(String(state.exTott).replace(/,/g, ""));
-  const safe = Number.isFinite(tott) ? Math.max(0, tott) : 0;
-  return { tott: safe, tp: tottToTp(safe) };
-}
-
-function exchangeReady() {
-  const { tott } = exchangeAmounts();
-  return tott >= EXCHANGE_MIN && tott <= state.balance;
-}
-
-function exchangeHint() {
-  const { tott } = exchangeAmounts();
-  if (!tott) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
-  if (tott < EXCHANGE_MIN) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
-  if (tott > state.balance) return "보유한 TOTT보다 많아요. 채우기에서 SOL을 TOTT로 바꿔요.";
-  return "";
-}
-
-function exchangeRateLine() {
-  const { at } = rates();
-  const when = at ? `${clockText(new Date(at)).slice(11)} 기준` : "기본 환율";
-  return `1 TOTT ≈ ${tpText(tpPerTott())} TP · ${when}`;
 }
 
 // ---- 채우기: 솔라나(SOL) → TOTT 교환 ----
@@ -5151,7 +5107,7 @@ function receivePage() {
     ? `<button class="primary ex-confirm" type="button" data-ex-return>결제로 돌아가기</button>`
     : `<button class="primary ex-confirm" type="button" data-nav="wallet">지갑으로 가기</button>`;
   return `
-    ${topBar(`TOTT 받기`, { back: `wallet`, label: "지갑", cls: "light-bar" })}
+    ${topBar(`TOTT 받기`, { back: `wallet`, label: "지갑", right: `<span class="bar-spacer" aria-hidden="true"></span>`, cls: "light-bar" })}
     <div class="scroll light ex-form rcv">
       <p class="ex-intro">거래소나 다른 지갑에서 아래 주소로 TOTT를 보내면 이 지갑에 들어와요.</p>
       ${walletPicker()}
@@ -5164,7 +5120,7 @@ function receivePage() {
       <ul class="rcv-notes">
         <li>Solana 네트워크의 TOTT만 받을 수 있어요. 다른 네트워크로 보내면 돌려받을 수 없어요.</li>
         <li>입금은 보통 몇 분 안에 반영되고, 거래 내역에서 확인할 수 있어요.</li>
-        <li>받은 TOTT는 교환하기에서 TP로 바꿔 결제에 써요.</li>
+        <li>받은 TOTT는 토마톡 지갑에서 TP로 바꿔 결제에 써요.</li>
       </ul>
       ${action}
       <button class="rcv-alt" type="button" data-nav="fill">SOL이 있다면 TOTT로 채우기 ›</button>
@@ -5177,7 +5133,7 @@ function fillForm() {
   const { sol, tott } = fillAmounts();
   const ready = fillReady();
   return `
-    ${topBar(`채우기`, { back: `wallet`, label: "지갑", cls: "light-bar" })}
+    ${topBar(`채우기`, { back: `wallet`, label: "지갑", right: `<span class="bar-spacer" aria-hidden="true"></span>`, cls: "light-bar" })}
     <div class="scroll light ex-form">
       <p class="ex-intro">지갑에 있는 솔라나(SOL)를 TOTT로 바꿔 채워요.</p>
       ${walletPicker()}
@@ -5270,166 +5226,10 @@ function pickWallet(id) {
   state.walletId = id;
   syncBalance();
   persistWallet();
-  state.exTott = "";
-  state.exTp = "";
   state.fillSol = "";
   state.walletPick = false;
 }
 
-// TOTT · TP 교환 (기획 31장): 사용 지갑 → 잔액 → 입력(TOTT 기준 / TP 기준 전환) → 교환 예상 → 교환 → 안내 사항
-function exchangeForm() {
-  const { tott, tp } = exchangeAmounts();
-  const ready = exchangeReady();
-  const tpMode = state.exMode === "tp";
-  const amount = tpMode ? state.exTp : state.exTott;
-  return `
-    ${topBar(`TOTT · TP 교환`, { back: `wallet`, label: "지갑", cls: "light-bar" })}
-    <div class="scroll light ex-form">
-      <p class="ex-intro">토마톡 앱에 연동되어 있는 팬텀 지갑을 통해 TOTT를 TP로 교환할 수 있습니다.</p>
-      ${walletPicker()}
-      <section class="ex-card">
-        <div class="ex-line"><span>보유 TOTT</span><strong class="ex-inline">${tottText(state.balance)} <small>TOTT</small></strong></div>
-        <div class="ex-line"><span>보유 TP</span><strong class="ex-inline">${tpText(state.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-      </section>
-      ${state.balance > 0 ? "" : `
-      <section class="ex-card ex-none">
-        <h2>TOTT가 없어요</h2>
-        <p>지갑 주소로 TOTT를 받은 뒤<br>TP로 교환할 수 있어요.</p>
-        <button class="primary" type="button" data-go-receive>TOTT 받기</button>
-      </section>`}
-      <div class="ex-head-row"><h2>교환할 수량</h2>
-        <div class="ex-mode" role="tablist">
-          <button type="button" role="tab" class="${tpMode ? "" : "on"}" aria-selected="${!tpMode}" data-ex-mode="tott">TOTT 기준</button>
-          <button type="button" role="tab" class="${tpMode ? "on" : ""}" aria-selected="${tpMode}" data-ex-mode="tp">TP 기준</button>
-        </div>
-      </div>
-      <section class="ex-card ex-box${state.balance > 0 ? "" : " is-off"}">
-        <div class="ex-field">
-          <span class="ex-field-head"><label for="ex-amount">${tpMode ? "받고 싶은 TP" : "사용할 TOTT"} <small>1 TP = ₩1</small></label><button type="button" class="ex-max" data-ex-pct="100">최대</button></span>
-          <span class="ex-input">
-            <input id="ex-amount" data-field="exAmount" inputmode="${tpMode ? "numeric" : "decimal"}" placeholder="0" value="${esc(amount)}" />
-            <b>${tpMode ? "TP" : "TOTT"}</b>
-          </span>
-        </div>
-        <p class="ex-rate"><span class="ex-rate-label">현재 환율</span><span class="ex-rate-value" data-ex-rate>${esc(exchangeRateLine())} <button type="button" data-ex-refresh aria-label="환율 새로고침">${icon("refresh")}</button></span></p>
-        <p class="ex-hint${tott > 0 && !ready ? " warn" : ""}${exchangeHint() ? "" : " is-empty"}" data-ex-hint>${icon("info")}<span>${esc(exchangeHint())}</span></p>
-      </section>
-      <div class="ex-head-row"><h2>교환 예상</h2></div>
-      <section class="ex-card ex-preview">
-        <div class="ex-line"><span>받을 TP</span><strong class="green ex-inline" data-ex-get>+ ${tpText(tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-        <div class="ex-line"><span>교환 후 TP</span><strong class="ex-inline" data-ex-after-tp>${tpText(state.tp + tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-      </section>
-      <button class="primary ex-confirm" type="button" data-ex-confirm ${ready ? "" : "disabled"}>교환하기</button>
-      <section class="ex-notice">
-        <h3>${icon("info")} 교환 안내 사항</h3>
-        <ol>
-          <li>최소 변경 가능한 금액은 ${EXCHANGE_MIN} TOTT에요.</li>
-          <li>최소 변경 수량보다 적을 경우 교환이 되지 않아요.</li>
-          <li>실시간 TOTT 가격 변동으로 인해 실제 지급 TP 수량이 달라질 수 있어요.</li>
-          <li>TP 교환 비율은 KRW와 1:1로 맞춰져 있어요.</li>
-          <li>한번 교환된 TP는 다시 TOTT로 변경할 수 없어요.</li>
-          <li>지갑별 TOTT 수량과 TP 수량이 다르므로 확인을 잘해주세요.</li>
-          <li>지갑에 보유한 TP는 다른 지갑으로 이동이 불가능해요.</li>
-        </ol>
-      </section>
-    </div>
-  `;
-}
-
-// 입력 중에는 전체 render 없이 반대쪽 값·예상·버튼만 갱신한다(포커스 유지).
-function syncExchangeForm() {
-  if (state.exMode === "tp") {
-    const tp = Number(String(state.exTp).replace(/,/g, ""));
-    const safe = Number.isFinite(tp) && tp > 0 ? tp : 0;
-    let tott = safe ? tpToTott(safe) : 0;
-    if (tott > state.balance && safe <= Math.floor(state.balance * tpPerTott())) tott = state.balance;
-    state.exTott = tott ? String(Number(tott.toFixed(6))) : "";
-  } else {
-    const { tp } = exchangeAmounts();
-    state.exTp = tp ? tpText(tp) : "";
-  }
-  const { tott, tp } = exchangeAmounts();
-  const set = (selector, text) => {
-    const node = app.querySelector(selector);
-    if (node) node.firstChild.textContent = text;
-  };
-  const button = app.querySelector("[data-ex-confirm]");
-  if (button) button.disabled = !exchangeReady();
-  const hint = app.querySelector("[data-ex-hint]");
-  if (hint) {
-    const text = exchangeHint();
-    hint.lastElementChild.textContent = text;
-    hint.classList.toggle("warn", tott > 0 && !exchangeReady());
-    hint.classList.toggle("is-empty", !text);
-  }
-  set("[data-ex-get]", `+ ${tpText(tp)} `);
-  set("[data-ex-after-tp]", `${tpText(state.tp + tp)} `);
-}
-
-function setExchangeTott(amount) {
-  const value = Math.max(0, Math.min(state.balance, Number(amount) || 0));
-  state.exTott = value ? String(Number(value.toFixed(6))) : "";
-  // TP 표기는 내림: 반올림해 올리면 보유 TOTT보다 많은 TP가 적혀 "최대"가 보유량을 넘는 것처럼 보인다
-  state.exTp = value ? tpText(Math.floor(value * tpPerTott())) : "";
-}
-
-function runExchange() {
-  if (!exchangeReady()) return false;
-  const { tott, tp } = exchangeAmounts();
-  state.balance = Number((state.balance - tott).toFixed(6));
-  currentWallet().balance = state.balance;
-  state.tp += tp;
-  state.exchanges.unshift({
-    id: `EX_${Date.now()}`,
-    at: new Date().toISOString(),
-    wallet: currentWallet().id,
-    tott,
-    tp,
-    tpAfter: state.tp,
-  });
-  persistWallet();
-  state.exTott = "";
-  state.exTp = "";
-  return true;
-}
-
-// 교환 완료 화면: 결제 시트로 바로 돌아가지 않고 받은 TP·남은 TOTT·환율을 먼저 보여 준다.
-function exchangeDone() {
-  const done = state.exDone;
-  if (!done) return exchangeForm();
-  const wallet = walletById(done.wallet) || currentWallet();
-  const at = new Date(done.at);
-  const when = `${at.getFullYear()}.${pad2(at.getMonth() + 1)}.${pad2(at.getDate())} ${pad2(at.getHours())}:${pad2(at.getMinutes())}`;
-  const action = state.walletReturn
-    ? `<button class="primary ex-confirm" type="button" data-ex-return>결제로 돌아가기</button>`
-    : `<button class="primary ex-confirm" type="button" data-nav="wallet">지갑으로 가기</button>`;
-  return `
-    ${topBar(`교환 완료`, { back: `wallet`, label: "지갑", cls: "light-bar" })}
-    <div class="scroll light ex-form ex-done">
-      <div class="ex-done-head">
-        <span class="ex-done-mark" aria-hidden="true">${icon("check")}</span>
-        <h2>교환이 완료됐어요</h2>
-        <p>${tottText(done.tott)} TOTT를 ${tpText(done.tp)} TP로 바꿨어요.</p>
-      </div>
-      <section class="ex-card ex-preview">
-        <div class="ex-line"><span>받은 TP</span><strong class="green ex-inline">+ ${tpText(done.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-        <div class="ex-line"><span>보유 TP</span><strong class="ex-inline">${tpText(done.tpAfter)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
-        <div class="ex-line ex-group"><span>사용한 TOTT</span><strong class="ex-inline">${tottText(done.tott)} <small>TOTT</small></strong></div>
-        <div class="ex-line"><span>남은 TOTT</span><strong class="ex-inline">${tottText(done.balanceAfter)} <small>TOTT</small></strong></div>
-      </section>
-      <section class="ex-card ex-done-meta">
-        <div class="ex-line"><span>적용 환율</span><strong>${esc(done.rate)}</strong></div>
-        <div class="ex-line"><span>지갑</span><strong>${esc(wallet.name || "")}</strong></div>
-        <div class="ex-line"><span>교환 시각</span><strong>${when}</strong></div>
-      </section>
-      <p class="ex-done-note">${icon("info")}<span>교환된 TP는 다시 TOTT로 바꿀 수 없어요.</span></p>
-      ${action}
-      <button class="ex-done-more" type="button" data-nav="exchange-history">거래 내역 보기</button>
-    </div>
-  `;
-}
-
-// 지갑·교환에서 결제 시트로 돌아간다(슬라이드 18 "연결 후 현재 결제 화면으로 돌아옵니다").
 function returnToSheet() {
   const back = state.walletReturn;
   state.walletReturn = null;
@@ -5778,8 +5578,6 @@ function render() {
   else if (state.screen === "wallet") view = wallet();
   else if (state.screen === "wallet-manage") view = walletManage();
   else if (state.screen === "exchange-history") view = exchangeHistory();
-  else if (state.screen === "exchange-done") view = exchangeDone();
-  else if (state.screen === "exchange-form") view = exchangeForm();
   else if (state.screen === "fill") view = fillForm();
   else if (state.screen === "receive") view = receivePage();
   else if (state.tab === "track" || state.screen === "track") view = state.shipmentId ? shipmentDetail() : tracking();
@@ -5860,13 +5658,10 @@ app.addEventListener("click", (event) => {
   const guideNext = event.target.closest("[data-guide-next]");
   const guideStart = event.target.closest("[data-guide-start]");
   const guideClose = event.target.closest("[data-guide-close]");
-  const exPct = event.target.closest("[data-ex-pct]");
-  const exMode = event.target.closest("[data-ex-mode]");
   const walletPickBtn = event.target.closest("[data-wallet-pick]");
   const walletPickItem = event.target.closest("[data-wallet-pick-item]");
   const fillPct = event.target.closest("[data-fill-pct]");
   const fillConfirm = event.target.closest("[data-fill-confirm]");
-  const exConfirm = event.target.closest("[data-ex-confirm]");
   const exReturn = event.target.closest("[data-ex-return]");
   const faqCat = event.target.closest("[data-faq-cat]");
   const inqWrite = event.target.closest("[data-inq-write]");
@@ -5877,7 +5672,7 @@ app.addEventListener("click", (event) => {
   const inqDelete = event.target.closest("[data-inq-delete]");
   const exRefresh = event.target.closest("[data-ex-refresh]");
   const exDateClear = event.target.closest("[data-ex-date-clear]");
-  const goExchange = event.target.closest("[data-go-exchange]");
+  const goWallet = event.target.closest("[data-go-wallet]");
   const goReceive = event.target.closest("[data-go-receive]");
   const walletLink = event.target.closest("[data-wallet-link]");
   const walletCopy = event.target.closest("[data-wallet-copy]");
@@ -5998,13 +5793,12 @@ app.addEventListener("click", (event) => {
   } else if (guideClose) {
     state.screen = "home";
     state.tab = "home";
-  } else if (goExchange) {
-    // 결제 시트 → 지갑 교환 페이지 → 교환 뒤 시트로 복귀
+  } else if (goWallet) {
+    // TP 부족 시: 교환 UI는 토마톡 지갑 쪽. 여기선 잔액만 보여 준다.
     state.walletReturn = { productId: state.productId, sheet: state.sheet };
     state.sheet = null;
-    state.exTott = "";
-    state.exTp = "";
-    state.screen = "exchange-form";
+    state.screen = "wallet";
+    toast("TOTT → TP 교환은 토마톡 지갑에서 해요.");
   } else if (goReceive) {
     // TOTT가 없을 때: 받기 화면(주소·복사). 결제에서 왔다면 돌아갈 시트를 기억한다.
     if (state.sheet) state.walletReturn = { productId: state.productId, sheet: state.sheet };
@@ -6022,10 +5816,6 @@ app.addEventListener("click", (event) => {
   } else if (ledgerFilter) {
     state.ledgerFilter = ledgerFilter.dataset.ledgerFilter;
     state.historyOpen = null;
-  } else if (exPct) {
-    setExchangeTott(state.balance * (Number(exPct.dataset.exPct) / 100));
-  } else if (exMode) {
-    state.exMode = exMode.dataset.exMode === "tp" ? "tp" : "tott";
   } else if (walletPickBtn) {
     state.walletPick = !state.walletPick;
   } else if (walletPickItem) {
@@ -6038,11 +5828,6 @@ app.addEventListener("click", (event) => {
     if (!runFill()) return;
     toast(`${tottText(tott)} TOTT를 채웠어요.`);
     state.screen = "wallet";
-  } else if (exConfirm) {
-    if (exConfirm.disabled || !runExchange()) return;
-    // 완료 화면에서 받은 TP·남은 TOTT를 보여 준 뒤 결제 시트(또는 지갑)로 돌아간다
-    state.exDone = { ...state.exchanges[0], balanceAfter: state.balance, rate: exchangeRateLine() };
-    state.screen = "exchange-done";
   } else if (exReturn) {
     returnToSheet();
   } else if (faqCat) {
@@ -6076,8 +5861,6 @@ app.addEventListener("click", (event) => {
   } else if (exRefresh) {
     fetchRates().then((ok) => {
       if (!ok) return;
-      const line = app.querySelector("[data-ex-rate]");
-      if (line) line.firstChild.textContent = `${exchangeRateLine()} `;
       const fillLine = app.querySelector("[data-fill-rate]");
       if (fillLine) fillLine.firstChild.textContent = `${fillRateLine()} `;
       if (state.screen === "fill") syncFillForm();
@@ -6123,16 +5906,13 @@ app.addEventListener("click", (event) => {
       state.screen = "artists";
       state.searchOpen = false;
       state.query = "";
-    } else if (name === "wallet" || name === "wallet-manage" || name === "exchange-form" || name === "exchange-history" || name === "fill" || name === "receive") {
+    } else if (name === "wallet" || name === "wallet-manage" || name === "exchange-history" || name === "fill" || name === "receive") {
+      // 지갑 흐름은 토마톡 지갑 영역 — 포토카드 햄버거(마이페이지) 메뉴를 닫고 안 쓴다.
+      state.menuOpen = false;
       state.tab = "home";
       state.screen = name;
       if (name === "fill") state.fillSol = "";
       if (name === "wallet") state.walletReturn = null;
-      if (name === "exchange-form") {
-        state.exTott = "";
-        state.exTp = "";
-        state.exMode = "tott";
-      }
       state.walletPick = false;
       if (name === "exchange-history") {
         state.exDate = "";
@@ -6462,12 +6242,6 @@ app.addEventListener("input", (event) => {
   const field = event.target.dataset.field;
   if (!field) return;
   state[field] = event.target.value;
-  if (field === "exAmount") {
-    if (state.exMode === "tp") state.exTp = event.target.value;
-    else state.exTott = event.target.value;
-    syncExchangeForm();
-    return;
-  }
   if (field === "inqTitle" || field === "inqBody") {
     const button = app.querySelector("[data-inq-submit]");
     if (button) button.disabled = !(String(state.inqTitle || "").trim() && String(state.inqBody || "").trim());
