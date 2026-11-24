@@ -4090,7 +4090,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
-.shelf-albums { margin-bottom: 2px; color: #b9ae9f; }
+.shelf-albums { margin-top: 6px; color: #b9ae9f; }
+.artist-random-albums { margin-top: 4px; }
 .detail .compose-line {
   margin: 2px 0 6px;
   font-size: 13px;

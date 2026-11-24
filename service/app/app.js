@@ -1155,9 +1155,9 @@ function shelfStage(group) {
 function shelfCopy(group) {
   return `
         <strong class="shelf-artist">${esc(group.artist)}</strong>
-        ${albumLines(group, "shelf-albums")}
         <span class="shelf-meta">${shelfMeta(group)}</span>
-        <span class="shelf-price">${wonText(group.price)}</span>`;
+        <span class="shelf-price">${wonText(group.price)}</span>
+        ${albumLines(group, "shelf-albums")}`;
 }
 
 function shelfRow(group) {
@@ -1175,9 +1175,9 @@ function artistRandomTile(group) {
       <span class="artist-random-fade" aria-hidden="true"></span>
       <span class="artist-random-copy">
         <strong>${esc(group.artist)}</strong>
-        ${albumLines(group, "artist-random-albums")}
         <span>${shelfMeta(group)}</span>
         <span class="artist-random-price">${wonText(group.price)}</span>
+        ${albumLines(group, "artist-random-albums")}
       </span>
       <img class="artist-random-mystery" src="${CARD_FRONT_FX}" alt="" />
     </button>`;
