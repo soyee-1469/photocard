@@ -1272,8 +1272,9 @@ function paintRing(scene, rot) {
     const angle = index * RING_STEP - rot;
     const t = Math.min(1, Math.abs(angle) / 90);
     item.style.transform = `rotateY(${angle}deg) translateZ(${RING_RADIUS}px)`;
-    item.style.opacity = Math.abs(angle) >= 96 ? "0" : String(1 - t * 0.35);
-    item.style.setProperty("--dim", (1 - t * 0.55).toFixed(3));
+    // 뒤로 돌수록 어둡고 흐려진다. 글자 밑으로 들어간 앨범이 글자를 방해하지 않게 세게 건다.
+    item.style.opacity = Math.abs(angle) >= 96 ? "0" : String(1 - t * 0.5);
+    item.style.setProperty("--dim", (1 - t * 0.7).toFixed(3));
     item.style.zIndex = String(100 - Math.round(Math.abs(angle)));
   });
 }
