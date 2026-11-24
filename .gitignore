@@ -42,3 +42,7 @@ yarn-error.*
 
 # local agent settings
 .claude/
+
+# 스캔 원본(600dpi)과 작업 스크린샷은 저장소에 넣지 않는다
+/포토카드 스캔/
+.tmp-*/
