@@ -3946,9 +3946,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 
 /* 커버플로우 진열(선반형과 비교용). 가운데 정면·양옆은 돌아서며 작고 어둡게 */
 .flow.rows { display: flex; flex-direction: column; gap: 6px; }
+/* 넓은 폰에서도 캐러셀이 글자 옆에 붙어 있도록 폭 상한을 둔다. */
 .flow-row {
   display: grid;
-  grid-template-columns: minmax(96px, 32%) minmax(0, 1fr);
+  grid-template-columns: minmax(96px, 32%) minmax(0, 300px);
   align-items: center;
   gap: 8px;
   padding: 4px 0 8px;
@@ -4024,6 +4025,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  isolation: isolate;
   margin: 0;
   padding: 0 0 0 2px;
   border: 0;
@@ -4093,4 +4095,16 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   font-size: 13px;
   line-height: 1.4;
   color: #b9a995;
+}
+/* 글자 뒤 검정 그라데이션: 캐러셀이 글자 밑으로 들어와도 글자가 읽힌다. */
+.flow-copy::before {
+  content: "";
+  position: absolute;
+  top: -14px;
+  bottom: -14px;
+  left: -16px;
+  right: -56px;
+  z-index: -1;
+  background: linear-gradient(90deg, var(--bg) 0%, var(--bg) 58%, transparent 100%);
+  pointer-events: none;
 }
