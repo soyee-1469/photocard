@@ -8,7 +8,7 @@ const SHELF_GROUPS = [
     "artistId": "cortis",
     "artist": "CORTIS",
     "sheets": 50,
-    "kinds": 21,
+    "kinds": 13,
     "price": 3500,
     "groupPhoto": "/assets/groups/CORTIS_group.jpg",
     "covers": [
@@ -21,7 +21,7 @@ const SHELF_GROUPS = [
     "artistId": "seventeen",
     "artist": "SEVENTEEN",
     "sheets": 50,
-    "kinds": 46,
+    "kinds": 41,
     "price": 3900,
     "groupPhoto": "/assets/groups/SEVENTEEN_group.jpg",
     "covers": [
@@ -38,7 +38,7 @@ const SHELF_GROUPS = [
     "artistId": "twice",
     "artist": "TWICE",
     "sheets": 50,
-    "kinds": 47,
+    "kinds": 34,
     "price": 3300,
     "groupPhoto": "/assets/groups/TWICE_group.jpg",
     "covers": [
@@ -53,7 +53,7 @@ const SHELF_GROUPS = [
     "artistId": "blackpink",
     "artist": "BLACKPINK",
     "sheets": 50,
-    "kinds": 22,
+    "kinds": 12,
     "price": 8900,
     "groupPhoto": "/assets/groups/BLACKPINK_group.jpg",
     "covers": [
@@ -73,7 +73,7 @@ const SHELF_GROUPS = [
     "artistId": "bts",
     "artist": "BTS",
     "sheets": 50,
-    "kinds": 25,
+    "kinds": 20,
     "price": 4000,
     "groupPhoto": "/assets/groups/BTS_group.jpg",
     "covers": [
@@ -88,6 +88,36 @@ const SHELF_GROUPS = [
 ];
 const SHELF_PRODUCT_IDS = new Set(SHELF_GROUPS.map((group) => group.id));
 const ALBUM_UNITS = [
+  {
+    "artistId": "cortis",
+    "id": "cortis-greengreen-everline-ld",
+    "name": "GREENGREEN 럭키드로우 특전",
+    "eventType": "pob",
+    "badge": "럭키드로우",
+    "eventName": "에버라인",
+    "covers": [],
+    "cardCount": 0
+  },
+  {
+    "artistId": "cortis",
+    "id": "cortis-greengreen-pob",
+    "name": "GREENGREEN 특전",
+    "eventType": "pob",
+    "badge": "특전",
+    "eventName": "판매처 미확인",
+    "covers": [],
+    "cardCount": 0
+  },
+  {
+    "artistId": "cortis",
+    "id": "cortis-greengreen-soundwave-ld",
+    "name": "GREENGREEN 럭키드로우 특전",
+    "eventType": "pob",
+    "badge": "럭키드로우",
+    "eventName": "사운드웨이브",
+    "covers": [],
+    "cardCount": 0
+  },
   {
     "artistId": "cortis",
     "id": "cortis-greengreen",
@@ -113,34 +143,14 @@ const ALBUM_UNITS = [
     "cardCount": 2
   },
   {
-    "artistId": "cortis",
-    "id": "cortis-greengreen-everline-ld",
-    "name": "GREENGREEN 럭키드로우 특전",
-    "eventType": "pob",
-    "badge": "럭키드로우",
-    "eventName": "에버라인",
-    "covers": [],
-    "cardCount": 2
-  },
-  {
-    "artistId": "cortis",
-    "id": "cortis-greengreen-soundwave-ld",
-    "name": "GREENGREEN 럭키드로우 특전",
-    "eventType": "pob",
-    "badge": "럭키드로우",
-    "eventName": "사운드웨이브",
-    "covers": [],
-    "cardCount": 5
-  },
-  {
-    "artistId": "cortis",
-    "id": "cortis-greengreen-pob",
-    "name": "GREENGREEN 특전",
+    "artistId": "seventeen",
+    "id": "seventeen-happy-burstday-pob",
+    "name": "HAPPY BURSTDAY 특전",
     "eventType": "pob",
     "badge": "특전",
     "eventName": "판매처 미확인",
     "covers": [],
-    "cardCount": 1
+    "cardCount": 0
   },
   {
     "artistId": "seventeen",
@@ -179,14 +189,24 @@ const ALBUM_UNITS = [
     "cardCount": 7
   },
   {
-    "artistId": "seventeen",
-    "id": "seventeen-happy-burstday-pob",
-    "name": "HAPPY BURSTDAY 특전",
+    "artistId": "twice",
+    "id": "twice-this-is-for-withmuu-pob",
+    "name": "THIS IS FOR 예판 특전",
+    "eventType": "pob",
+    "badge": "예판특전",
+    "eventName": "위드뮤",
+    "covers": [],
+    "cardCount": 0
+  },
+  {
+    "artistId": "twice",
+    "id": "twice-this-is-for-incheon-pob",
+    "name": "THIS IS FOR WORLD TOUR IN INCHEON 특전",
     "eventType": "pob",
     "badge": "특전",
-    "eventName": "판매처 미확인",
+    "eventName": "팬즈샵",
     "covers": [],
-    "cardCount": 5
+    "cardCount": 0
   },
   {
     "artistId": "twice",
@@ -213,24 +233,36 @@ const ALBUM_UNITS = [
     "cardCount": 18
   },
   {
-    "artistId": "twice",
-    "id": "twice-this-is-for-incheon-pob",
-    "name": "THIS IS FOR WORLD TOUR IN INCHEON 특전",
+    "artistId": "blackpink",
+    "id": "blackpink-deadline-pob-dress",
+    "name": "DEADLINE 특전 (드레스)",
     "eventType": "pob",
     "badge": "특전",
-    "eventName": "팬즈샵",
+    "eventName": "판매처 미확인",
     "covers": [],
-    "cardCount": 9
+    "cardCount": 0
   },
   {
-    "artistId": "twice",
-    "id": "twice-this-is-for-withmuu-pob",
-    "name": "THIS IS FOR 예판 특전",
+    "artistId": "blackpink",
+    "id": "blackpink-deadline-pob-selfie",
+    "name": "DEADLINE 특전 (셀카)",
     "eventType": "pob",
-    "badge": "예판특전",
-    "eventName": "위드뮤",
+    "badge": "특전",
+    "eventName": "판매처 미확인",
     "covers": [],
-    "cardCount": 4
+    "cardCount": 0
+  },
+  {
+    "artistId": "blackpink",
+    "id": "blackpink-deadline-goyang-md",
+    "name": "DEADLINE WORLD TOUR IN GOYANG MD 특전",
+    "eventType": "pob",
+    "badge": "MD 특전",
+    "eventName": "고양 콘서트",
+    "covers": [
+      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg"
+    ],
+    "cardCount": 0
   },
   {
     "artistId": "blackpink",
@@ -245,36 +277,14 @@ const ALBUM_UNITS = [
     "cardCount": 12
   },
   {
-    "artistId": "blackpink",
-    "id": "blackpink-deadline-goyang-md",
-    "name": "DEADLINE WORLD TOUR IN GOYANG MD 특전",
+    "artistId": "bts",
+    "id": "bts-arirang-soundwave-pob",
+    "name": "ARIRANG 예판 특전",
     "eventType": "pob",
-    "badge": "MD 특전",
-    "eventName": "고양 콘서트",
-    "covers": [
-      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg"
-    ],
-    "cardCount": 4
-  },
-  {
-    "artistId": "blackpink",
-    "id": "blackpink-deadline-pob-dress",
-    "name": "DEADLINE 특전 (드레스)",
-    "eventType": "pob",
-    "badge": "특전",
-    "eventName": "판매처 미확인",
+    "badge": "예판특전",
+    "eventName": "사운드웨이브",
     "covers": [],
-    "cardCount": 4
-  },
-  {
-    "artistId": "blackpink",
-    "id": "blackpink-deadline-pob-selfie",
-    "name": "DEADLINE 특전 (셀카)",
-    "eventType": "pob",
-    "badge": "특전",
-    "eventName": "판매처 미확인",
-    "covers": [],
-    "cardCount": 2
+    "cardCount": 0
   },
   {
     "artistId": "bts",
@@ -309,16 +319,6 @@ const ALBUM_UNITS = [
     "eventName": "VT코스메틱",
     "covers": [],
     "cardCount": 6
-  },
-  {
-    "artistId": "bts",
-    "id": "bts-arirang-soundwave-pob",
-    "name": "ARIRANG 예판 특전",
-    "eventType": "pob",
-    "badge": "예판특전",
-    "eventName": "사운드웨이브",
-    "covers": [],
-    "cardCount": 5
   }
 ];
 const STOCK_PRODUCTS = [
@@ -335,10 +335,7 @@ const STOCK_PRODUCTS = [
     "home": true,
     "albumIds": [
       "cortis-greengreen",
-      "cortis-greengreen-scratch",
-      "cortis-greengreen-everline-ld",
-      "cortis-greengreen-soundwave-ld",
-      "cortis-greengreen-pob"
+      "cortis-greengreen-scratch"
     ],
     "cards": [
       {
@@ -549,120 +546,6 @@ const STOCK_PRODUCTS = [
           "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_02_1앞.jpg",
           "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_03_1앞.jpg"
         ]
-      },
-      {
-        "no": "14",
-        "member": "Seonghyeon",
-        "front": "P014_CORTIS_GREENGREEN_EVERLINE-LD_Seonghyeon_특전_01_1앞.jpg",
-        "back": "P014_CORTIS_GREENGREEN_EVERLINE-LD_Seonghyeon_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-everline-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 에버라인 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P014",
-        "stockFiles": [
-          "P014_CORTIS_GREENGREEN_EVERLINE-LD_Seonghyeon_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "15",
-        "member": "Keonho",
-        "front": "P015_CORTIS_GREENGREEN_EVERLINE-LD_Keonho_특전_01_1앞.jpg",
-        "back": "P015_CORTIS_GREENGREEN_EVERLINE-LD_Keonho_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-everline-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 에버라인 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P015",
-        "stockFiles": [
-          "P015_CORTIS_GREENGREEN_EVERLINE-LD_Keonho_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "16",
-        "member": "Martin",
-        "front": "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_01_1앞.jpg",
-        "back": "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 2,
-        "unitId": "cortis-greengreen-soundwave-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 사운드웨이브 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P017",
-        "stockFiles": [
-          "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_01_1앞.jpg",
-          "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_02_1앞.jpg"
-        ]
-      },
-      {
-        "no": "17",
-        "member": "Juhoon",
-        "front": "P018_CORTIS_GREENGREEN_SOUNDWAVE-LD_Juhoon_특전_01_1앞.jpg",
-        "back": "P018_CORTIS_GREENGREEN_SOUNDWAVE-LD_Juhoon_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-soundwave-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 사운드웨이브 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P018",
-        "stockFiles": [
-          "P018_CORTIS_GREENGREEN_SOUNDWAVE-LD_Juhoon_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "18",
-        "member": "Keonho",
-        "front": "P019_CORTIS_GREENGREEN_SOUNDWAVE-LD_Keonho_특전_01_1앞.jpg",
-        "back": "P019_CORTIS_GREENGREEN_SOUNDWAVE-LD_Keonho_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-soundwave-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 사운드웨이브 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P019",
-        "stockFiles": [
-          "P019_CORTIS_GREENGREEN_SOUNDWAVE-LD_Keonho_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "19",
-        "member": "Seonghyeon",
-        "front": "P020_CORTIS_GREENGREEN_SOUNDWAVE-LD_Seonghyeon_특전_01_1앞.jpg",
-        "back": "P020_CORTIS_GREENGREEN_SOUNDWAVE-LD_Seonghyeon_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-soundwave-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 사운드웨이브 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P020",
-        "stockFiles": [
-          "P020_CORTIS_GREENGREEN_SOUNDWAVE-LD_Seonghyeon_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "20",
-        "member": "James",
-        "front": "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_01_1앞.jpg",
-        "back": "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 2,
-        "unitId": "cortis-greengreen-soundwave-ld",
-        "album": "GREENGREEN 럭키드로우 특전 – 사운드웨이브 (뒷면 GREENGREEN 검정, 판매처 표기 없음)",
-        "code": "P021",
-        "stockFiles": [
-          "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_01_1앞.jpg",
-          "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_02_1앞.jpg"
-        ]
-      },
-      {
-        "no": "21",
-        "member": "Seonghyeon?",
-        "front": "P016_CORTIS_GREENGREEN_UNKNOWN_Seonghyeon(추정)_특전_01_1앞.jpg",
-        "back": "P016_CORTIS_GREENGREEN_UNKNOWN_Seonghyeon(추정)_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "cortis-greengreen-pob",
-        "album": "GREENGREEN 특전(판매처 미확인)",
-        "code": "P016",
-        "stockFiles": [
-          "P016_CORTIS_GREENGREEN_UNKNOWN_Seonghyeon(추정)_특전_01_1앞.jpg"
-        ]
       }
     ]
   },
@@ -680,8 +563,7 @@ const STOCK_PRODUCTS = [
     "albumIds": [
       "seventeen-happy-burstday",
       "seventeen-new-tour",
-      "seventeen-carat-land-2025",
-      "seventeen-happy-burstday-pob"
+      "seventeen-carat-land-2025"
     ],
     "cards": [
       {
@@ -1261,76 +1143,6 @@ const STOCK_PRODUCTS = [
         "stockFiles": [
           "P047_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_DK_01_1앞.jpg"
         ]
-      },
-      {
-        "no": "42",
-        "member": "Jun",
-        "front": "P063_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Jun_특전_01_1앞.jpg",
-        "back": "P063_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Jun_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "seventeen-happy-burstday-pob",
-        "album": "HAPPY BURSTDAY (정규5집) 특전 – 생일 캘린더 뒷면(멤버명·생일 인쇄), 판매처 미확인",
-        "code": "P063",
-        "stockFiles": [
-          "P063_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Jun_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "43",
-        "member": "Dino",
-        "front": "P064_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Dino_특전_01_1앞.jpg",
-        "back": "P064_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Dino_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "seventeen-happy-burstday-pob",
-        "album": "HAPPY BURSTDAY (정규5집) 특전 – 생일 캘린더 뒷면(멤버명·생일 인쇄), 판매처 미확인",
-        "code": "P064",
-        "stockFiles": [
-          "P064_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Dino_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "44",
-        "member": "Mingyu",
-        "front": "P065_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Mingyu_특전_01_1앞.jpg",
-        "back": "P065_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Mingyu_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "seventeen-happy-burstday-pob",
-        "album": "HAPPY BURSTDAY (정규5집) 특전 – 생일 캘린더 뒷면(멤버명·생일 인쇄), 판매처 미확인",
-        "code": "P065",
-        "stockFiles": [
-          "P065_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Mingyu_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "45",
-        "member": "Wonwoo",
-        "front": "P066_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Wonwoo_특전_01_1앞.jpg",
-        "back": "P066_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Wonwoo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "seventeen-happy-burstday-pob",
-        "album": "HAPPY BURSTDAY (정규5집) 특전 – 생일 캘린더 뒷면(멤버명·생일 인쇄), 판매처 미확인",
-        "code": "P066",
-        "stockFiles": [
-          "P066_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Wonwoo_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "46",
-        "member": "The8",
-        "front": "P067_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_The8_특전_01_1앞.jpg",
-        "back": "P067_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_The8_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "seventeen-happy-burstday-pob",
-        "album": "HAPPY BURSTDAY (정규5집) 특전 – 생일 캘린더 뒷면(멤버명·생일 인쇄), 판매처 미확인",
-        "code": "P067",
-        "stockFiles": [
-          "P067_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_The8_특전_01_1앞.jpg"
-        ]
       }
     ]
   },
@@ -1347,9 +1159,7 @@ const STOCK_PRODUCTS = [
     "home": true,
     "albumIds": [
       "twice-this-is-for",
-      "twice-this-is-for-incheon",
-      "twice-this-is-for-incheon-pob",
-      "twice-this-is-for-withmuu-pob"
+      "twice-this-is-for-incheon"
     ],
     "cards": [
       {
@@ -1830,188 +1640,6 @@ const STOCK_PRODUCTS = [
         "stockFiles": [
           "P085_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Tzuyu_v2_01_1앞.jpg"
         ]
-      },
-      {
-        "no": "35",
-        "member": "Sana",
-        "front": "P103_TWICE_THIS_IS_FOR_INCHEON-FANS_Sana_특전_01_1앞.jpg",
-        "back": "P103_TWICE_THIS_IS_FOR_INCHEON-FANS_Sana_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P103",
-        "stockFiles": [
-          "P103_TWICE_THIS_IS_FOR_INCHEON-FANS_Sana_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "36",
-        "member": "Momo",
-        "front": "P104_TWICE_THIS_IS_FOR_INCHEON-FANS_Momo_특전_01_1앞.jpg",
-        "back": "P104_TWICE_THIS_IS_FOR_INCHEON-FANS_Momo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P104",
-        "stockFiles": [
-          "P104_TWICE_THIS_IS_FOR_INCHEON-FANS_Momo_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "37",
-        "member": "Jeongyeon",
-        "front": "P105_TWICE_THIS_IS_FOR_INCHEON-FANS_Jeongyeon_특전_01_1앞.jpg",
-        "back": "P105_TWICE_THIS_IS_FOR_INCHEON-FANS_Jeongyeon_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P105",
-        "stockFiles": [
-          "P105_TWICE_THIS_IS_FOR_INCHEON-FANS_Jeongyeon_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "38",
-        "member": "Nayeon",
-        "front": "P106_TWICE_THIS_IS_FOR_INCHEON-FANS_Nayeon_특전_01_1앞.jpg",
-        "back": "P106_TWICE_THIS_IS_FOR_INCHEON-FANS_Nayeon_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P106",
-        "stockFiles": [
-          "P106_TWICE_THIS_IS_FOR_INCHEON-FANS_Nayeon_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "39",
-        "member": "Jihyo",
-        "front": "P107_TWICE_THIS_IS_FOR_INCHEON-FANS_Jihyo_특전_01_1앞.jpg",
-        "back": "P107_TWICE_THIS_IS_FOR_INCHEON-FANS_Jihyo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P107",
-        "stockFiles": [
-          "P107_TWICE_THIS_IS_FOR_INCHEON-FANS_Jihyo_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "40",
-        "member": "Tzuyu",
-        "front": "P111_TWICE_THIS_IS_FOR_INCHEON-FANS_Tzuyu_특전_01_1앞.jpg",
-        "back": "P111_TWICE_THIS_IS_FOR_INCHEON-FANS_Tzuyu_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P111",
-        "stockFiles": [
-          "P111_TWICE_THIS_IS_FOR_INCHEON-FANS_Tzuyu_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "41",
-        "member": "Chaeyoung",
-        "front": "P112_TWICE_THIS_IS_FOR_INCHEON-FANS_Chaeyoung_특전_01_1앞.jpg",
-        "back": "P112_TWICE_THIS_IS_FOR_INCHEON-FANS_Chaeyoung_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P112",
-        "stockFiles": [
-          "P112_TWICE_THIS_IS_FOR_INCHEON-FANS_Chaeyoung_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "42",
-        "member": "Dahyun",
-        "front": "P113_TWICE_THIS_IS_FOR_INCHEON-FANS_Dahyun_특전_01_1앞.jpg",
-        "back": "P113_TWICE_THIS_IS_FOR_INCHEON-FANS_Dahyun_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P113",
-        "stockFiles": [
-          "P113_TWICE_THIS_IS_FOR_INCHEON-FANS_Dahyun_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "43",
-        "member": "Mina",
-        "front": "P114_TWICE_THIS_IS_FOR_INCHEON-FANS_Mina_특전_01_1앞.jpg",
-        "back": "P114_TWICE_THIS_IS_FOR_INCHEON-FANS_Mina_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-incheon-pob",
-        "album": "THIS IS FOR WORLD TOUR IN INCHEON 특전 (하트 포즈, 매물 표기 \"팬즈샵 특전\")",
-        "code": "P114",
-        "stockFiles": [
-          "P114_TWICE_THIS_IS_FOR_INCHEON-FANS_Mina_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "44",
-        "member": "Dahyun",
-        "front": "P102_TWICE_THIS_IS_FOR_WITHMUU-POB_Dahyun_특전_01_1앞.jpg",
-        "back": "P102_TWICE_THIS_IS_FOR_WITHMUU-POB_Dahyun_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-withmuu-pob",
-        "album": "THIS IS FOR (정규4집) 위드뮤 예판 특전 (파란 의상 셀카, 뒷면 WITH·MU·U)",
-        "code": "P102",
-        "stockFiles": [
-          "P102_TWICE_THIS_IS_FOR_WITHMUU-POB_Dahyun_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "45",
-        "member": "Sana",
-        "front": "P108_TWICE_THIS_IS_FOR_WITHMUU-POB_Sana_특전_01_1앞.jpg",
-        "back": "P108_TWICE_THIS_IS_FOR_WITHMUU-POB_Sana_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-withmuu-pob",
-        "album": "THIS IS FOR (정규4집) 위드뮤 예판 특전 (파란 의상 셀카, 뒷면 WITH·MU·U)",
-        "code": "P108",
-        "stockFiles": [
-          "P108_TWICE_THIS_IS_FOR_WITHMUU-POB_Sana_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "46",
-        "member": "Mina",
-        "front": "P109_TWICE_THIS_IS_FOR_WITHMUU-POB_Mina_특전_01_1앞.jpg",
-        "back": "P109_TWICE_THIS_IS_FOR_WITHMUU-POB_Mina_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-withmuu-pob",
-        "album": "THIS IS FOR (정규4집) 위드뮤 예판 특전 (파란 의상 셀카, 뒷면 WITH·MU·U)",
-        "code": "P109",
-        "stockFiles": [
-          "P109_TWICE_THIS_IS_FOR_WITHMUU-POB_Mina_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "47",
-        "member": "Tzuyu",
-        "front": "P110_TWICE_THIS_IS_FOR_WITHMUU-POB_Tzuyu_특전_01_1앞.jpg",
-        "back": "P110_TWICE_THIS_IS_FOR_WITHMUU-POB_Tzuyu_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "twice-this-is-for-withmuu-pob",
-        "album": "THIS IS FOR (정규4집) 위드뮤 예판 특전 (파란 의상 셀카, 뒷면 WITH·MU·U)",
-        "code": "P110",
-        "stockFiles": [
-          "P110_TWICE_THIS_IS_FOR_WITHMUU-POB_Tzuyu_특전_01_1앞.jpg"
-        ]
       }
     ]
   },
@@ -2027,10 +1655,7 @@ const STOCK_PRODUCTS = [
     "price": 8900,
     "home": true,
     "albumIds": [
-      "blackpink-deadline",
-      "blackpink-deadline-goyang-md",
-      "blackpink-deadline-pob-dress",
-      "blackpink-deadline-pob-selfie"
+      "blackpink-deadline"
     ],
     "cards": [
       {
@@ -2209,165 +1834,6 @@ const STOCK_PRODUCTS = [
         "stockFiles": [
           "P126_BLACKPINK_DEADLINE_Jisoo_v3_01_1앞.jpg"
         ]
-      },
-      {
-        "no": "13",
-        "member": "Jisoo",
-        "front": "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_01_1앞.jpg",
-        "back": "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 5,
-        "unitId": "blackpink-deadline-goyang-md",
-        "album": "DEADLINE WORLD TOUR IN GOYANG 콘서트 MD 구매 특전 (매물 표기 4만·5만원 이상 구매)",
-        "code": "P133",
-        "stockFiles": [
-          "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_01_1앞.jpg",
-          "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_02_1앞.jpg",
-          "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_03_1앞.jpg",
-          "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_04_1앞.jpg",
-          "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_05_1앞.jpg"
-        ]
-      },
-      {
-        "no": "14",
-        "member": "Lisa",
-        "front": "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_01_1앞.jpg",
-        "back": "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 5,
-        "unitId": "blackpink-deadline-goyang-md",
-        "album": "DEADLINE WORLD TOUR IN GOYANG 콘서트 MD 구매 특전 (매물 표기 4만·5만원 이상 구매)",
-        "code": "P134",
-        "stockFiles": [
-          "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_01_1앞.jpg",
-          "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_02_1앞.jpg",
-          "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_03_1앞.jpg",
-          "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_04_1앞.jpg",
-          "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_05_1앞.jpg"
-        ]
-      },
-      {
-        "no": "15",
-        "member": "Rosé",
-        "front": "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_01_1앞.jpg",
-        "back": "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 5,
-        "unitId": "blackpink-deadline-goyang-md",
-        "album": "DEADLINE WORLD TOUR IN GOYANG 콘서트 MD 구매 특전 (매물 표기 4만·5만원 이상 구매)",
-        "code": "P135",
-        "stockFiles": [
-          "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_01_1앞.jpg",
-          "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_02_1앞.jpg",
-          "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_03_1앞.jpg",
-          "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_04_1앞.jpg",
-          "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_05_1앞.jpg"
-        ]
-      },
-      {
-        "no": "16",
-        "member": "Jennie",
-        "front": "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_01_1앞.jpg",
-        "back": "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 6,
-        "unitId": "blackpink-deadline-goyang-md",
-        "album": "DEADLINE WORLD TOUR IN GOYANG 콘서트 MD 구매 특전 (매물 표기 4만·5만원 이상 구매)",
-        "code": "P136",
-        "stockFiles": [
-          "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_01_1앞.jpg",
-          "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_02_1앞.jpg",
-          "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_03_1앞.jpg",
-          "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_04_1앞.jpg",
-          "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_05_1앞.jpg"
-        ]
-      },
-      {
-        "no": "17",
-        "member": "Rosé",
-        "front": "P127_BLACKPINK_DEADLINE_UNKNOWN_Rosé_특전_01_1앞.jpg",
-        "back": "P127_BLACKPINK_DEADLINE_UNKNOWN_Rosé_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "blackpink-deadline-pob-dress",
-        "album": "DEADLINE (3rd 미니) 드레스 전신 포카 – 판매처 미확인 (YES24 특전과 같은 사진, 뒷면에 yes24 로고 없음)",
-        "code": "P127",
-        "stockFiles": [
-          "P127_BLACKPINK_DEADLINE_UNKNOWN_Rosé_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "18",
-        "member": "Lisa",
-        "front": "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_01_1앞.jpg",
-        "back": "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 3,
-        "unitId": "blackpink-deadline-pob-dress",
-        "album": "DEADLINE (3rd 미니) 드레스 전신 포카 – 판매처 미확인 (YES24 특전과 같은 사진, 뒷면에 yes24 로고 없음)",
-        "code": "P128",
-        "stockFiles": [
-          "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_01_1앞.jpg",
-          "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_02_1앞.jpg",
-          "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_03_1앞.jpg"
-        ]
-      },
-      {
-        "no": "19",
-        "member": "Jisoo",
-        "front": "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_01_1앞.jpg",
-        "back": "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 2,
-        "unitId": "blackpink-deadline-pob-dress",
-        "album": "DEADLINE (3rd 미니) 드레스 전신 포카 – 판매처 미확인 (YES24 특전과 같은 사진, 뒷면에 yes24 로고 없음)",
-        "code": "P129",
-        "stockFiles": [
-          "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_01_1앞.jpg",
-          "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_02_1앞.jpg"
-        ]
-      },
-      {
-        "no": "20",
-        "member": "Jennie",
-        "front": "P130_BLACKPINK_DEADLINE_UNKNOWN_Jennie_특전_01_1앞.jpg",
-        "back": "P130_BLACKPINK_DEADLINE_UNKNOWN_Jennie_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "blackpink-deadline-pob-dress",
-        "album": "DEADLINE (3rd 미니) 드레스 전신 포카 – 판매처 미확인 (YES24 특전과 같은 사진, 뒷면에 yes24 로고 없음)",
-        "code": "P130",
-        "stockFiles": [
-          "P130_BLACKPINK_DEADLINE_UNKNOWN_Jennie_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "21",
-        "member": "Jisoo",
-        "front": "P131_BLACKPINK_DEADLINE_WITHMUU-POB_Jisoo_특전_01_1앞.jpg",
-        "back": "P131_BLACKPINK_DEADLINE_WITHMUU-POB_Jisoo_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "blackpink-deadline-pob-selfie",
-        "album": "DEADLINE 시기 셀카 포카 – 판매처 미확인 (뒷면 스캔 없음)",
-        "code": "P131",
-        "stockFiles": [
-          "P131_BLACKPINK_DEADLINE_WITHMUU-POB_Jisoo_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "22",
-        "member": "Rosé",
-        "front": "P132_BLACKPINK_DEADLINE_WITHMUU-POB_Rosé_특전_01_1앞.jpg",
-        "back": "P132_BLACKPINK_DEADLINE_WITHMUU-POB_Rosé_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "blackpink-deadline-pob-selfie",
-        "album": "DEADLINE 시기 셀카 포카 – 판매처 미확인 (뒷면 스캔 없음)",
-        "code": "P132",
-        "stockFiles": [
-          "P132_BLACKPINK_DEADLINE_WITHMUU-POB_Rosé_특전_01_1앞.jpg"
-        ]
       }
     ]
   },
@@ -2385,8 +1851,7 @@ const STOCK_PRODUCTS = [
     "albumIds": [
       "bts-arirang-rooted-in-music",
       "bts-arirang-gyeongbokgung",
-      "bts-vt-collab",
-      "bts-arirang-soundwave-pob"
+      "bts-vt-collab"
     ],
     "cards": [
       {
@@ -2692,76 +2157,6 @@ const STOCK_PRODUCTS = [
         "code": "P142",
         "stockFiles": [
           "P142_BTS_VT_x_BTS_Jungkook_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "21",
-        "member": "Jungkook",
-        "front": "P157_BTS_ARIRANG_SOUNDWAVE-POB_Jungkook_특전_01_1앞.jpg",
-        "back": "P157_BTS_ARIRANG_SOUNDWAVE-POB_Jungkook_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "bts-arirang-soundwave-pob",
-        "album": "ARIRANG (정규5집) 사운드웨이브 예판 특전 (흑백 전신, 뒷면 SOUND WAVE 로고)",
-        "code": "P157",
-        "stockFiles": [
-          "P157_BTS_ARIRANG_SOUNDWAVE-POB_Jungkook_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "22",
-        "member": "Jin",
-        "front": "P158_BTS_ARIRANG_SOUNDWAVE-POB_Jin_특전_01_1앞.jpg",
-        "back": "P158_BTS_ARIRANG_SOUNDWAVE-POB_Jin_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "bts-arirang-soundwave-pob",
-        "album": "ARIRANG (정규5집) 사운드웨이브 예판 특전 (흑백 전신, 뒷면 SOUND WAVE 로고)",
-        "code": "P158",
-        "stockFiles": [
-          "P158_BTS_ARIRANG_SOUNDWAVE-POB_Jin_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "23",
-        "member": "V",
-        "front": "P159_BTS_ARIRANG_SOUNDWAVE-POB_V_특전_01_1앞.jpg",
-        "back": "P159_BTS_ARIRANG_SOUNDWAVE-POB_V_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "bts-arirang-soundwave-pob",
-        "album": "ARIRANG (정규5집) 사운드웨이브 예판 특전 (흑백 전신, 뒷면 SOUND WAVE 로고)",
-        "code": "P159",
-        "stockFiles": [
-          "P159_BTS_ARIRANG_SOUNDWAVE-POB_V_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "24",
-        "member": "Suga?",
-        "front": "P160_BTS_ARIRANG_SOUNDWAVE-POB_Suga(추정)_특전_01_1앞.jpg",
-        "back": "P160_BTS_ARIRANG_SOUNDWAVE-POB_Suga(추정)_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "bts-arirang-soundwave-pob",
-        "album": "ARIRANG (정규5집) 사운드웨이브 예판 특전 (흑백 전신, 뒷면 SOUND WAVE 로고)",
-        "code": "P160",
-        "stockFiles": [
-          "P160_BTS_ARIRANG_SOUNDWAVE-POB_Suga(추정)_특전_01_1앞.jpg"
-        ]
-      },
-      {
-        "no": "25",
-        "member": "RM",
-        "front": "P161_BTS_ARIRANG_SOUNDWAVE-POB_RM_특전_01_1앞.jpg",
-        "back": "P161_BTS_ARIRANG_SOUNDWAVE-POB_RM_특전_01_2뒤.jpg",
-        "rarity": "NORMAL",
-        "stock": 1,
-        "unitId": "bts-arirang-soundwave-pob",
-        "album": "ARIRANG (정규5집) 사운드웨이브 예판 특전 (흑백 전신, 뒷면 SOUND WAVE 로고)",
-        "code": "P161",
-        "stockFiles": [
-          "P161_BTS_ARIRANG_SOUNDWAVE-POB_RM_특전_01_1앞.jpg"
         ]
       }
     ]

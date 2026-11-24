@@ -1106,13 +1106,11 @@ function productTile(item, compact = false) {
     </button>`;
 }
 
-// 목록용 앨범 요약 한 줄: 대표 앨범 + "외 N" + 특전 개수. 전체 목록은 상세의 앨범별 구성이 보여준다.
+// 목록용 앨범 요약 한 줄: 대표 앨범 + "외 N". 특전은 랜덤 상품에 안 들어가므로 세지 않는다.
 function albumLine(group) {
   const units = (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).filter((unit) => unit.artistId === group.artistId);
   const albums = units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name);
-  const pobs = units.filter((unit) => unit.eventType === "pob").length;
-  const lead = albums[0] ? `${albums[0]}${albums.length > 1 ? ` 외 ${albums.length - 1}` : ""}` : "";
-  return [lead, pobs ? `특전 ${pobs}종` : ""].filter(Boolean).join(" · ");
+  return albums[0] ? `${albums[0]}${albums.length > 1 ? ` 외 ${albums.length - 1}` : ""}` : "";
 }
 
 function shelfMeta(group) {

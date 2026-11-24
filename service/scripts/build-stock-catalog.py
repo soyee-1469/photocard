@@ -212,7 +212,14 @@ def build_catalog() -> None:
     album_units = []
     referenced: set[str] = set()
     for group, meta in GROUP_META.items():
-        cards = [c for c in catalog_products if c["group"] == group]
+        # 특전(pob)은 랜덤 상품에서 뺀다(2026-11-24 결정). 나중에 별도 상품으로 더 비싸게 구성한다.
+        # 유닛 목록(ALBUM_UNITS)에는 남겨 두어 그때 그대로 쓴다.
+        group_cards = [c for c in catalog_products if c["group"] == group]
+        cards = [c for c in group_cards if c["unit"]["eventType"] != "pob"]
+        for c in group_cards:
+            unit = c["unit"]
+            if unit["eventType"] == "pob" and all(u["id"] != unit["id"] for u in album_units):
+                album_units.append({"artistId": meta["artistId"], **unit, "cardCount": 0})
         # 상세 순서: 수록 앨범 → 팬미팅/기타 → 특전. 같은 종류면 이름순, 그 안에서 제품번호순.
         type_rank = {"album": 0, "fansign": 1, "japan": 1, "unknown": 1, "pob": 2}
         cards.sort(key=lambda c: (type_rank.get(c["unit"]["eventType"], 1), c["unit"]["name"], c["code"]))
@@ -249,7 +256,7 @@ def build_catalog() -> None:
                 "artistId": meta["artistId"],
                 "artist": meta["artist"],
                 "sheets": meta["sheets"],
-                "kinds": meta["kinds"],
+                "kinds": len(pack_cards),  # 특전 제외 종수. GROUP_META 값은 참고용.
                 "price": meta["price"],
                 "groupPhoto": meta["groupPhoto"],
                 "covers": meta["covers"],
