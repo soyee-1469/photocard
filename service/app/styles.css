@@ -3003,6 +3003,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
 }
 .demo img { display: block; }
+/* 이용 가이드의 가수 사진(결제 배경, 뜯은 카드, 보유 카드)은 흐리게. 설명용이라 실물이 보일 필요가 없다. */
+.demo-bg, .demo-card img, .demo-grid img { filter: blur(7px); transform: scale(1.12); }
 .demo-btn {
   position: absolute;
   left: 16px;
