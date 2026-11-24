@@ -792,8 +792,12 @@ function lineup(count, drawable) {
   return `${base} · 지금 ${drawable}종 뽑기 가능`;
 }
 
-// 공식 라인업 대비 보유. 유닛의 officialKinds(재고표 `공식종수` 열)가 있을 때만.
+// 공식 라인업 대비 보유 표시. 데이터(재고표 `공식종수` 열 → officialKinds)는 받되 화면은 보류(2026-11-24).
+// 미보유 자리를 어떻게 보일지(빈 칸 / 실물 사진 + 품절) 정해지면 켠다.
+const SHOW_OFFICIAL_LINEUP = false;
+
 function officialNote(unit, have) {
+  if (!SHOW_OFFICIAL_LINEUP) return "";
   const official = Number(unit?.officialKinds) || 0;
   if (!official || official <= have) return "";
   return `공식 ${official}종 중 ${have}종 보유`;
@@ -801,6 +805,7 @@ function officialNote(unit, have) {
 
 // 공식 라인업에는 있지만 우리가 안 가진 카드 자리. 공식 이미지는 쓰지 않는다.
 function missingSlots(unit, have) {
+  if (!SHOW_OFFICIAL_LINEUP) return "";
   const official = Number(unit?.officialKinds) || 0;
   const missing = Math.max(0, official - have);
   return Array.from({ length: missing }, () => `
