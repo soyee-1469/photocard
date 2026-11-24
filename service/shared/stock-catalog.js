@@ -378,7 +378,7 @@ const STOCK_PRODUCTS = [
         "member": "Seonghyeon",
         "front": "P005_CORTIS_GREENGREEN_Seonghyeon_v1_01_1앞.jpg",
         "back": "P005_CORTIS_GREENGREEN_Seonghyeon_v1_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 5,
         "unitId": "cortis-greengreen",
         "album": "GREENGREEN",
@@ -489,15 +489,15 @@ const STOCK_PRODUCTS = [
       {
         "no": "10",
         "member": "Martin",
-        "front": "P012_CORTIS_GREENGREEN(추정)_Martin_01_1앞.jpg",
-        "back": "P012_CORTIS_GREENGREEN(추정)_Martin_01_2뒤.jpg",
+        "front": "P012_CORTIS_GREENGREEN_Martin_01_1앞.jpg",
+        "back": "P012_CORTIS_GREENGREEN_Martin_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "cortis-greengreen",
         "album": "GREENGREEN",
         "code": "P012",
         "stockFiles": [
-          "P012_CORTIS_GREENGREEN(추정)_Martin_01_1앞.jpg"
+          "P012_CORTIS_GREENGREEN_Martin_01_1앞.jpg"
         ]
       },
       {
@@ -585,7 +585,7 @@ const STOCK_PRODUCTS = [
         "member": "Mingyu",
         "front": "P023_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v1_01_1앞.jpg",
         "back": "P023_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v1_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
         "album": "HAPPY BURSTDAY",
@@ -810,15 +810,15 @@ const STOCK_PRODUCTS = [
       {
         "no": "18",
         "member": "Joshua",
-        "front": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_1앞.jpg",
-        "back": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_2뒤.jpg",
+        "front": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua_01_1앞.jpg",
+        "back": "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-happy-burstday",
         "album": "HAPPY BURSTDAY",
         "code": "P048",
         "stockFiles": [
-          "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_1앞.jpg"
+          "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua_01_1앞.jpg"
         ]
       },
       {
@@ -881,29 +881,29 @@ const STOCK_PRODUCTS = [
       {
         "no": "23",
         "member": "Vernon",
-        "front": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_1앞.jpg",
-        "back": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_2뒤.jpg",
+        "front": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon_01_1앞.jpg",
+        "back": "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
         "album": "WORLD TOUR [NEW]",
         "code": "P051",
         "stockFiles": [
-          "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_1앞.jpg"
+          "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon_01_1앞.jpg"
         ]
       },
       {
         "no": "24",
         "member": "Seungkwan",
-        "front": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_1앞.jpg",
-        "back": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_2뒤.jpg",
+        "front": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan_01_1앞.jpg",
+        "back": "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
         "album": "WORLD TOUR [NEW]",
         "code": "P052",
         "stockFiles": [
-          "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_1앞.jpg"
+          "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan_01_1앞.jpg"
         ]
       },
       {
@@ -993,29 +993,29 @@ const STOCK_PRODUCTS = [
       {
         "no": "31",
         "member": "S.Coups",
-        "front": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_1앞.jpg",
-        "back": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_2뒤.jpg",
+        "front": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups_01_1앞.jpg",
+        "back": "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
         "album": "WORLD TOUR [NEW]",
         "code": "P059",
         "stockFiles": [
-          "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_1앞.jpg"
+          "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups_01_1앞.jpg"
         ]
       },
       {
         "no": "32",
         "member": "Dino",
-        "front": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_1앞.jpg",
-        "back": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_2뒤.jpg",
+        "front": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino_01_1앞.jpg",
+        "back": "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino_01_2뒤.jpg",
         "rarity": "NORMAL",
         "stock": 1,
         "unitId": "seventeen-new-tour",
         "album": "WORLD TOUR [NEW]",
         "code": "P060",
         "stockFiles": [
-          "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_1앞.jpg"
+          "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino_01_1앞.jpg"
         ]
       },
       {
@@ -1051,7 +1051,7 @@ const STOCK_PRODUCTS = [
         "member": "Woozi",
         "front": "P039_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Woozi_01_1앞.jpg",
         "back": "P039_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Woozi_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1065,7 +1065,7 @@ const STOCK_PRODUCTS = [
         "member": "The8",
         "front": "P040_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_The8_01_1앞.jpg",
         "back": "P040_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_The8_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1079,7 +1079,7 @@ const STOCK_PRODUCTS = [
         "member": "Joshua",
         "front": "P041_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Joshua_01_1앞.jpg",
         "back": "P041_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Joshua_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1093,7 +1093,7 @@ const STOCK_PRODUCTS = [
         "member": "Jun",
         "front": "P042_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Jun_01_1앞.jpg",
         "back": "P042_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Jun_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1107,7 +1107,7 @@ const STOCK_PRODUCTS = [
         "member": "Hoshi",
         "front": "P043_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Hoshi_01_1앞.jpg",
         "back": "P043_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Hoshi_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1121,7 +1121,7 @@ const STOCK_PRODUCTS = [
         "member": "Wonwoo",
         "front": "P044_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Wonwoo_01_1앞.jpg",
         "back": "P044_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Wonwoo_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1135,7 +1135,7 @@ const STOCK_PRODUCTS = [
         "member": "DK",
         "front": "P047_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_DK_01_1앞.jpg",
         "back": "P047_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_DK_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 1,
         "unitId": "seventeen-carat-land-2025",
         "album": "SEVENTEEN in CARAT LAND 2025",
@@ -1939,7 +1939,7 @@ const STOCK_PRODUCTS = [
         "member": "Jin",
         "front": "P148_BTS_ARIRANG_BK_Jin_01_1앞.jpg",
         "back": "P148_BTS_ARIRANG_BK_Jin_01_2뒤.jpg",
-        "rarity": "NORMAL",
+        "rarity": "RARE",
         "stock": 3,
         "unitId": "bts-arirang-rooted-in-music",
         "album": "ARIRANG (Rooted in Music ver.)",

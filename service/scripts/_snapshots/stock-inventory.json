@@ -19,7 +19,8 @@
       "P001_CORTIS_GREENGREEN_SCRATCH-PINK_02_1앞.jpg",
       "P001_CORTIS_GREENGREEN_SCRATCH-PINK_03_1앞.jpg",
       "P001_CORTIS_GREENGREEN_SCRATCH-PINK_04_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P002",
@@ -40,7 +41,8 @@
       "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_01_1앞.jpg",
       "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_02_1앞.jpg",
       "P002_CORTIS_GREENGREEN_SCRATCH-WHITE_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P003",
@@ -62,7 +64,8 @@
       "P003_CORTIS_GREENGREEN_Martin_02_1앞.jpg",
       "P003_CORTIS_GREENGREEN_Martin_03_1앞.jpg",
       "P003_CORTIS_GREENGREEN_Martin_04_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P004",
@@ -85,7 +88,8 @@
       "P004_CORTIS_GREENGREEN_Keonho_03_1앞.jpg",
       "P004_CORTIS_GREENGREEN_Keonho_04_1앞.jpg",
       "P004_CORTIS_GREENGREEN_Keonho_05_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P005",
@@ -108,7 +112,8 @@
       "P005_CORTIS_GREENGREEN_Seonghyeon_v1_03_1앞.jpg",
       "P005_CORTIS_GREENGREEN_Seonghyeon_v1_04_1앞.jpg",
       "P005_CORTIS_GREENGREEN_Seonghyeon_v1_05_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P006",
@@ -131,7 +136,8 @@
       "P006_CORTIS_GREENGREEN_Juhoon_v1_03_1앞.jpg",
       "P006_CORTIS_GREENGREEN_Juhoon_v1_04_1앞.jpg",
       "P006_CORTIS_GREENGREEN_Juhoon_v1_05_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P007",
@@ -154,7 +160,8 @@
       "P007_CORTIS_GREENGREEN_James_v1_03_1앞.jpg",
       "P007_CORTIS_GREENGREEN_James_v1_04_1앞.jpg",
       "P007_CORTIS_GREENGREEN_James_v1_05_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P008",
@@ -173,7 +180,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P008_CORTIS_GREENGREEN_James_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P009",
@@ -192,7 +200,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P009_CORTIS_GREENGREEN_Seonghyeon_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P010",
@@ -211,7 +220,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P010_CORTIS_GREENGREEN_Seonghyeon_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P011",
@@ -233,7 +243,8 @@
       "P011_CORTIS_GREENGREEN_Group_02_1앞.jpg",
       "P011_CORTIS_GREENGREEN_Group_03_1앞.jpg",
       "P011_CORTIS_GREENGREEN_Group_04_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P012",
@@ -252,7 +263,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P012_CORTIS_GREENGREEN(추정)_Martin_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P013",
@@ -271,7 +283,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P013_CORTIS_GREENGREEN_Juhoon_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P014",
@@ -290,7 +303,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P014_CORTIS_GREENGREEN_EVERLINE-LD_Seonghyeon_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P015",
@@ -309,7 +323,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P015_CORTIS_GREENGREEN_EVERLINE-LD_Keonho_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P016",
@@ -328,7 +343,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P016_CORTIS_GREENGREEN_UNKNOWN_Seonghyeon(추정)_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P017",
@@ -348,7 +364,8 @@
     "_fronts": [
       "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_01_1앞.jpg",
       "P017_CORTIS_GREENGREEN_SOUNDWAVE-LD_Martin_특전_02_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P018",
@@ -367,7 +384,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P018_CORTIS_GREENGREEN_SOUNDWAVE-LD_Juhoon_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P019",
@@ -386,7 +404,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P019_CORTIS_GREENGREEN_SOUNDWAVE-LD_Keonho_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P020",
@@ -405,7 +424,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P020_CORTIS_GREENGREEN_SOUNDWAVE-LD_Seonghyeon_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P021",
@@ -425,7 +445,8 @@
     "_fronts": [
       "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_01_1앞.jpg",
       "P021_CORTIS_GREENGREEN_SOUNDWAVE-LD_James_특전_02_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P022",
@@ -444,7 +465,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P022_SEVENTEEN_HAPPY_BURSTDAY_Vernon_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P023",
@@ -463,7 +485,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P023_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P024",
@@ -483,7 +506,8 @@
     "_fronts": [
       "P024_SEVENTEEN_HAPPY_BURSTDAY_Woozi_v1_01_1앞.jpg",
       "P024_SEVENTEEN_HAPPY_BURSTDAY_Woozi_v1_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P025",
@@ -502,7 +526,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P025_SEVENTEEN_HAPPY_BURSTDAY_DK_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P026",
@@ -522,7 +547,8 @@
     "_fronts": [
       "P026_SEVENTEEN_HAPPY_BURSTDAY_Vernon_v2_01_1앞.jpg",
       "P026_SEVENTEEN_HAPPY_BURSTDAY_Vernon_v2_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P027",
@@ -542,7 +568,8 @@
     "_fronts": [
       "P027_SEVENTEEN_HAPPY_BURSTDAY_S.Coups_01_1앞.jpg",
       "P027_SEVENTEEN_HAPPY_BURSTDAY_S.Coups_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P028",
@@ -561,7 +588,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P028_SEVENTEEN_HAPPY_BURSTDAY_Woozi_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P029",
@@ -580,7 +608,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P029_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P030",
@@ -599,7 +628,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P030_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P031",
@@ -618,7 +648,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P031_SEVENTEEN_HAPPY_BURSTDAY_Joshua_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P032",
@@ -637,7 +668,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P032_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P033",
@@ -656,7 +688,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P033_SEVENTEEN_HAPPY_BURSTDAY_Jun_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P034",
@@ -675,7 +708,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P034_SEVENTEEN_HAPPY_BURSTDAY_Seungkwan_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P035",
@@ -694,7 +728,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P035_SEVENTEEN_HAPPY_BURSTDAY_Hoshi_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P036",
@@ -713,7 +748,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P036_SEVENTEEN_HAPPY_BURSTDAY_Wonwoo_v4_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P037",
@@ -732,7 +768,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P037_SEVENTEEN_HAPPY_BURSTDAY_Jun_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P038",
@@ -751,7 +788,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P038_SEVENTEEN_HAPPY_BURSTDAY_Seungkwan_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P039",
@@ -770,7 +808,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P039_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Woozi_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P040",
@@ -789,7 +828,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P040_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_The8_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P041",
@@ -808,7 +848,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P041_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Joshua_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P042",
@@ -827,7 +868,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P042_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Jun_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P043",
@@ -846,7 +888,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P043_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Hoshi_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P044",
@@ -865,7 +908,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P044_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_Wonwoo_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P045",
@@ -884,7 +928,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P045_SEVENTEEN_WORLD_TOUR_NEW_Mingyu_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P046",
@@ -903,7 +948,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P046_SEVENTEEN_WORLD_TOUR_NEW_DK_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P047",
@@ -922,7 +968,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P047_SEVENTEEN_SEVENTEEN_in_CARAT_LAND_2025_DK_01_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P048",
@@ -941,7 +988,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P048_SEVENTEEN_HAPPY_BURSTDAY_Joshua(추정)_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P049",
@@ -960,7 +1008,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P049_SEVENTEEN_HAPPY_BURSTDAY_Mingyu_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P050",
@@ -980,7 +1029,8 @@
     "_fronts": [
       "P050_SEVENTEEN_WORLD_TOUR_NEW_Joshua_01_1앞.jpg",
       "P050_SEVENTEEN_WORLD_TOUR_NEW_Joshua_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P051",
@@ -999,7 +1049,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P051_SEVENTEEN_WORLD_TOUR_NEW_Vernon(추정)_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P052",
@@ -1018,7 +1069,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P052_SEVENTEEN_WORLD_TOUR_NEW_Seungkwan(추정)_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P053",
@@ -1037,7 +1089,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P053_SEVENTEEN_WORLD_TOUR_NEW_S.Coups_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P054",
@@ -1056,7 +1109,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P054_SEVENTEEN_WORLD_TOUR_NEW_Vernon_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P055",
@@ -1075,7 +1129,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P055_SEVENTEEN_WORLD_TOUR_NEW_Dino_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P056",
@@ -1094,7 +1149,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P056_SEVENTEEN_WORLD_TOUR_NEW_Jun_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P057",
@@ -1113,7 +1169,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P057_SEVENTEEN_WORLD_TOUR_NEW_The8_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P058",
@@ -1132,7 +1189,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P058_SEVENTEEN_WORLD_TOUR_NEW_Mingyu_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P059",
@@ -1151,7 +1209,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P059_SEVENTEEN_WORLD_TOUR_NEW_S.Coups(추정)_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P060",
@@ -1170,7 +1229,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P060_SEVENTEEN_WORLD_TOUR_NEW_Dino(추정)_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P061",
@@ -1189,7 +1249,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P061_SEVENTEEN_WORLD_TOUR_NEW_DK_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P062",
@@ -1208,7 +1269,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P062_SEVENTEEN_WORLD_TOUR_NEW_The8_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P063",
@@ -1227,7 +1289,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P063_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Jun_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P064",
@@ -1246,7 +1309,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P064_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Dino_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P065",
@@ -1265,7 +1329,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P065_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Mingyu_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P066",
@@ -1284,7 +1349,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P066_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_Wonwoo_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P067",
@@ -1303,7 +1369,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P067_SEVENTEEN_HAPPY_BURSTDAY_UNKNOWN_The8_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P068",
@@ -1322,7 +1389,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P068_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Nayeon_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P069",
@@ -1341,7 +1409,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P069_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Jeongyeon_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P070",
@@ -1360,7 +1429,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P070_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Momo_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P071",
@@ -1379,7 +1449,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P071_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Sana_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P072",
@@ -1398,7 +1469,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P072_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Jihyo_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P073",
@@ -1417,7 +1489,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P073_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Mina_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P074",
@@ -1436,7 +1509,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P074_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Dahyun_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P075",
@@ -1455,7 +1529,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P075_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Chaeyoung_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P076",
@@ -1474,7 +1549,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P076_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Tzuyu_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P077",
@@ -1493,7 +1569,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P077_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Nayeon_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P078",
@@ -1512,7 +1589,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P078_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Jeongyeon_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P079",
@@ -1531,7 +1609,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P079_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Momo_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P080",
@@ -1550,7 +1629,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P080_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Sana_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P081",
@@ -1569,7 +1649,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P081_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Jihyo_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P082",
@@ -1588,7 +1669,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P082_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Mina_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P083",
@@ -1607,7 +1689,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P083_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Dahyun_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P084",
@@ -1626,7 +1709,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P084_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Chaeyoung_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P085",
@@ -1645,7 +1729,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P085_TWICE_THIS_IS_FOR_WORLD_TOUR_IN_INCHEON_Tzuyu_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P086",
@@ -1666,7 +1751,8 @@
       "P086_TWICE_THIS_IS_FOR_Jeongyeon_v1_01_1앞.jpg",
       "P086_TWICE_THIS_IS_FOR_Jeongyeon_v1_02_1앞.jpg",
       "P086_TWICE_THIS_IS_FOR_Jeongyeon_v1_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P087",
@@ -1685,7 +1771,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P087_TWICE_THIS_IS_FOR_Tzuyu_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P088",
@@ -1704,7 +1791,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P088_TWICE_THIS_IS_FOR_Sana_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P089",
@@ -1723,7 +1811,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P089_TWICE_THIS_IS_FOR_Jihyo_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P090",
@@ -1742,7 +1831,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P090_TWICE_THIS_IS_FOR_Chaeyoung_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P091",
@@ -1761,7 +1851,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P091_TWICE_THIS_IS_FOR_Jeongyeon_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P092",
@@ -1780,7 +1871,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P092_TWICE_THIS_IS_FOR_Tzuyu_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P093",
@@ -1799,7 +1891,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P093_TWICE_THIS_IS_FOR_Jeongyeon_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P094",
@@ -1818,7 +1911,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P094_TWICE_THIS_IS_FOR_Sana_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P095",
@@ -1837,7 +1931,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P095_TWICE_THIS_IS_FOR_Momo_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P096",
@@ -1856,7 +1951,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P096_TWICE_THIS_IS_FOR_Chaeyoung_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P097",
@@ -1876,7 +1972,8 @@
     "_fronts": [
       "P097_TWICE_THIS_IS_FOR_Dahyun_01_1앞.jpg",
       "P097_TWICE_THIS_IS_FOR_Dahyun_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P098",
@@ -1895,7 +1992,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P098_TWICE_THIS_IS_FOR_Tzuyu_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P099",
@@ -1914,7 +2012,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P099_TWICE_THIS_IS_FOR_Mina_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P100",
@@ -1933,7 +2032,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P100_TWICE_THIS_IS_FOR_Chaeyoung_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P101",
@@ -1952,7 +2052,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P101_TWICE_THIS_IS_FOR_Sana_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P102",
@@ -1971,7 +2072,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P102_TWICE_THIS_IS_FOR_WITHMUU-POB_Dahyun_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P103",
@@ -1990,7 +2092,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P103_TWICE_THIS_IS_FOR_INCHEON-FANS_Sana_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P104",
@@ -2009,7 +2112,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P104_TWICE_THIS_IS_FOR_INCHEON-FANS_Momo_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P105",
@@ -2028,7 +2132,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P105_TWICE_THIS_IS_FOR_INCHEON-FANS_Jeongyeon_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P106",
@@ -2047,7 +2152,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P106_TWICE_THIS_IS_FOR_INCHEON-FANS_Nayeon_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P107",
@@ -2066,7 +2172,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P107_TWICE_THIS_IS_FOR_INCHEON-FANS_Jihyo_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P108",
@@ -2085,7 +2192,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P108_TWICE_THIS_IS_FOR_WITHMUU-POB_Sana_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P109",
@@ -2104,7 +2212,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P109_TWICE_THIS_IS_FOR_WITHMUU-POB_Mina_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P110",
@@ -2123,7 +2232,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P110_TWICE_THIS_IS_FOR_WITHMUU-POB_Tzuyu_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P111",
@@ -2142,7 +2252,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P111_TWICE_THIS_IS_FOR_INCHEON-FANS_Tzuyu_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P112",
@@ -2161,7 +2272,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P112_TWICE_THIS_IS_FOR_INCHEON-FANS_Chaeyoung_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P113",
@@ -2180,7 +2292,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P113_TWICE_THIS_IS_FOR_INCHEON-FANS_Dahyun_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P114",
@@ -2199,7 +2312,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P114_TWICE_THIS_IS_FOR_INCHEON-FANS_Mina_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P115",
@@ -2219,7 +2333,8 @@
     "_fronts": [
       "P115_BLACKPINK_DEADLINE_Lisa_v1_01_1앞.jpg",
       "P115_BLACKPINK_DEADLINE_Lisa_v1_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P116",
@@ -2239,7 +2354,8 @@
     "_fronts": [
       "P116_BLACKPINK_DEADLINE_Lisa_v2_01_1앞.jpg",
       "P116_BLACKPINK_DEADLINE_Lisa_v2_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P117",
@@ -2259,7 +2375,8 @@
     "_fronts": [
       "P117_BLACKPINK_DEADLINE_Lisa_v3_01_1앞.jpg",
       "P117_BLACKPINK_DEADLINE_Lisa_v3_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P118",
@@ -2279,7 +2396,8 @@
     "_fronts": [
       "P118_BLACKPINK_DEADLINE_Jennie_v1_01_1앞.jpg",
       "P118_BLACKPINK_DEADLINE_Jennie_v1_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P119",
@@ -2299,7 +2417,8 @@
     "_fronts": [
       "P119_BLACKPINK_DEADLINE_Jennie_v2_01_1앞.jpg",
       "P119_BLACKPINK_DEADLINE_Jennie_v2_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P120",
@@ -2319,7 +2438,8 @@
     "_fronts": [
       "P120_BLACKPINK_DEADLINE_Jennie_v3_01_1앞.jpg",
       "P120_BLACKPINK_DEADLINE_Jennie_v3_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P121",
@@ -2339,7 +2459,8 @@
     "_fronts": [
       "P121_BLACKPINK_DEADLINE_Rosé_v1_01_1앞.jpg",
       "P121_BLACKPINK_DEADLINE_Rosé_v1_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P122",
@@ -2359,7 +2480,8 @@
     "_fronts": [
       "P122_BLACKPINK_DEADLINE_Rosé_v2_01_1앞.jpg",
       "P122_BLACKPINK_DEADLINE_Rosé_v2_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P123",
@@ -2379,7 +2501,8 @@
     "_fronts": [
       "P123_BLACKPINK_DEADLINE_Rosé_v3_01_1앞.jpg",
       "P123_BLACKPINK_DEADLINE_Rosé_v3_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P124",
@@ -2398,7 +2521,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P124_BLACKPINK_DEADLINE_Jisoo_v1_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P125",
@@ -2417,7 +2541,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P125_BLACKPINK_DEADLINE_Jisoo_v2_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P126",
@@ -2436,7 +2561,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P126_BLACKPINK_DEADLINE_Jisoo_v3_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P127",
@@ -2455,7 +2581,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P127_BLACKPINK_DEADLINE_UNKNOWN_Rosé_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P128",
@@ -2476,7 +2603,8 @@
       "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_01_1앞.jpg",
       "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_02_1앞.jpg",
       "P128_BLACKPINK_DEADLINE_UNKNOWN_Lisa_특전_03_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P129",
@@ -2496,7 +2624,8 @@
     "_fronts": [
       "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_01_1앞.jpg",
       "P129_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_02_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P130",
@@ -2515,7 +2644,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P130_BLACKPINK_DEADLINE_UNKNOWN_Jennie_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P131",
@@ -2534,7 +2664,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P131_BLACKPINK_DEADLINE_UNKNOWN_Jisoo_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P132",
@@ -2553,7 +2684,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P132_BLACKPINK_DEADLINE_UNKNOWN_Rosé_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P133",
@@ -2576,7 +2708,8 @@
       "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_03_1앞.jpg",
       "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_04_1앞.jpg",
       "P133_BLACKPINK_DEADLINE_GOYANG-MD_Jisoo_특전_05_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P134",
@@ -2599,7 +2732,8 @@
       "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_03_1앞.jpg",
       "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_04_1앞.jpg",
       "P134_BLACKPINK_DEADLINE_GOYANG-MD_Lisa_특전_05_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P135",
@@ -2622,7 +2756,8 @@
       "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_03_1앞.jpg",
       "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_04_1앞.jpg",
       "P135_BLACKPINK_DEADLINE_GOYANG-MD_Rosé_특전_05_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P136",
@@ -2646,7 +2781,8 @@
       "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_04_1앞.jpg",
       "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_05_1앞.jpg",
       "P136_BLACKPINK_DEADLINE_GOYANG-MD_Jennie_특전_06_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P137",
@@ -2665,7 +2801,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P137_BTS_VT_x_BTS_Jin_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P138",
@@ -2685,7 +2822,8 @@
     "_fronts": [
       "P138_BTS_VT_x_BTS_J-Hope_01_1앞.jpg",
       "P138_BTS_VT_x_BTS_J-Hope_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P139",
@@ -2705,7 +2843,8 @@
     "_fronts": [
       "P139_BTS_VT_x_BTS_Suga_01_1앞.jpg",
       "P139_BTS_VT_x_BTS_Suga_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P140",
@@ -2725,7 +2864,8 @@
     "_fronts": [
       "P140_BTS_VT_x_BTS_V_01_1앞.jpg",
       "P140_BTS_VT_x_BTS_V_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P141",
@@ -2745,7 +2885,8 @@
     "_fronts": [
       "P141_BTS_VT_x_BTS_Jimin_01_1앞.jpg",
       "P141_BTS_VT_x_BTS_Jimin_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P142",
@@ -2764,7 +2905,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P142_BTS_VT_x_BTS_Jungkook_01_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P143",
@@ -2785,7 +2927,8 @@
       "P143_BTS_ARIRANG_BK_Jungkook_01_1앞.jpg",
       "P143_BTS_ARIRANG_BK_Jungkook_02_1앞.jpg",
       "P143_BTS_ARIRANG_BK_Jungkook_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P144",
@@ -2806,7 +2949,8 @@
       "P144_BTS_ARIRANG_BK_V_01_1앞.jpg",
       "P144_BTS_ARIRANG_BK_V_02_1앞.jpg",
       "P144_BTS_ARIRANG_BK_V_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P145",
@@ -2827,7 +2971,8 @@
       "P145_BTS_ARIRANG_BK_Jimin_01_1앞.jpg",
       "P145_BTS_ARIRANG_BK_Jimin_02_1앞.jpg",
       "P145_BTS_ARIRANG_BK_Jimin_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P146",
@@ -2848,7 +2993,8 @@
       "P146_BTS_ARIRANG_BK_J-Hope_01_1앞.jpg",
       "P146_BTS_ARIRANG_BK_J-Hope_02_1앞.jpg",
       "P146_BTS_ARIRANG_BK_J-Hope_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P147",
@@ -2869,7 +3015,8 @@
       "P147_BTS_ARIRANG_BK_Suga_01_1앞.jpg",
       "P147_BTS_ARIRANG_BK_Suga_02_1앞.jpg",
       "P147_BTS_ARIRANG_BK_Suga_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P148",
@@ -2890,7 +3037,8 @@
       "P148_BTS_ARIRANG_BK_Jin_01_1앞.jpg",
       "P148_BTS_ARIRANG_BK_Jin_02_1앞.jpg",
       "P148_BTS_ARIRANG_BK_Jin_03_1앞.jpg"
-    ]
+    ],
+    "등급": "RARE"
   },
   {
     "제품번호": "P149",
@@ -2911,7 +3059,8 @@
       "P149_BTS_ARIRANG_BK_RM_01_1앞.jpg",
       "P149_BTS_ARIRANG_BK_RM_02_1앞.jpg",
       "P149_BTS_ARIRANG_BK_RM_03_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P150",
@@ -2931,7 +3080,8 @@
     "_fronts": [
       "P150_BTS_ARIRANG_WH_Jungkook_01_1앞.jpg",
       "P150_BTS_ARIRANG_WH_Jungkook_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P151",
@@ -2951,7 +3101,8 @@
     "_fronts": [
       "P151_BTS_ARIRANG_WH_V_01_1앞.jpg",
       "P151_BTS_ARIRANG_WH_V_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P152",
@@ -2971,7 +3122,8 @@
     "_fronts": [
       "P152_BTS_ARIRANG_WH_Jimin_01_1앞.jpg",
       "P152_BTS_ARIRANG_WH_Jimin_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P153",
@@ -2991,7 +3143,8 @@
     "_fronts": [
       "P153_BTS_ARIRANG_WH_J-Hope_01_1앞.jpg",
       "P153_BTS_ARIRANG_WH_J-Hope_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P154",
@@ -3011,7 +3164,8 @@
     "_fronts": [
       "P154_BTS_ARIRANG_WH_Suga_01_1앞.jpg",
       "P154_BTS_ARIRANG_WH_Suga_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P155",
@@ -3031,7 +3185,8 @@
     "_fronts": [
       "P155_BTS_ARIRANG_WH_Jin_01_1앞.jpg",
       "P155_BTS_ARIRANG_WH_Jin_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P156",
@@ -3051,7 +3206,8 @@
     "_fronts": [
       "P156_BTS_ARIRANG_WH_RM_01_1앞.jpg",
       "P156_BTS_ARIRANG_WH_RM_02_1앞.jpg"
-    ]
+    ],
+    "등급": "NORMAL"
   },
   {
     "제품번호": "P157",
@@ -3070,7 +3226,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P157_BTS_ARIRANG_SOUNDWAVE-POB_Jungkook_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P158",
@@ -3089,7 +3246,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P158_BTS_ARIRANG_SOUNDWAVE-POB_Jin_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P159",
@@ -3108,7 +3266,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P159_BTS_ARIRANG_SOUNDWAVE-POB_V_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P160",
@@ -3127,7 +3286,8 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P160_BTS_ARIRANG_SOUNDWAVE-POB_Suga(추정)_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   },
   {
     "제품번호": "P161",
@@ -3146,6 +3306,7 @@
     "시세 확인일": "2026-11-20",
     "_fronts": [
       "P161_BTS_ARIRANG_SOUNDWAVE-POB_RM_특전_01_1앞.jpg"
-    ]
+    ],
+    "등급": "SPECIAL"
   }
 ]

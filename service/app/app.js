@@ -1845,7 +1845,7 @@ function ownedDetail() {
             <tr><th>상품</th><td>${pack ? esc(productName(pack)) : esc(card.album)}</td></tr>
             ${member}
             <tr><th>번호</th><td>${esc(card.no)}</td></tr>
-            <tr><th>등급</th><td>${esc(card.rarity)}</td></tr>
+            <tr><th>등급</th><td>${rarityBadge(card)}</td></tr>
             <tr><th>보유 수량</th><td>${copies.length}장</td></tr>
             <tr><th>보유 번호</th><td>${esc(card.id)}</td></tr>
           </table>
@@ -2628,7 +2628,7 @@ function cardSlot(card) {
       <div class="slot pair${sold ? " is-soldout" : ""}">
         <div class="pair-imgs">${imgs}</div>
         ${sold ? `<span class="slot-sold">품절</span>` : ""}
-        <small>${esc(card.no)}${who ? ` · ${esc(who)}` : ""}</small>
+        <small>${esc(card.no)}${who ? ` · ${esc(who)}` : ""} ${rarityBadge(card)}</small>
       </div>`;
 }
 
@@ -3035,8 +3035,18 @@ function openBar(note) {
     </header>`;
 }
 
+// 등급 뱃지. NORMAL도 표시한다(회색). RARE·SPECIAL은 색으로 구분.
+function rarityBadge(card) {
+  const grade = String(card.rarity || "NORMAL").toUpperCase();
+  return `<em class="rarity r-${grade.toLowerCase()}">${esc(grade)}</em>`;
+}
+
 function cardWho(card) {
   return [card.member, card.rarity].filter(Boolean).join(" · ");
+}
+
+function cardWhoHtml(card) {
+  return `${card.member ? `${esc(card.member)} · ` : ""}${rarityBadge(card)}`;
 }
 
 function revealSlide(card, index) {
@@ -3083,7 +3093,7 @@ function result() {
         ${progress ? `<p class="result-count" data-result-progress>${progress}</p>` : ""}
         ${artistMark(item)}
         <h2 data-result-name>${esc(item.album)} ${esc(card.no)}</h2>
-        <p class="result-grade" data-result-grade>${esc(cardWho(card))}</p>
+        <p class="result-grade" data-result-grade>${cardWhoHtml(card)}</p>
         <p class="result-status">보유 카드에서 확인 가능해요</p>
         <div class="result-actions">
           <button class="primary" data-again="${count}">${many ? `${count}장 한 번 더 뽑기` : "한 번 더 뽑기"}</button>
@@ -3119,7 +3129,7 @@ function armResultCarousel() {
       state.revealIndex = index;
       const card = state.reveal[index];
       if (name) name.textContent = `${item.album} ${card.no}`;
-      if (grade) grade.textContent = cardWho(card);
+      if (grade) grade.innerHTML = cardWhoHtml(card);
       if (progress) progress.textContent = `${index + 1} / ${state.reveal.length}`;
       dots.forEach((dot, i) => dot.classList.toggle("on", i === index));
     }, 60);

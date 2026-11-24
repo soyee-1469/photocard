@@ -205,6 +205,8 @@ def build_catalog() -> None:
                 "unit": unit,
                 "group": group,
                 "member": clean_name(row.get("멤버")),
+                # 등급: 재고표 `등급` 열(NORMAL/RARE/SPECIAL). 비어 있으면 특전은 SPECIAL, 나머지는 NORMAL.
+                "rarity": (row.get("등급") or "").strip().upper() or ("SPECIAL" if unit["eventType"] == "pob" else "NORMAL"),
                 "album": clean_name(row.get("앨범/버전")),
                 "qty": qty,
                 "front": front,
@@ -246,7 +248,7 @@ def build_catalog() -> None:
                     "member": c["member"],
                     "front": c["front"],
                     "back": c["back"],
-                    "rarity": "NORMAL",
+                    "rarity": c["rarity"],
                     "stock": c["qty"],
                     "unitId": unit["id"],
                     "album": unit["name"],  # 손님에게는 유닛 표시명(재고표 원문의 밑줄·괄호 없음)

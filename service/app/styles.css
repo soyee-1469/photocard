@@ -525,7 +525,7 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   pointer-events: none;
 }
 .artist-random-copy strong {
@@ -539,12 +539,15 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   font-size: 11px;
   font-weight: 600;
   line-height: 1.3;
-  color: rgba(255, 247, 236, 0.92);
+  color: rgba(255, 247, 236, 0.78);
 }
 .artist-random-copy .artist-random-price {
-  font-size: 12px;
-  font-weight: 600;
+  margin-top: 6px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
 }
 .artist-random-mystery {
   position: absolute;
@@ -595,14 +598,20 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   line-height: 1.15;
   letter-spacing: -0.02em;
 }
-.shelf-meta,
-.shelf-price {
-  color: #d2c2ad;
+.shelf-meta {
+  color: #b8a690;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.35;
 }
-.shelf-price { color: #fff; font-weight: 600; }
+.shelf-price {
+  margin-top: 6px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
 /* 선반 널빤지: 검정, 얇게. */
 .shelf-ledge {
   position: absolute;
@@ -4013,3 +4022,19 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .flow-stage.on-shelf .flow-mystery { bottom: 24px; }
 .detail-hero.sflow-hero .flow-stage.on-shelf { height: 212px; }
 .detail-hero.sflow-hero .shelf-ledge { left: 2%; right: 2%; }
+
+/* 카드 등급 뱃지: NORMAL 회색, RARE 파랑, SPECIAL 보라. 결과·구성·보유 카드 상세에 같이 쓴다. */
+.rarity {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+  background: #2a2a2e;
+  color: #b9b9c0;
+}
+.rarity.r-rare { background: #1f3a63; color: #8fc1ff; }
+.rarity.r-special { background: #3a2160; color: #d2a8ff; }
