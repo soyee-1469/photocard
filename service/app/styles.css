@@ -1032,19 +1032,24 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   background: #111;
   border: 1px solid var(--line);
 }
-.slot.is-soldout .pair-imgs { opacity: 0.55; }
+/* 품절 카드: 흑백으로 가라앉히고 가운데에 큰 도장. 글자도 흐리게. */
+.slot.is-soldout .pair-imgs { opacity: 0.32; filter: grayscale(1); }
+.slot.is-soldout small { color: #6f6f76; }
 .slot-sold {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  left: 50%;
+  top: 42%;
   z-index: 2;
-  padding: 3px 6px;
-  border-radius: 4px;
-  background: rgba(18, 18, 20, 0.88);
-  color: #ececf0;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  transform: translate(-50%, -50%) rotate(-10deg);
+  padding: 5px 12px;
+  border: 2px solid #ff5b5b;
+  border-radius: 6px;
+  background: rgba(20, 10, 10, 0.78);
+  color: #ff7676;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 .slot.pair { position: relative; }
 .slot small {
@@ -1527,11 +1532,14 @@ button:disabled { opacity: 0.4; }
 
 .owned {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: 20px;
-  row-gap: 8px;
+  grid-template-columns: repeat(2, 1fr); /* 앞·뒷면을 같이 보여주므로 2열 */
+  column-gap: 16px;
+  row-gap: 12px;
   padding: 8px 16px 24px;
 }
+.owned .shot.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border-radius: 0; overflow: visible; }
+.owned .shot.pair .face { display: block; border-radius: 8px; overflow: hidden; background: #111; }
+.owned .shot.pair .face img { width: 100%; aspect-ratio: 55 / 85; object-fit: cover; display: block; border-radius: 0; }
 .owned > figure,
 .owned > .pick-card,
 .shelf-wrap .tile,
@@ -2739,15 +2747,23 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 구매 내역 */
 .purchase {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  grid-template-columns: 64px 1fr auto;
   gap: 12px;
   align-items: center;
   padding: 12px;
   border-radius: 16px;
   background: var(--surface);
 }
+.purchase { border: 0; background: transparent; color: inherit; text-align: left; padding: 0; width: 100%; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .purchase .thumb { display: block; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: #111; }
 .purchase .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* 받은 카드 썸네일: 카드 비율(55:85)로 세우고, 여러 장이면 살짝 겹친다 */
+.purchase .thumb.cards { position: relative; width: 56px; height: 72px; overflow: visible; background: transparent; border-radius: 0; }
+.purchase .thumb.cards i { position: absolute; left: 6px; top: 0; width: 44px; height: 68px; border-radius: 5px; overflow: hidden; background: #111; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55); }
+.purchase .thumb.cards i.c0 { z-index: 3; }
+.purchase .thumb.cards i.c1 { transform: translate(6px, 2px) rotate(7deg); z-index: 2; }
+.purchase .thumb.cards i.c2 { transform: translate(12px, 4px) rotate(14deg); z-index: 1; }
+.purchase .thumb.cards b { position: absolute; right: -10px; bottom: -4px; padding: 1px 6px; border-radius: 999px; background: #2a2a2e; color: #d6d6dc; font-size: 10px; }
 .purchase .thumb-blank { display: block; width: 100%; height: 100%; }
 .purchase p { margin: 0; }
 .purchase .purchase-when { color: var(--muted); font-size: 11px; }

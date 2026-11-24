@@ -184,6 +184,7 @@ const state = {
   walletReturn: null,
   walletCurrency: "KRW",
   ledgerFilter: "all",
+  purchaseRange: "all",
   reveal: [],
   revealIndex: 0,
   country: "",
@@ -1557,12 +1558,17 @@ function cardSourceLine(card) {
 
 // 배송 상태 표시(statusBadge)는 Ver.02라 보유 카드 격자에서 뺀다.
 // 카드 그림 공통 틀. 겉 클래스·속성·사진 위 오버레이만 다르다.
+// 보유 카드는 앞면(보호 처리)과 뒷면을 나란히 보여준다. 뒷면 파일이 없는 카드(데모)는 앞면만.
 function figureShell(card, { cls = "", attrs = `data-card="${esc(card.id)}"`, overlay = "", qty = true } = {}) {
   const badge = qty && Number(card.count) > 0 ? `<span class="qty-badge">${card.count}장</span>` : "";
+  const back = ownedBackSrc(card);
+  const faces = back
+    ? `<span class="face front">${cardShot(card)}</span><span class="face back"><img src="${esc(back)}" alt="" draggable="false" /></span>`
+    : cardShot(card);
   return `
     <figure${cls ? ` class="${cls}"` : ""} ${attrs}>
-      <div class="shot">
-        ${cardShot(card)}
+      <div class="shot${back ? " pair" : ""}">
+        ${faces}
         ${overlay}
         ${badge}
       </div>
@@ -1799,9 +1805,11 @@ function ownedCard() {
 }
 
 function ownedBackSrc(card) {
-  const pack = catalog().find((item) => item.artist === card.artist && item.album === card.album);
-  const found = pack?.cards.find((entry) => entry.no === card.no && entry.back);
-  return found ? photo(found.back) : "";
+  if (card.back) return photo(card.back);
+  const packs = catalog().filter((item) => item.artist === card.artist);
+  const exact = packs.flatMap((item) => item.cards).find((entry) => entry.no === card.no && entry.album === card.album && entry.back);
+  const loose = exact || packs.flatMap((item) => item.cards).find((entry) => entry.no === card.no && entry.back);
+  return loose ? photo(loose.back) : "";
 }
 
 function otherCards(card) {
@@ -2542,29 +2550,63 @@ function purchaseDate(value) {
 }
 
 // 구매 내역(Q22 기본값): 결제 기록을 단순 목록으로 보여 준다.
+const PURCHASE_RANGES = [["7d", "1주일"], ["1m", "1개월"], ["6m", "6개월"], ["1y", "1년"], ["all", "전체"]];
+
+function purchaseCutoff(range) {
+  const d = new Date();
+  if (range === "7d") d.setDate(d.getDate() - 7);
+  else if (range === "1m") d.setMonth(d.getMonth() - 1);
+  else if (range === "6m") d.setMonth(d.getMonth() - 6);
+  else if (range === "1y") d.setFullYear(d.getFullYear() - 1);
+  else return "";
+  return d.toISOString().slice(0, 10);
+}
+
 function purchases() {
+  const range = state.purchaseRange || "all";
+  const cutoff = purchaseCutoff(range);
+  const chips = PURCHASE_RANGES.map(([id, label]) => `<button type="button" class="${id === range ? "on" : ""}" data-purchase-range="${id}">${label}</button>`).join("");
   const orders = readOrderStore()
     .filter((order) => order.kind === "purchase")
+    .filter((order) => !cutoff || String(order.purchasedOn || "").slice(0, 10) >= cutoff)
     .sort((a, b) => String(b.purchasedOn || "").localeCompare(String(a.purchasedOn || "")));
   const rows = orders.length
     ? orders.map((order) => {
+      // 썸네일은 상품 커버가 아니라 "받은 카드". 1장이면 그 카드, 여러 장이면 3장을 겹치고 +N.
+      // 주문에 적힌 카드가 우선. 예전 주문(파일명 없음)만 보유 카드에서 같은 가수·번호를 찾아 보충한다(id는 재사용될 수 있음).
+      const ownedById = new Map(state.owned.map((card) => [card.id, card]));
+      const got = (order.cards || []).map((card) => {
+        if (card.front) return card;
+        const owned = ownedById.get(card.id);
+        return owned && owned.artist === card.artist && owned.no === card.no ? owned : card;
+      });
+      const shots = got.filter((card) => card.front).slice(0, 3);
       const item = product(order.productId);
       const cover = item?.cover ? `<img src="${esc(item.cover)}" alt="" />` : `<span class="thumb-blank"></span>`;
+      const thumb = shots.length
+        ? `<span class="thumb cards n${shots.length}">${shots.map((card, index) => `<i class="c${index}">${cardShot(card)}</i>`).join("")}${got.length > 3 ? `<b>+${got.length - 3}</b>` : ""}</span>`
+        : `<span class="thumb">${cover}</span>`;
+      const members = got.map((card) => card.member).filter(Boolean).join(", ");
+      const count = Number(order.count) || got.length;
       const price = Number.isFinite(Number(order.price)) && order.price != null ? priceBlock(order.price) : "—";
+      const target = got.length === 1 && got[0].id ? `data-card="${esc(got[0].id)}"` : `data-purchase-album="${esc(order.artist || "")}"`;
       return `
-        <article class="purchase">
-          <span class="thumb">${cover}</span>
+        <button type="button" class="purchase" ${target}>
+          ${thumb}
           <span>
             <p class="purchase-when">${esc(purchaseDate(order.purchasedOn) || "—")}</p>
             <p class="name">${esc(order.productName || order.album || "")}</p>
-            <p class="meta">${esc(order.artist || "")} · ${Number(order.count) || (order.cards || []).length}장</p>
+            <p class="meta">${count}장${members ? ` · ${esc(members)}` : ""}</p>
           </span>
           <strong>${price}</strong>
-        </article>`;
+        </button>`;
     }).join("")
-    : `<p class="empty">구매 내역이 없어요.</p>`;
+    : `<p class="empty">${cutoff ? "이 기간에는 구매 내역이 없어요." : "구매 내역이 없어요."}</p>`;
   return `
     ${topBar(`구매 내역`)}
+    <div class="album-filters">
+      <div class="artist-tabs snap">${chips}</div>
+    </div>
     <div class="scroll"><div class="list">${rows}</div></div>
   `;
 }
@@ -3262,6 +3304,8 @@ function draw(item, count) {
       album: card.album,
       no: card.no,
       member: card.member || "",
+      front: card.front || "",
+      back: card.back || "",
     })),
   });
   state.tp -= item.price * count;
@@ -5742,6 +5786,8 @@ app.addEventListener("click", (event) => {
   const postcodeClose = event.target.closest("[data-postcode-close]");
   const postcode = event.target.closest("[data-postcode]");
   const cardHit = event.target.closest("[data-card]");
+  const purchaseAlbum = event.target.closest("[data-purchase-album]");
+  const purchaseRange = event.target.closest("[data-purchase-range]");
   const walletConnect = event.target.closest("[data-wallet-connect]");
   const sheetClose = event.target.closest("[data-sheet-close]");
   const walletBackdrop = event.target.classList.contains("modal-bg");
@@ -6189,6 +6235,15 @@ app.addEventListener("click", (event) => {
   } else if (postcode) {
     state.postcodeOpen = true;
     state.postcodeError = false;
+  } else if (purchaseRange) {
+    state.purchaseRange = purchaseRange.dataset.purchaseRange;
+  } else if (purchaseAlbum) {
+    // 여러 장 산 내역은 보유 카드 화면을 그 가수로 걸러서 연다.
+    state.albumArtist = purchaseAlbum.dataset.purchaseAlbum || "all";
+    state.picked = [];
+    state.tab = "album";
+    state.screen = "album";
+    state.focusStatus = null;
   } else if (cardHit) {
     if (state.screen !== "card") {
       state.cardFrom = state.screen === "ship" ? "ship" : state.screen === "track" ? "track" : "album";
