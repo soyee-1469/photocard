@@ -683,29 +683,10 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
   height: 82px;
   transform: perspective(600px) rotateY(-6deg);
   transform-origin: left bottom;
-  filter: drop-shadow(2px 5px 8px rgba(0, 0, 0, 0.48));
+  transform-style: preserve-3d;
+  --edge: 5px;
 }
-.shelf-box::before {
-  content: "";
-  position: absolute;
-  left: -4px;
-  top: 3px;
-  bottom: 3px;
-  width: 4px;
-  border-radius: 1px 0 0 1px;
-  background: linear-gradient(180deg, #cfc7ba 0%, #8f8678 55%, #5d564c 100%);
-  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.25);
-}
-.shelf-box img {
-  display: block;
-  height: 100%;
-  width: auto;
-  max-width: 58px;
-  object-fit: contain;
-  object-position: bottom center;
-  border-radius: 2px;
-  background: #111;
-}
+.shelf-box img { max-width: 58px; }
 .shelf-mystery {
   position: absolute;
   right: 0;
@@ -3987,32 +3968,11 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   height: 118px;
   scroll-snap-align: center;
   transform-origin: center bottom;
-  filter: drop-shadow(2px 6px 9px rgba(0, 0, 0, 0.5));
+  transform-style: preserve-3d;
   will-change: transform;
+  --edge: 7px;
 }
-.flow-item::before {
-  content: "";
-  position: absolute;
-  left: -4px;
-  top: 3px;
-  bottom: 3px;
-  width: 4px;
-  border-radius: 1px 0 0 1px;
-  background: linear-gradient(180deg, #cfc7ba 0%, #8f8678 55%, #5d564c 100%);
-}
-.flow-item img {
-  display: block;
-  height: 100%;
-  width: auto;
-  max-width: 160px;
-  object-fit: contain;
-  object-position: bottom center;
-  border-radius: 3px;
-  background: #111;
-  pointer-events: none;
-  user-select: none;
-  -webkit-user-drag: none;
-}
+.flow-item img { max-width: 160px; }
 .flow-ledge {
   position: absolute;
   left: 0;
@@ -4055,3 +4015,47 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 }
 .flow-copy > * { display: inline; margin: 0; }
 .flow-copy .shelf-price { margin-left: auto; }
+
+/* 두께 있는 커버 상자. 선반형·커버플로우·상세 히어로가 같이 쓴다.
+   옆면은 좌우 둘 다 두고 backface-visibility로 카메라를 향한 쪽만 보인다.
+   부모에 filter를 걸면 3D가 평면화되므로 그림자·어둡기는 img와 옆면에만 건다. */
+.cover3d {
+  position: relative;
+  display: block;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.cover3d img {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  border-radius: 2px;
+  background: #111;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: brightness(var(--dim, 1)) drop-shadow(2px 6px 9px rgba(0, 0, 0, 0.5));
+}
+.cover-edge {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  width: var(--edge, 6px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 30%, rgba(0, 0, 0, 0.25)),
+    linear-gradient(90deg, #efe9df 0%, #cfc7ba 40%, #8f8678 100%);
+  backface-visibility: hidden;
+  filter: brightness(var(--dim, 1));
+}
+.cover-edge.l {
+  left: 0;
+  transform-origin: left center;
+  transform: rotateY(90deg);
+}
+.cover-edge.r {
+  right: 0;
+  transform-origin: right center;
+  transform: rotateY(-90deg);
+}

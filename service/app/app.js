@@ -1114,8 +1114,13 @@ function wonText(amount) {
   return `${Number(amount || 0).toLocaleString("ko-KR")}원`;
 }
 
+// 커버 한 장을 두께 있는 상자로. 앞면 이미지 + 좌우 옆면(회전하면 카메라를 향한 쪽만 보인다).
+function coverBox(src) {
+  return `<span class="cover3d"><img src="${src}" alt="" draggable="false" /><i class="cover-edge l"></i><i class="cover-edge r"></i></span>`;
+}
+
 function shelfBox(src, kind) {
-  return `<span class="shelf-box shelf-box-${kind}"><img src="${src}" alt="" /></span>`;
+  return `<span class="shelf-box shelf-box-${kind}">${coverBox(src)}</span>`;
 }
 
 function shelfStage(group) {
@@ -1181,12 +1186,13 @@ function homeShelfRows(query) {
 // 가로 스크롤 스냅이 드래그·관성·정지를 맡고, 스크롤 위치로 기울기·크기·밝기만 계산한다.
 // 커버는 높이 고정·폭은 원본 비율. 가로로 긴 앨범도 세로로 긴 앨범도 바닥을 맞춰 선다.
 const FLOW_SPACING = 104; // 한 칸 기준 거리(px). 기울기 계산 단위.
+const FLOW_BASE_TILT = -8; // 가운데 앨범도 살짝 돌려 옆면(두께)이 보이게 한다.
 const FLOW_MAX_COVERS = 5;
 
 function flowStage(group) {
   const covers = (group.covers || []).slice(0, FLOW_MAX_COVERS);
   const items = covers
-    .map((src) => `<span class="flow-item"><img src="${src}" alt="" draggable="false" /></span>`)
+    .map((src) => `<span class="flow-item">${coverBox(src)}</span>`)
     .join("");
   const single = covers.length < 2 ? " is-single" : "";
   return `
@@ -1216,11 +1222,12 @@ function paintFlow(scroller) {
     const d = Math.max(-2.5, Math.min(2.5, (mid - center) / FLOW_SPACING));
     const t = Math.min(1, Math.abs(d));
     const sign = d < 0 ? -1 : 1;
-    const rot = -sign * t * 48;
+    const rot = FLOW_BASE_TILT - sign * t * 48;
     const shift = -d * 30;
     const scale = 1 - t * 0.18;
     item.style.transform = `translateX(${shift}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
-    item.style.filter = `brightness(${(1 - t * 0.42).toFixed(3)})`;
+    // filter는 요소를 평면화해 3D 옆면을 없애므로, 어둡기는 변수로 넘겨 자식(img·옆면)에만 건다.
+    item.style.setProperty("--dim", (1 - t * 0.42).toFixed(3));
     item.style.zIndex = String(10 - Math.round(Math.abs(d) * 2));
   });
 }
