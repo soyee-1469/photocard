@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>포토카드 스캔 정리</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <h1>포토카드 스캔 정리</h1>
+    <nav class="tabs">
+      <button class="tab is-on" data-tab="scan">스캔 정리 <span id="scan-count" class="badge"></span></button>
+      <button class="tab" data-tab="stock">재고 <span id="stock-count" class="badge"></span></button>
+    </nav>
+    <div id="status" class="status"></div>
+  </header>
+
+  <main id="scan" class="page is-on">
+    <section class="bar">
+      <label class="folder">스캐너 저장 폴더 <input id="folder" type="text" /></label>
+      <button id="pick" class="btn">폴더 선택</button>
+      <button id="refresh" class="btn primary">새로고침</button>
+      <button id="open-folder" class="btn ghost">Finder에서 열기</button>
+    </section>
+    <section id="pairs"></section>
+    <section id="unpaired-wrap" class="block">
+      <h2>짝이 없는 스캔 <span id="unpaired-count" class="badge"></span></h2>
+      <p class="hint">앞면 하나와 뒷면 하나를 고른 뒤 「짝 확정」을 누르면 위 목록으로 올라갑니다. 누락된 면이 있으면 등록되지 않고 원본은 그대로 남습니다.</p>
+      <div id="unpaired" class="grid"></div>
+      <div class="row">
+        <button id="pair-btn" class="btn primary" disabled>짝 확정</button>
+        <span id="pair-pick" class="muted"></span>
+      </div>
+    </section>
+    <details id="done-wrap" class="block">
+      <summary>등록 완료한 스캔 <span id="done-count" class="badge"></span></summary>
+      <div id="done" class="grid small"></div>
+    </details>
+  </main>
+
+  <main id="stock" class="page">
+    <section class="bar">
+      <input id="stock-search" type="search" placeholder="가수, 앨범, 멤버, 관리코드 검색" />
+      <button id="export" class="btn primary">관리자 포맷으로 내보내기</button>
+      <button id="open-data" class="btn ghost">저장 폴더 열기</button>
+    </section>
+    <div id="stock-summary" class="summary"></div>
+    <section id="stock-list"></section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
