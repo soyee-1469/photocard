@@ -1126,8 +1126,9 @@ function shelfMeta(group) {
   return `${group.kinds}종 랜덤`;
 }
 
+// 목록 가격은 결제 단위인 TP로만 적는다(TP는 원화 1:1). 원화·달러 환산은 상세의 가격 블록에만.
 function wonText(amount) {
-  return `${Number(amount || 0).toLocaleString("ko-KR")}원`;
+  return `${Number(amount || 0).toLocaleString("ko-KR")} TP`;
 }
 
 // 커버 한 장을 두께 있는 상자로. 앞면 이미지 + 좌우 옆면(회전하면 카메라를 향한 쪽만 보인다).
