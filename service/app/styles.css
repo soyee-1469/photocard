@@ -3994,13 +3994,14 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.55));
   pointer-events: none;
 }
+/* 커버플로우 아래 글줄: 선반형과 같은 세로 쌓기(이름·구성·장수·가격) */
 .flow-copy {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
+  flex-direction: column;
+  gap: 2px;
   width: 100%;
   margin: 6px 0 0;
-  padding: 0;
+  padding: 0 2px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -4008,8 +4009,6 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.flow-copy > * { display: inline; margin: 0; }
-.flow-copy .shelf-price { margin-left: auto; }
 
 /* 두께 있는 커버 상자. 선반형·커버플로우·상세 히어로가 같이 쓴다.
    옆면은 좌우 둘 다 두고 backface-visibility로 카메라를 향한 쪽만 보인다.
