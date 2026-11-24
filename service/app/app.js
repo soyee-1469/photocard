@@ -1216,7 +1216,7 @@ function flowStage(group) {
   const items = covers.map((src) => `<span class="flow-item">${coverBox(src)}</span>`).join("");
   const single = covers.length < 2 ? " is-single" : "";
   return `
-    <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="album">
+    <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="flow">
       <span class="flow-scene" data-flow>${items}</span>
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
@@ -1226,7 +1226,7 @@ function flowStage(group) {
 function flowRow(group) {
   return `
     <div class="flow-row">
-      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="flow">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${group.kinds}종 랜덤</span>
         <span class="shelf-price">${wonText(group.price)}</span>
@@ -1248,7 +1248,7 @@ function ringStage(group) {
   const covers = displayCovers(group, 3);
   const items = covers.map((src) => `<span class="ring-item">${coverBox(src)}</span>`).join("");
   return `
-    <span class="ring-stage" data-open="${esc(group.id)}" data-hero="album">
+    <span class="ring-stage" data-open="${esc(group.id)}" data-hero="ring">
       <span class="ring-scene" data-ring>${items}</span>
       <img class="flow-mystery ring-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
@@ -1257,7 +1257,7 @@ function ringStage(group) {
 function ringRow(group) {
   return `
     <div class="flow-row ring-row">
-      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="ring">
         <strong class="shelf-artist">${esc(group.artist)}</strong>
         <span class="shelf-meta">${shelfMeta(group)}</span>
         <span class="shelf-price">${wonText(group.price)}</span>
@@ -2788,6 +2788,11 @@ function detail(item) {
       </div>`;
   } else if (state.detailHero === "album" && group) {
     hero = `<div class="detail-hero album-hero">${shelfStage(group)}</div>`;
+  } else if (state.detailHero === "flow" && group) {
+    // 진입한 목록과 같은 모양으로 이어진다(캐러셀 → 캐러셀, 회전 → 회전).
+    hero = `<div class="detail-hero flow-hero">${flowStage(group)}</div>`;
+  } else if (state.detailHero === "ring" && group) {
+    hero = `<div class="detail-hero ring-hero">${ringStage(group)}</div>`;
   }
   return `
     <header class="bar">
@@ -6195,9 +6200,7 @@ app.addEventListener("click", (event) => {
     }
     state.productId = open.dataset.open;
     state.productFrom = state.screen;
-    state.detailHero = open.dataset.hero === "artist" || open.dataset.hero === "album"
-      ? open.dataset.hero
-      : "";
+    state.detailHero = ["artist", "album", "flow", "ring"].includes(open.dataset.hero) ? open.dataset.hero : "";
     state.screen = "detail";
     state.tab = "home";
     state.sheet = null;
