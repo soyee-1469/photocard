@@ -1372,12 +1372,24 @@ function repaintOnLoad(scene, paint) {
   });
 }
 
+// 1·2장도 무한 순환이다. 같은 장이 동시에 두 번 보이지 않도록, 왼쪽으로 사라지는 구간과
+// 오른쪽에서 나타나는 구간을 투명하게 해 교대시킨다(1장: [-0.5, 0.5), 2장: [-0.5, 1.5)).
 function flowSlot(index, pos, count) {
-  if (count < 2) return 0;                 // 1장: 항상 정면
-  if (count === 2) return index - pos;     // 2장: 순환 없이 둘이 자리만 바꾼다(pos는 0~1)
-  const lo = -1.5;
+  const lo = count >= 3 ? -1.5 : -0.5;
   const d = index - pos;
   return ((((d - lo) % count) + count) % count) + lo;
+}
+
+function flowFade(d, count) {
+  if (count >= 3) {
+    if (d < -1) return Math.max(0, 1 - (-d - 1) * 2);
+    if (d > 2.2) return Math.max(0, 1 - (d - 2.2) * 2);
+    return 1;
+  }
+  if (d < 0) return Math.max(0, 1 - (-d) / 0.5);          // 왼쪽으로 나가며 사라진다
+  if (count === 1) return Math.max(0, 1 - d / 0.5);        // 오른쪽에서 들어오며 나타난다
+  if (d > 1.2) return Math.max(0, 1 - (d - 1.2) / 0.3);    // 2장: 오른쪽 끝에서 들어온다
+  return 1;
 }
 
 function paintFlow(scene, pos) {
@@ -1397,7 +1409,7 @@ function paintFlow(scene, pos) {
     const rot = FLOW_BASE_TILT - sign * t * 48;
     const x = d * spacing;
     const scale = 1 - t * 0.18;
-    const fade = d < -1 ? Math.max(0, 1 - (-d - 1) * 2) : d > 2.2 ? Math.max(0, 1 - (d - 2.2) * 2) : 1;
+    const fade = flowFade(d, count);
     item.style.transform = `translateX(${x}px) perspective(520px) rotateY(${rot}deg) scale(${scale})`;
     item.style.opacity = String(fade);
     item.style.setProperty("--dim", (1 - t * 0.42).toFixed(3));
@@ -1418,7 +1430,6 @@ function armCoverflows() {
     let velocity = 0;
     paintFlow(scene, pos);
     repaintOnLoad(scene, () => paintFlow(scene, pos));
-    if (count < 2) return;
     scene.addEventListener("pointerdown", (event) => {
       down = true;
       startX = lastX = event.clientX;
@@ -1437,7 +1448,6 @@ function armCoverflows() {
       lastX = event.clientX;
       lastT = now;
       pos = startPos - dx / FLOW_SPACING;
-      if (count === 2) pos = Math.max(-0.25, Math.min(1.25, pos)); // 2장은 끝에서 살짝만 더 가고 멈춘다
       paintFlow(scene, pos);
     });
     const release = () => {
@@ -1446,7 +1456,7 @@ function armCoverflows() {
       // 빠르게 튕기면 한 칸 더 넘긴다(관성 대용).
       const fling = Math.abs(velocity) > 0.45 ? (velocity < 0 ? 1 : -1) : 0;
       pos = Math.round(pos + fling);
-      pos = count === 2 ? Math.max(0, Math.min(1, pos)) : ((pos % count) + count) % count;
+      pos = ((pos % count) + count) % count;
       scene.classList.add("is-snapping");
       paintFlow(scene, pos);
       setTimeout(() => { delete stage.dataset.drag; }, 160);
