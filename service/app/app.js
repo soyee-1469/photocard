@@ -3587,15 +3587,23 @@ function armDeck() {
   // 자리에 서면 펼침 화면(cardSpread)이 같은 자리에서 포장을 터뜨리고 카드를 뒤집는다.
   const spreadFromDeck = () => {
     deck.classList.add("is-picked", "is-spread");
-    // 이미 연 카드는 2-1-2의 앞자리로, 남은 포장은 그 뒤 자리로 간다.
+    // 이미 연 카드는 2-1-2의 앞자리로, 남은 장수만큼의 포장은 그 뒤 자리로 간다.
+    // 10개 원형 배치면 필요한 수만 무작위로 고르고 나머지 포장은 사라진다. 찢기 연출은 거치지 않는다.
     const done = Math.min(state.revealIndex, count);
     takenCards.forEach((card, index) => {
       const spot = SPREAD_GRID[Math.min(index, done - 1)] || SPREAD_GRID[0];
       card.style.setProperty("--sx", `${spot.x}px`);
       card.style.setProperty("--sy", `${spot.y}px`);
     });
-    cards.forEach((card, index) => {
-      const spot = SPREAD_GRID[done + index] || SPREAD_GRID[SPREAD_GRID.length - 1];
+    const need = Math.max(0, Math.min(count - done, SPREAD_GRID.length - done));
+    const picked = cards.slice().sort(() => Math.random() - 0.5).slice(0, need);
+    cards.forEach((card) => {
+      const order = picked.indexOf(card);
+      if (order < 0) {
+        card.classList.add("is-gone");
+        return;
+      }
+      const spot = SPREAD_GRID[done + order];
       card.style.setProperty("--sx", `${spot.x}px`);
       card.style.setProperty("--sy", `${spot.y}px`);
     });
@@ -3618,7 +3626,7 @@ function armDeck() {
     if (direct) {
       event.stopPropagation();
       if (!deck.classList.contains("is-fan") || deck.classList.contains("is-picked")) return;
-      if (multi && cards.length + takenCards.length === SPREAD_GRID.length) {
+      if (multi) {
         spreadFromDeck();
         return;
       }
