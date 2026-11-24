@@ -1106,6 +1106,14 @@ function productTile(item, compact = false) {
     </button>`;
 }
 
+// 이 가수 랜덤에 묶인 앨범들. 수록 앨범 이름을 나열하고 특전은 개수만.
+function albumLine(group) {
+  const units = (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).filter((unit) => unit.artistId === group.artistId);
+  const albums = units.filter((unit) => unit.eventType !== "pob").map((unit) => unit.name);
+  const pobs = units.filter((unit) => unit.eventType === "pob").length;
+  return [...albums, pobs ? `특전 ${pobs}종` : ""].filter(Boolean).join(" · ");
+}
+
 function shelfMeta(group) {
   return `${group.sheets}장 · ${group.kinds}종 랜덤`;
 }
@@ -1152,14 +1160,14 @@ function shelfRow(group) {
 }
 
 function artistRandomTile(group) {
-  const crop = group.artistId === "blackpink" ? " crop-faces" : "";
-  return `
-    <button type="button" class="artist-random-tile${crop}" data-open="${esc(group.id)}" data-hero="artist">
+    return `
+    <button type="button" class="artist-random-tile" data-open="${esc(group.id)}" data-hero="artist">
       <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
       <span class="artist-random-fade" aria-hidden="true"></span>
       <span class="artist-random-copy">
         <strong>${esc(group.artist)}</strong>
         <span>${shelfMeta(group)}</span>
+        <span class="artist-random-albums">${esc(albumLine(group))}</span>
         <span class="artist-random-price">${wonText(group.price)}</span>
       </span>
       <img class="artist-random-mystery" src="${CARD_FRONT_FX}" alt="" />
@@ -1198,7 +1206,6 @@ function flowStage(group) {
   return `
     <span class="flow-stage${single}" data-open="${esc(group.id)}" data-hero="album">
       <span class="flow-scroll" data-flow><span class="flow-track">${items}</span></span>
-      <span class="flow-ledge" aria-hidden="true"></span>
       <img class="flow-mystery" src="${CARD_FRONT_FX}" alt="" />
     </span>`;
 }
@@ -2665,9 +2672,8 @@ function detail(item) {
   const group = shelfGroupOf(item.id);
   let hero = `<img class="cover" src="${item.cover}" alt="" />`;
   if (state.detailHero === "artist" && group?.groupPhoto) {
-    const crop = group.artistId === "blackpink" ? " crop-faces" : "";
-    hero = `
-      <div class="detail-hero artist-hero${crop}">
+        hero = `
+      <div class="detail-hero artist-hero">
         <img class="artist-random-photo" src="${esc(group.groupPhoto)}" alt="" />
         <span class="artist-random-fade" aria-hidden="true"></span>
       </div>`;
