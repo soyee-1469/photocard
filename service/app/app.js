@@ -1344,10 +1344,22 @@ function paintFlow(scroller) {
 function armCoverflows() {
   document.querySelectorAll("[data-flow]").forEach((scroller) => {
     // 처음엔 가운데 앨범을 정면에 둔다(3장이면 1-2-1). 양옆이 보여야 "더 있다"는 신호가 된다.
+    // 커버 폭은 이미지가 로드돼야 정해지므로, 사용자가 만지기 전까지는 로드될 때마다 다시 맞춘다.
     const items = scroller.querySelectorAll(".flow-item");
-    const first = items[Math.floor((items.length - 1) / 2)];
-    if (first) scroller.scrollLeft = first.offsetLeft + first.offsetWidth / 2 - scroller.clientWidth / 2;
-    paintFlow(scroller);
+    const middle = items[Math.floor((items.length - 1) / 2)];
+    let touched = false;
+    const recenter = () => {
+      if (touched || !middle) return;
+      scroller.scrollLeft = middle.offsetLeft + middle.offsetWidth / 2 - scroller.clientWidth / 2;
+      paintFlow(scroller);
+    };
+    recenter();
+    scroller.querySelectorAll("img").forEach((img) => {
+      if (!img.complete) img.addEventListener("load", recenter, { once: true });
+    });
+    ["pointerdown", "touchstart", "wheel"].forEach((type) =>
+      scroller.addEventListener(type, () => { touched = true; }, { passive: true }),
+    );
     let raf = 0;
     let settle = 0;
     const markDrag = () => {
