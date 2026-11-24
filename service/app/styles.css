@@ -4004,10 +4004,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 /* 물음표 카드는 캐러셀 시작 지점(첫 앨범 왼쪽 아래)에 걸쳐 둔다. */
 .flow-mystery {
   position: absolute;
-  left: 21%;
+  left: 19%;
   bottom: 8px;
   z-index: 3;
-  height: 64px;
+  height: 77px;
   width: auto;
   aspect-ratio: 55 / 85;
   object-fit: contain;
