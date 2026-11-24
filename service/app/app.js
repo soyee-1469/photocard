@@ -1270,13 +1270,13 @@ function homeRingRows(query) {
   return homeShelfGroups(query).map(ringRow).join("");
 }
 
-// 앨범 사이 각도: 현(chord)이 가장 넓은 커버의 85% 이상이 되게. 가로형 커버가 있으면 벌어진다.
+// 앨범 사이 각도: 이웃 앨범의 현(chord)이 가장 넓은 커버 폭 + 여유보다 커지게. 가로형 커버면 더 벌어진다.
 function ringStep(scene) {
   const widest = widestItem(scene, ".cover3d img");
   if (!widest) return RING_STEP;
-  const chord = Math.min(2 * RING_RADIUS * 0.95, widest * 0.85);
+  const chord = Math.min(2 * RING_RADIUS * 0.98, widest + 10);
   const step = (2 * Math.asin(chord / (2 * RING_RADIUS)) * 180) / Math.PI;
-  return Math.max(RING_STEP, Math.min(80, Math.round(step)));
+  return Math.max(RING_STEP, Math.min(88, Math.round(step)));
 }
 
 function paintRing(scene, rot) {
@@ -1339,7 +1339,8 @@ function armRings() {
 // 무대 안 가장 넓은 커버 폭. 이미지 로드 전엔 0이라 기본 간격을 쓴다.
 function widestItem(scene, selector) {
   let width = 0;
-  scene.querySelectorAll(selector).forEach((item) => { width = Math.max(width, item.getBoundingClientRect().width); });
+  // offsetWidth는 3D 회전 전의 실제 폭. getBoundingClientRect는 기울어진 투영 폭이라 작게 나온다.
+  scene.querySelectorAll(selector).forEach((item) => { width = Math.max(width, item.offsetWidth); });
   return width;
 }
 
