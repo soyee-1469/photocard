@@ -1358,6 +1358,7 @@ button:disabled { opacity: 0.4; }
 .sheet-bg {
   position: absolute;
   inset: 0;
+  z-index: 5; /* 히어로의 3D 무대(z-index 1)보다 위. 모달(6)보다는 아래 */
   background: rgba(0, 0, 0, 0.62);
   display: flex;
   align-items: flex-end;
