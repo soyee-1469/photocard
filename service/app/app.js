@@ -102,245 +102,10 @@ function statusGlyph(status) {
   return "";
 }
 
-function shelfCard(no, member, front, back, stock) {
-  return {
-    no: String(no).padStart(2, "0"),
-    member,
-    front,
-    back,
-    rarity: "NORMAL",
-    stock,
-  };
-}
+const PRODUCTS = typeof STOCK_PRODUCTS !== "undefined" ? STOCK_PRODUCTS : [];
+// 가이드 미리보기·관리자 데모가 쓰는 대표 상품(예전 데모 id 대체).
+const DEMO_PRODUCT_ID = PRODUCTS[0]?.id || "cortis-random";
 
-const PRODUCTS = [
-  {
-    id: "blackpink-jump",
-    artist: "BLACKPINK",
-    artistId: "blackpink",
-    album: "JUMP",
-    eventType: "album",
-    eventName: "",
-    cover: "/assets/covers/jump.jpg",
-    price: 2500,
-    home: true,
-    banner: true,
-    cards: [
-      { no: "01", front: "67.jpg", back: "68.jpg", member: "리사", rarity: "NORMAL" },
-      { no: "02", front: "69.jpg", back: "68.jpg", member: "로제", rarity: "NORMAL" },
-      { no: "03", front: "71.jpg", back: "68.jpg", member: "제니", rarity: "NORMAL" },
-      { no: "04", front: "73.jpg", back: "68.jpg", member: "지수", rarity: "NORMAL" },
-      { no: "05", front: "75.jpg", back: "68.jpg", member: "단체", rarity: "NORMAL" },
-    ],
-  },
-  {
-    id: "lesserafim-crazy",
-    artist: "LE SSERAFIM",
-    artistId: "lesserafim",
-    album: "CRAZY",
-    eventType: "album",
-    eventName: "",
-    cover: "/assets/covers/crazy.jpg",
-    price: 2500,
-    home: true,
-    sale: "out",
-    cards: [1, 2, 3, 4, 5].map((no) => ({
-      no: String(no).padStart(2, "0"),
-      front: `0${no}.jpg`,
-      back: "06.jpg",
-      member: "",
-      rarity: "NORMAL",
-    })),
-  },
-  {
-    id: "lesserafim-easy",
-    artist: "LE SSERAFIM",
-    artistId: "lesserafim",
-    album: "EASY",
-    eventType: "album",
-    eventName: "",
-    cover: "/assets/covers/easy.jpg",
-    price: 2500,
-    home: true,
-    sale: "soon",
-    cards: [
-      { no: "01", front: "10.jpg", back: "11.jpg", member: "", rarity: "NORMAL" },
-      { no: "02", front: "12.jpg", back: "11.jpg", member: "", rarity: "NORMAL" },
-      { no: "03", front: "14.jpg", back: "11.jpg", member: "", rarity: "NORMAL" },
-      { no: "04", front: "16.jpg", back: "11.jpg", member: "", rarity: "NORMAL" },
-      { no: "05", front: "18.jpg", back: "11.jpg", member: "", rarity: "NORMAL" },
-    ],
-  },
-  {
-    id: "ive-empathy-makestar",
-    artist: "IVE",
-    artistId: "ive",
-    album: "IVE EMPATHY",
-    eventType: "pob",
-    eventName: "MAKESTAR",
-    cover: "/assets/covers/ive-empathy.jpg",
-    price: 2500,
-    home: true,
-    cards: [20, 22, 24, 26, 28].map((front, index) => ({
-      no: String(index + 1).padStart(2, "0"),
-      front: `${front}.jpg`,
-      back: "19.jpg",
-      member: "",
-      rarity: "NORMAL",
-    })),
-  },
-  {
-    id: "rose-rosie-jp",
-    artist: "로제",
-    artistId: "rose",
-    album: "rosie",
-    eventType: "japan",
-    eventName: "WPCR-18718",
-    cover: "/assets/covers/rosie.jpg",
-    price: 2500,
-    home: true,
-    cards: [59, 61, 63, 65].map((front, index) => ({
-      no: String(index + 1).padStart(2, "0"),
-      front: `${front}.jpg`,
-      back: `${front + 1}.jpg`,
-      member: "로제",
-      rarity: "NORMAL",
-    })),
-  },
-  // 홈 NEW 5그룹 랜덤팩. 데모 상품은 유지하고 목록에서만 제외한다.
-  {
-    id: "cortis-random",
-    artist: "CORTIS",
-    artistId: "cortis",
-    album: "GREENGREEN",
-    displayName: "CORTIS Photocard",
-    eventType: "album",
-    cover: "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg",
-    price: 3500,
-    home: true,
-    cards: [
-      shelfCard(1, "Seonghyeon", "01.jpg", "06.jpg", 8),
-      shelfCard(2, "Keonho", "02.jpg", "06.jpg", 7),
-      shelfCard(3, "Martin", "03.jpg", "06.jpg", 0),
-      shelfCard(4, "James", "04.jpg", "06.jpg", 0),
-      shelfCard(5, "Juhoon", "05.jpg", "06.jpg", 0),
-      shelfCard(6, "Martin", "07.jpg", "06.jpg", 6),
-      shelfCard(7, "James", "08.jpg", "06.jpg", 5),
-      shelfCard(8, "Juhoon", "09.jpg", "06.jpg", 4),
-      shelfCard(9, "Seonghyeon", "10.jpg", "11.jpg", 0),
-      shelfCard(10, "Keonho", "12.jpg", "11.jpg", 3),
-    ],
-  },
-  {
-    id: "seventeen-random",
-    artist: "SEVENTEEN",
-    artistId: "seventeen",
-    album: "HAPPY BURSTDAY",
-    displayName: "SEVENTEEN Photocard",
-    eventType: "album",
-    cover: "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
-    price: 3900,
-    home: true,
-    cards: [
-      shelfCard(1, "S.Coups", "20.jpg", "19.jpg", 4),
-      shelfCard(2, "Jeonghan", "22.jpg", "19.jpg", 3),
-      shelfCard(3, "Joshua", "24.jpg", "19.jpg", 3),
-      shelfCard(4, "Jun", "26.jpg", "19.jpg", 3),
-      shelfCard(5, "Hoshi", "28.jpg", "19.jpg", 3),
-      shelfCard(6, "Wonwoo", "30.jpg", "19.jpg", 3),
-      shelfCard(7, "Woozi", "32.jpg", "19.jpg", 3),
-      shelfCard(8, "The8", "34.jpg", "19.jpg", 3),
-      shelfCard(9, "Mingyu", "36.jpg", "19.jpg", 3),
-      shelfCard(10, "DK", "38.jpg", "19.jpg", 3),
-      shelfCard(11, "Seungkwan", "40.jpg", "19.jpg", 3),
-      shelfCard(12, "Vernon", "42.jpg", "19.jpg", 3),
-      shelfCard(13, "Dino", "44.jpg", "19.jpg", 3),
-      shelfCard(14, "Jun", "46.jpg", "19.jpg", 0),
-      shelfCard(15, "Dino", "48.jpg", "19.jpg", 0),
-    ],
-  },
-  {
-    id: "twice-random",
-    artist: "TWICE",
-    artistId: "twice",
-    album: "THIS IS FOR",
-    displayName: "TWICE Photocard",
-    eventType: "album",
-    cover: "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
-    price: 3300,
-    home: true,
-    cards: [
-      shelfCard(1, "Nayeon", "50.jpg", "49.jpg", 4),
-      shelfCard(2, "Jeongyeon", "51.jpg", "49.jpg", 4),
-      shelfCard(3, "Momo", "52.jpg", "49.jpg", 4),
-      shelfCard(4, "Sana", "53.jpg", "49.jpg", 4),
-      shelfCard(5, "Jihyo", "54.jpg", "49.jpg", 4),
-      shelfCard(6, "Mina", "55.jpg", "49.jpg", 4),
-      shelfCard(7, "Dahyun", "56.jpg", "49.jpg", 4),
-      shelfCard(8, "Chaeyoung", "57.jpg", "49.jpg", 4),
-      shelfCard(9, "Tzuyu", "58.jpg", "49.jpg", 4),
-      shelfCard(10, "Nayeon", "59.jpg", "60.jpg", 0),
-      shelfCard(11, "Jeongyeon", "61.jpg", "62.jpg", 0),
-      shelfCard(12, "Momo", "63.jpg", "64.jpg", 0),
-      shelfCard(13, "Jihyo", "65.jpg", "66.jpg", 0),
-      shelfCard(14, "Chaeyoung", "67.jpg", "68.jpg", 0),
-      shelfCard(15, "Sana", "69.jpg", "68.jpg", 3),
-      shelfCard(16, "Mina", "71.jpg", "68.jpg", 3),
-      shelfCard(17, "Dahyun", "73.jpg", "68.jpg", 3),
-      shelfCard(18, "Tzuyu", "75.jpg", "68.jpg", 3),
-    ],
-  },
-  {
-    id: "blackpink-random",
-    artist: "BLACKPINK",
-    artistId: "blackpink",
-    album: "DEADLINE",
-    displayName: "BLACKPINK Photocard",
-    eventType: "album",
-    cover: "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
-    price: 8900,
-    home: true,
-    cards: [
-      shelfCard(1, "Jisoo", "80.jpg", "79.jpg", 6),
-      shelfCard(2, "Jennie", "81.jpg", "79.jpg", 6),
-      shelfCard(3, "Rosé", "82.jpg", "79.jpg", 6),
-      shelfCard(4, "Lisa", "83.jpg", "79.jpg", 6),
-      shelfCard(5, "Jisoo", "84.jpg", "79.jpg", 4),
-      shelfCard(6, "Rosé", "85.jpg", "79.jpg", 4),
-      shelfCard(7, "Jennie", "86.jpg", "79.jpg", 0),
-      shelfCard(8, "Lisa", "87.jpg", "79.jpg", 0),
-      shelfCard(9, "Jennie", "88.jpg", "79.jpg", 5),
-      shelfCard(10, "Jisoo", "89.jpg", "79.jpg", 5),
-    ],
-  },
-  {
-    id: "bts-random",
-    artist: "BTS",
-    artistId: "bts",
-    album: "ARIRANG",
-    displayName: "BTS Photocard",
-    eventType: "album",
-    cover: "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
-    price: 4000,
-    home: true,
-    cards: [
-      shelfCard(1, "RM", "90.jpg", "91.jpg", 0),
-      shelfCard(2, "Jin", "92.jpg", "91.jpg", 5),
-      shelfCard(3, "Suga", "93.jpg", "91.jpg", 5),
-      shelfCard(4, "J-Hope", "94.jpg", "91.jpg", 0),
-      shelfCard(5, "Jimin", "95.jpg", "91.jpg", 0),
-      shelfCard(6, "V", "96.jpg", "91.jpg", 5),
-      shelfCard(7, "Jungkook", "97.jpg", "91.jpg", 5),
-      shelfCard(8, "Jin", "98.jpg", "91.jpg", 4),
-      shelfCard(9, "Suga", "99.jpg", "91.jpg", 4),
-      shelfCard(10, "V", "100.jpg", "91.jpg", 4),
-      shelfCard(11, "Jungkook", "101.jpg", "91.jpg", 4),
-      shelfCard(12, "RM", "102.jpg", "91.jpg", 3),
-      shelfCard(13, "J-Hope", "103.jpg", "91.jpg", 3),
-      shelfCard(14, "Jimin", "104.jpg", "91.jpg", 3),
-    ],
-  },
-];
 
 let nextId = 1;
 
@@ -398,17 +163,21 @@ function seedShipments(owned) {
 }
 
 function seedOwned() {
-  return [
-    own({ artist: "BLACKPINK", album: "JUMP", no: "01", front: "67.jpg", member: "리사", rarity: "NORMAL", status: "shipping_cart" }),
-    own({ artist: "BLACKPINK", album: "JUMP", no: "02", front: "69.jpg", member: "로제", rarity: "NORMAL", status: "stored" }),
-    own({ artist: "BLACKPINK", album: "JUMP", no: "02", front: "69.jpg", member: "로제", rarity: "NORMAL", status: "stored" }),
-    own({ artist: "LE SSERAFIM", album: "CRAZY", no: "01", front: "01.jpg", member: "", rarity: "NORMAL", status: "stored" }),
-    own({ artist: "LE SSERAFIM", album: "EASY", no: "01", front: "10.jpg", member: "", rarity: "NORMAL", status: "shipped" }),
-    own({ artist: "LE SSERAFIM", album: "EASY", no: "02", front: "12.jpg", member: "", rarity: "NORMAL", status: "shipped" }),
-    own({ artist: "LE SSERAFIM", album: "EASY", no: "03", front: "14.jpg", member: "", rarity: "NORMAL", status: "shipped" }),
-    own({ artist: "IVE", album: "IVE EMPATHY", no: "01", front: "20.jpg", member: "", rarity: "NORMAL", status: "delivered" }),
-    own({ artist: "로제", album: "rosie", no: "01", front: "59.jpg", member: "로제", rarity: "NORMAL", status: "stored" }),
-  ].map((card) => ({ ...card, purchasedOn: isoDate(14) }));
+  // 데모 보유카드도 스캔본만 쓴다. 옛 번호 파일(01.jpg 등)은 쓰지 않는다.
+  const samples = (PRODUCTS || []).flatMap((pack) =>
+    (pack.cards || []).filter((card) => card.stock > 0).slice(0, 2).map((card) => ({ pack, card })),
+  ).slice(0, 6);
+  if (!samples.length) return [];
+  return samples.map((entry, index) => own({
+    artist: entry.pack.artist,
+    album: entry.card.album || entry.pack.album,
+    no: entry.card.no,
+    front: entry.card.front,
+    member: entry.card.member || "",
+    rarity: entry.card.rarity || "NORMAL",
+    status: index === 0 ? "shipping_cart" : index > 3 ? "shipped" : "stored",
+    purchasedOn: isoDate(14),
+  }));
 }
 
 const state = {
@@ -416,7 +185,7 @@ const state = {
   screen: "home",
   board: "service",
   adminScene: "",
-  productId: "blackpink-jump",
+  productId: "cortis-random",
   detailHero: "", // artist | album | "" (기본 커버)
   sheet: null,
   focusStatus: null,
@@ -885,90 +654,6 @@ const ARTIST_NAMES = {
   holding: "미분류",
 };
 
-// 홈 NEW 1열 선반용 카탈로그(장수·종수·확정가 고정). extra는 데이터만 두고 선반에는 안 올린다.
-const CARD_FRONT_FX = "/assets/fx/card_front.png";
-const CARD_BACK_FX = "/assets/fx/card_back.png";
-const SHELF_SLOT_COUNT = 3;
-const SHELF_GROUPS = [
-  {
-    id: "cortis-random",
-    artistId: "cortis",
-    artist: "CORTIS",
-    sheets: 50,
-    kinds: 21,
-    price: 3500,
-    groupPhoto: "/assets/groups/CORTIS_group.jpg",
-    covers: ["/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg"],
-    extra: [],
-  },
-  {
-    id: "seventeen-random",
-    artistId: "seventeen",
-    artist: "SEVENTEEN",
-    sheets: 50,
-    kinds: 46,
-    price: 3900,
-    groupPhoto: "/assets/groups/SEVENTEEN_group.jpg",
-    covers: [
-      "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
-      "/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_poster.jpg",
-      "/assets/covers/SEVENTEEN/04_SEVENTEEN_CARAT_LAND_poster.jpg",
-    ],
-    extra: ["/assets/covers/SEVENTEEN/03_SEVENTEEN_NEW_JAPAN_poster.jpg"],
-  },
-  {
-    id: "twice-random",
-    artistId: "twice",
-    artist: "TWICE",
-    sheets: 50,
-    kinds: 47,
-    price: 3300,
-    groupPhoto: "/assets/groups/TWICE_group.jpg",
-    covers: [
-      "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
-      "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_DELUXE_cover.jpg",
-      "/assets/covers/TWICE/06_TWICE_THIS_IS_FOR_TOUR_poster.jpg",
-    ],
-    extra: [],
-  },
-  {
-    id: "blackpink-random",
-    artistId: "blackpink",
-    artist: "BLACKPINK",
-    sheets: 50,
-    kinds: 22,
-    price: 8900,
-    groupPhoto: "/assets/groups/BLACKPINK_group.jpg",
-    covers: [
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg",
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JENNIE_cover.jpg",
-      "/assets/covers/BLACKPINK/08_BLACKPINK_DEADLINE_GOYANG_poster.jpg",
-    ],
-    extra: [
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_BLACK_cover.jpg",
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_JISOO_cover.jpg",
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_LISA_cover.jpg",
-      "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_ROSE_cover.jpg",
-    ],
-  },
-  {
-    id: "bts-random",
-    artistId: "bts",
-    artist: "BTS",
-    sheets: 50,
-    kinds: 25,
-    price: 4000,
-    groupPhoto: "/assets/groups/BTS_group.jpg",
-    covers: [
-      "/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Korea_cover.jpg",
-      "/assets/covers/BTS/09_BTS_ARIRANG_cover.jpg",
-      "/assets/covers/BTS/09_BTS_ARIRANG_Living_Legend_cover.jpg",
-    ],
-    extra: ["/assets/covers/BTS/09_BTS_ARIRANG_Rooted_in_Music_cover.jpg"],
-  },
-];
-const SHELF_PRODUCT_IDS = new Set(SHELF_GROUPS.map((group) => group.id));
-
 function shelfGroupOf(id) {
   return SHELF_GROUPS.find((group) => group.id === id) || null;
 }
@@ -1158,8 +843,13 @@ function shortTitle(item) {
 
 function photo(file) {
   if (!file) return "";
-  if (file.startsWith("data:") || file.startsWith("/") || file.startsWith("http") || file.startsWith("blob:")) return file;
-  return `/assets/photocards/${file}`;
+  if (file.startsWith("data:") || file.startsWith("http") || file.startsWith("blob:")) return file;
+  // 한글 파일명(1앞/2뒤)은 경로 세그먼트별로 인코딩해야 폰/사파리에서 엑박이 안 난다.
+  const path = file.startsWith("/") ? file : `/assets/photocards/${file}`;
+  return path
+    .split("/")
+    .map((seg, index) => (index === 0 ? "" : encodeURIComponent(seg)))
+    .join("/");
 }
 
 function esc(value) {
@@ -1177,9 +867,9 @@ function gradeClass(rarity) {
 }
 
 const FALLBACK_BANNERS = [
-  { packId: "blackpink-jump", image: "/assets/covers/jump.jpg" },
-  { packId: "lesserafim-crazy", image: "/assets/covers/crazy.jpg" },
-  { packId: "ive-empathy-makestar", image: "/assets/covers/ive-empathy.jpg" },
+  { packId: "blackpink-random", image: "/assets/covers/BLACKPINK/07_BLACKPINK_DEADLINE_cover.jpg" },
+  { packId: "seventeen-random", image: "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg" },
+  { packId: "twice-random", image: "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg" },
 ];
 
 function bannerLines(packId, line1, line2) {
@@ -1540,15 +1230,14 @@ function shelfBox(src, kind) {
 }
 
 function shelfStage(group) {
+  // 있는 커버만 올린다. 부족분을 card_back으로 채우지 않는다.
   const covers = (group.covers || []).slice(0, SHELF_SLOT_COUNT);
-  const boxes = [];
-  covers.forEach((src) => boxes.push(shelfBox(src, "cover")));
-  while (boxes.length < SHELF_SLOT_COUNT) boxes.push(shelfBox(CARD_BACK_FX, "back"));
+  const boxes = covers.map((src) => shelfBox(src, "cover"));
+  const countClass = `n${Math.max(1, boxes.length)}`;
   return `
-    <span class="shelf-stage" aria-hidden="true">
+    <span class="shelf-stage ${countClass}" aria-hidden="true">
       <span class="shelf-boxes">${boxes.join("")}</span>
       <img class="shelf-mystery" src="${CARD_FRONT_FX}" alt="" />
-      <span class="shelf-ledge"></span>
     </span>`;
 }
 
@@ -1561,7 +1250,6 @@ function shelfRow(group) {
         <span class="shelf-meta">${group.sheets}장 · ${group.kinds}종 랜덤</span>
         <span class="shelf-price">${price}원</span>
       </span>
-      ${shelfStage(group)}
     </button>`;
 }
 
@@ -2937,23 +2625,65 @@ function wished() {
   `;
 }
 
-function detail(item) {
-  const slots = item.cards
-    .map((card) => {
-      const sold = isCardSoldOut(card);
-      const imgs = [
-        card.front ? `<span class="face front"><img src="${photo(card.front)}" alt="" /></span>` : "",
-        card.back ? `<span class="face"><img src="${photo(card.back)}" alt="" /></span>` : "",
-      ].join("");
-      const who = [card.member, sold ? "품절" : ""].filter(Boolean).join(" · ");
-      return `
+function albumUnitOf(id) {
+  if (!id) return null;
+  return (typeof ALBUM_UNITS !== "undefined" ? ALBUM_UNITS : []).find((unit) => unit.id === id) || null;
+}
+
+// 카드를 앨범/특전 유닛별로 묶는다. unitId가 없는 카드(데모)는 한 묶음.
+function cardGroups(cards) {
+  const groups = [];
+  const byKey = new Map();
+  cards.forEach((card) => {
+    const key = card.unitId || "";
+    if (!byKey.has(key)) {
+      const group = { key, unit: albumUnitOf(key), cards: [] };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    byKey.get(key).cards.push(card);
+  });
+  return groups;
+}
+
+function cardSlot(card) {
+  const sold = isCardSoldOut(card);
+  const imgs = [
+    card.front ? `<span class="face front"><img src="${photo(card.front)}" alt="" /></span>` : "",
+    card.back ? `<span class="face"><img src="${photo(card.back)}" alt="" /></span>` : "",
+  ].join("");
+  const who = [card.member, sold ? "품절" : ""].filter(Boolean).join(" · ");
+  return `
       <div class="slot pair${sold ? " is-soldout" : ""}">
         <div class="pair-imgs">${imgs}</div>
         ${sold ? `<span class="slot-sold">품절</span>` : ""}
         <small>${esc(card.no)}${who ? ` · ${esc(who)}` : ""}</small>
       </div>`;
-    })
-    .join("");
+}
+
+// 상세 구성: 유닛(앨범/특전)별 섹션. 헤더에 앨범명·특전 표기·종수.
+function unitGroupHtml(group) {
+  const unit = group.unit;
+  const slots = group.cards.map(cardSlot).join("");
+  if (!unit) return `<div class="slots">${slots}</div>`;
+  const cover = unit.covers?.[0] ? `<img class="unit-cover" src="${esc(unit.covers[0])}" alt="" />` : "";
+  const badge = unit.badge ? `<em class="unit-badge">${esc(unit.badge)}</em>` : "";
+  const sub = [unit.eventName, `${group.cards.length}종`].filter(Boolean).join(" · ");
+  return `
+      <div class="unit-group">
+        <header class="unit-head">
+          ${cover}
+          <div class="unit-copy">
+            <strong>${esc(unit.name)}${badge}</strong>
+            <small>${esc(sub)}</small>
+          </div>
+        </header>
+        <div class="slots">${slots}</div>
+      </div>`;
+}
+
+function detail(item) {
+  const composition = cardGroups(item.cards).map(unitGroupHtml).join("");
   // TP가 모자라도 버튼은 열어 둔다. 결제 시트가 부족분과 [TP 교환하기]를 보여 준다.
   // 품절만 남은 상품은 뽑기 버튼을 막는다(행 전체 품절 표시는 하지 않음).
   const canOne = drawableCards(item).length > 0;
@@ -3010,7 +2740,7 @@ function detail(item) {
         </div>
         <section class="section">
           <h3>포토카드 구성 ${item.cards.length}종</h3>
-          <div class="slots">${slots}</div>
+          ${composition}
         </section>
         <section class="section">
           <div class="facts-box">
@@ -4184,7 +3914,7 @@ function applyScene(id) {
   state.tab = "home";
   state.focusStatus = null;
   state.albumArtist = "all";
-  state.productId = "blackpink-jump";
+  state.productId = DEMO_PRODUCT_ID;
   state.reveal = [];
   state.revealIndex = 0;
   state.exchanges = [];
@@ -4214,10 +3944,10 @@ function applyScene(id) {
     if (id === "pay5") state.sheet = 5;
   } else if (id === "result") {
     state.screen = "result";
-    state.reveal = [previewCard("blackpink-jump", 1)];
+    state.reveal = [previewCard(DEMO_PRODUCT_ID, 1)];
   } else if (id === "five") {
     state.screen = "result";
-    state.reveal = product("blackpink-jump").cards.map((_, index) => previewCard("blackpink-jump", index));
+    state.reveal = product(DEMO_PRODUCT_ID).cards.map((_, index) => previewCard(DEMO_PRODUCT_ID, index));
   } else if (id === "album") {
     state.tab = "album";
     state.screen = "album";
@@ -5111,7 +4841,7 @@ function paintAdmin() {
 }
 
 function adminSaleScreen(sale) {
-  const item = product("blackpink-jump");
+  const item = product(DEMO_PRODUCT_ID);
   const titles = { on: "판매중", out: "품절", soon: "입고예정", draft: "등록중" };
   const listed = sale !== "draft";
   const badge = sale === "out" ? "품절" : sale === "soon" ? "입고예정" : "";
@@ -6135,16 +5865,21 @@ function fingerIcon() {
 
 function demoScene(kind) {
   const finger = `<span class="demo-finger" aria-hidden="true">${fingerIcon()}</span>`;
+  const demoPacks = (PRODUCTS || []).slice(0, 2);
+  const demoCover = (demoPacks[0] && demoPacks[0].cover) || CARD_FRONT_FX;
+  const demoFronts = (PRODUCTS || [])
+    .flatMap((pack) => (pack.cards || []).slice(0, 2).map((card) => card.front))
+    .filter(Boolean)
+    .slice(0, 6);
   if (kind === "pick") {
     // 목록에서 앨범을 누르면 포장 5개가 부채꼴로 펼쳐지고, 그중 하나를 고른다.
+    const tiles = demoPacks.map((pack, index) =>
+      `<span class="demo-tile t${index + 1}"><img src="${pack.cover}" alt="" /><b>${esc(pack.artist)}</b><small>${Number(pack.price).toLocaleString("ko-KR")} TP</small></span>`).join("");
     return `
       <div class="demo demo-pick" aria-hidden="true">
         <div class="demo-screen demo-list">
           <span class="demo-list-head">NEW</span>
-          <div class="demo-tiles">
-            <span class="demo-tile t1"><img src="/assets/covers/jump.jpg" alt="" /><b>JUMP</b><small>2,500 TP</small></span>
-            <span class="demo-tile t2"><img src="/assets/covers/crazy.jpg" alt="" /><b>CRAZY</b><small>2,500 TP</small></span>
-          </div>
+          <div class="demo-tiles">${tiles}</div>
         </div>
         <div class="demo-screen demo-deck">
           <span class="demo-deck-hint">한 장을 선택하세요</span>
@@ -6157,7 +5892,7 @@ function demoScene(kind) {
     // 지갑 연결이 먼저다. 연결 시트 → 연결 뒤 결제 시트 순으로 보여 준다.
     return `
       <div class="demo demo-pay" aria-hidden="true">
-        <img class="demo-bg" src="/assets/covers/jump.jpg" alt="" />
+        <img class="demo-bg" src="${demoCover}" alt="" />
         <div class="demo-sheet demo-sheet-wallet">
           <i class="demo-grab"></i>
           <b class="demo-need">지갑 연결이 필요해요</b>
@@ -6167,9 +5902,9 @@ function demoScene(kind) {
         <div class="demo-sheet demo-sheet-pay">
           <i class="demo-grab"></i>
           <span class="demo-linked"><i>✓</i>지갑 연결됨 · TOTT → TP 교환 가능</span>
-          <div><span>현재가격</span><b>2,500 TP</b></div>
+          <div><span>현재가격</span><b>3,500 TP</b></div>
           <div><span>보유</span><b>50,000 TP</b></div>
-          <div><span>차감 후 남은 잔액</span><b>47,500 TP</b></div>
+          <div><span>차감 후 남은 잔액</span><b>46,500 TP</b></div>
           <span class="demo-btn">결제하기</span>
         </div>
         ${finger}
@@ -6177,6 +5912,7 @@ function demoScene(kind) {
   }
   if (kind === "open") {
     const overs = [1, 2, 3, 4].map((index) => `<img class="demo-over o${index}" src="tears/method-1/over-${index}.png?v=1" alt="" />`).join("");
+    const openFront = demoFronts[0] || "";
     return `
       <div class="demo demo-open" aria-hidden="true">
         <div class="demo-pack">
@@ -6184,16 +5920,15 @@ function demoScene(kind) {
           ${overs}
           <img class="demo-shell" src="tears/over-5.png?v=3" alt="" />
         </div>
-        <span class="demo-card"><img src="${photo("67.jpg")}" alt="" /><span class="prism"></span></span>
+        <span class="demo-card"><img src="${photo(openFront)}" alt="" /><span class="prism"></span></span>
         ${finger}
       </div>`;
   }
-  const fronts = ["67.jpg", "69.jpg", "71.jpg", "01.jpg", "10.jpg", "20.jpg"];
   return `
     <div class="demo demo-album" aria-hidden="true">
-      <div class="demo-chips"><b>전체</b><span>BLACKPINK</span><span>LE SSERAFIM</span></div>
+      <div class="demo-chips"><b>전체</b><span>CORTIS</span><span>BLACKPINK</span></div>
       <div class="demo-grid">
-        ${fronts.map((file, index) => `<span style="--d:${index * 0.3}s"><img src="${photo(file)}" alt="" />${index === 0 ? `<i>2장</i>` : ""}</span>`).join("")}
+        ${demoFronts.map((file, index) => `<span style="--d:${index * 0.3}s"><img src="${photo(file)}" alt="" />${index === 0 ? `<i>2장</i>` : ""}</span>`).join("")}
       </div>
     </div>`;
 }

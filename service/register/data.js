@@ -1,38 +1,35 @@
 const ARTISTS = [
-  { id: "lesserafim", name: "LE SSERAFIM", kind: "group", members: ["김채원", "사쿠라", "허윤진", "카즈하", "홍은채"] },
-  { id: "ive", name: "IVE", kind: "group", members: ["안유진", "가을", "레이", "장원영", "리즈", "이서"] },
+  { id: "cortis", name: "CORTIS", kind: "group", members: [] },
+  { id: "seventeen", name: "SEVENTEEN", kind: "group", members: [] },
+  { id: "twice", name: "TWICE", kind: "group", members: [] },
   { id: "blackpink", name: "BLACKPINK", kind: "group", members: ["지수", "제니", "로제", "리사"] },
-  { id: "bts", name: "방탄소년단", kind: "group", members: ["전정국"] },
-  { id: "rose", name: "로제", kind: "solo", members: ["로제"], groupId: "blackpink" },
-  { id: "jungkook", name: "전정국", kind: "solo", members: ["전정국"], groupId: "bts" },
+  { id: "bts", name: "BTS", kind: "group", members: [] },
 ];
 
 const HOLDING_ID = "holding";
 
 const PROFILE_PHOTOS = {
   blackpink: "/assets/profiles/blackpink.jpg",
-  ive: "/assets/profiles/ive.jpg",
   bts: "/assets/profiles/bts.jpg",
-  rose: "/assets/profiles/rose.jpg",
-  lesserafim: "/assets/profiles/lesserafim.png",
+  cortis: "/assets/covers/CORTIS/01_CORTIS_GREENGREEN_cover.jpg",
+  seventeen: "/assets/covers/SEVENTEEN/02_SEVENTEEN_HAPPY_BURSTDAY_cover.jpg",
+  twice: "/assets/covers/TWICE/05_TWICE_THIS_IS_FOR_cover.jpg",
 };
 
 const ALIASES = {
-  lesserafim: ["르세라핌"],
-  ive: ["아이브"],
+  cortis: ["코르티스"],
+  seventeen: ["세븐틴", "svt"],
+  twice: ["트와이스"],
   blackpink: ["블랙핑크"],
-  bts: ["방탄", "BTS"],
-  rose: ["로제", "로지", "rose", "rosé", "blackpink rose"],
-  jungkook: ["정국"],
+  bts: ["방탄", "BTS", "방탄소년단"],
 };
 
 const ARTIST_I18N = {
+  cortis: { ko: "코르티스", en: "CORTIS", aliases: "cortis, 코르티스" },
+  seventeen: { ko: "세븐틴", en: "SEVENTEEN", aliases: "세븐틴, svt" },
+  twice: { ko: "트와이스", en: "TWICE", aliases: "트와이스" },
   blackpink: { ko: "블랙핑크", en: "BLACKPINK", aliases: "블랙핑크" },
-  lesserafim: { ko: "르세라핌", en: "LE SSERAFIM", aliases: "르세라핌" },
-  ive: { ko: "아이브", en: "IVE", aliases: "아이브" },
-  rose: { ko: "로제", en: "ROSÉ", aliases: "로제, rose, rosé, blackpink rose, 로지" },
   bts: { ko: "방탄소년단", en: "BTS", aliases: "방탄, BTS" },
-  jungkook: { ko: "전정국", en: "Jung Kook", aliases: "정국" },
 };
 
 const EVENT_TYPES = [
@@ -102,119 +99,27 @@ function pack(partial) {
   };
 }
 
-const SEED = [
+// 스캔 재고 카탈로그(STOCK_PRODUCTS)를 관리자 시드로 쓴다. 옛 번호 mock 이미지는 쓰지 않는다.
+const SEED = (typeof STOCK_PRODUCTS !== "undefined" ? STOCK_PRODUCTS : []).map((item) =>
   pack({
-    id: "lesserafim-crazy",
-    artistId: "lesserafim",
-    album: "CRAZY",
-    cover: "/assets/covers/crazy.jpg",
-    eventType: "album",
-    home: true,
-    status: "out",
-    cards: [1, 2, 3, 4, 5].map((no) => card(no, "", `0${no}.jpg`, "06.jpg", "unset")),
-  }),
-  pack({
-    id: "lesserafim-easy",
-    artistId: "lesserafim",
-    album: "EASY",
-    cover: "/assets/covers/easy.jpg",
-    eventType: "album",
-    home: true,
-    status: "soon",
-    cards: [
-      card(1, "", "10.jpg", "11.jpg", "unset"),
-      card(2, "", "12.jpg", "11.jpg", "unset"),
-      card(3, "", "14.jpg", "11.jpg", "unset"),
-      card(4, "", "16.jpg", "11.jpg", "unset"),
-      card(5, "", "18.jpg", "11.jpg", "unset"),
-    ],
-  }),
-  pack({
-    id: "ive-empathy-makestar",
-    artistId: "ive",
-    album: "IVE EMPATHY",
-    cover: "/assets/covers/ive-empathy.jpg",
-    eventType: "pob",
-    eventName: "MAKESTAR",
+    id: item.id,
+    artistId: item.artistId,
+    album: item.album || item.artist,
+    cover: item.cover || "",
+    eventType: item.eventType || "album",
+    eventName: item.eventName || "",
     home: true,
     status: "on",
-    cards: [
-      card(1, "", "20.jpg", "19.jpg", "pob"),
-      card(2, "", "22.jpg", "19.jpg", "pob"),
-      card(3, "", "24.jpg", "19.jpg", "pob"),
-      card(4, "", "26.jpg", "19.jpg", "pob"),
-      card(5, "", "28.jpg", "19.jpg", "pob"),
-    ],
+    price: item.price,
+    cards: (item.cards || []).map((entry) => ({
+      no: entry.no,
+      member: entry.member || "",
+      front: entry.front?.startsWith("/") ? entry.front : `/assets/photocards/${entry.front}`,
+      back: entry.back?.startsWith("/") ? entry.back : `/assets/photocards/${entry.back}`,
+      version: "unset",
+      rarity: entry.rarity || "NORMAL",
+      stock: entry.stock,
+      weight: 1,
+    })),
   }),
-  pack({
-    id: "ive-empathy-popo",
-    artistId: "ive",
-    album: "IVE EMPATHY",
-    cover: "/assets/covers/ive-empathy.jpg",
-    eventType: "unknown",
-    eventName: "Team POPO",
-    cards: [
-      card(1, "", "30.jpg", "29.jpg", "pob"),
-      card(2, "", "32.jpg", "31.jpg", "pob"),
-      card(3, "", "34.jpg", "33.jpg", "pob"),
-      card(4, "", "36.jpg", "35.jpg", "pob"),
-      card(5, "", "38.jpg", "37.jpg", "pob"),
-      card(6, "", "40.jpg", "39.jpg", "pob"),
-    ],
-  }),
-  pack({
-    id: "rose-rosie-jp",
-    artistId: "rose",
-    kind: "solo",
-    album: "rosie",
-    cover: "/assets/covers/rosie.jpg",
-    eventType: "japan",
-    eventName: "WPCR-18718",
-    home: true,
-    status: "on",
-    cards: [
-      card(1, "로제", "59.jpg", "60.jpg", "japan"),
-      card(2, "로제", "61.jpg", "62.jpg", "japan"),
-      card(3, "로제", "63.jpg", "64.jpg", "japan"),
-      card(4, "로제", "65.jpg", "66.jpg", "japan"),
-    ],
-  }),
-  pack({
-    id: "blackpink-jump",
-    artistId: "blackpink",
-    album: "JUMP",
-    cover: "/assets/covers/jump.jpg",
-    eventType: "album",
-    home: true,
-    status: "on",
-    cards: [
-      card(1, "리사", "67.jpg", "68.jpg", "unset"),
-      card(2, "로제", "69.jpg", "68.jpg", "unset"),
-      card(3, "제니", "71.jpg", "68.jpg", "unset"),
-      card(4, "지수", "73.jpg", "68.jpg", "unset"),
-      card(5, "단체", "75.jpg", "68.jpg", "unset"),
-    ],
-  }),
-  pack({
-    id: "bts-unknown",
-    artistId: "bts",
-    album: "",
-    eventType: "unknown",
-    cards: [
-      card(1, "전정국", "51.jpg", "52.jpg", "unset"),
-      card(2, "전정국", "53.jpg", "54.jpg", "unset"),
-      card(3, "전정국", "55.jpg", "56.jpg", "unset"),
-      card(4, "전정국", "57.jpg", "58.jpg", "unset"),
-    ],
-  }),
-  pack({
-    id: "unsorted",
-    artistId: HOLDING_ID,
-    kind: "unknown",
-    album: "",
-    eventType: "unknown",
-    cards: [41, 43, 45, 47, 49].map((front, index) =>
-      card(index + 1, "", `${front}.jpg`, `${front + 1}.jpg`, "unset"),
-    ),
-  }),
-];
+);
