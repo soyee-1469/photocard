@@ -4102,3 +4102,8 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .shelf-albums > span::before,
 .artist-random-albums > span::before,
 .detail .compose-line > span::before { content: "· "; opacity: 0.6; }
+/* 커버가 1장뿐이면 20% 키워 자리를 채운다(선반형·커버플로우 공통). */
+.shelf-boxes .shelf-box:only-child { height: 118px; }
+.shelf-boxes .shelf-box:only-child img { max-width: 84px; max-height: 118px; }
+.flow-stage.is-single .flow-item { height: 142px; }
+.flow-stage.is-single .flow-item img { max-width: 192px; max-height: 142px; }
