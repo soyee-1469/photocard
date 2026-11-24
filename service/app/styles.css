@@ -456,9 +456,8 @@ article.notice time { display: block; margin-top: 8px; color: var(--muted); font
 .shelf-wrap { padding: 32px 16px; }
 .shelf-wrap h2 { margin: 0 0 12px; font-size: 18px; font-weight: 700; }
 .shelf-wrap .empty { margin: 0; }
+/* 스크롤 영역엔 좌우 패딩이 없으므로 음수 마진을 주면 섹션 여백이 상쇄돼 0이 된다. 배경은 어차피 화면 폭. */
 .shelf-wrap.home-two {
-  margin-left: -16px;
-  margin-right: -16px;
   padding: 20px 0 8px;
   background:
     radial-gradient(120% 60% at 50% 0%, rgba(90, 58, 32, 0.22), transparent 58%),
