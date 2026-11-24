@@ -3965,7 +3965,7 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .flow-scene {
   position: absolute;
   z-index: 1; /* 앨범들의 z-index를 이 안에 가둬 물음표 카드(z-index 3)가 항상 앞에 온다 */
-  left: 50%;
+  left: 57%; /* 정면 앨범(최대 150px)이 왼쪽 글자 영역에 닿지 않는 중심 */
   bottom: 10px;
   width: 0;
   height: 0;
