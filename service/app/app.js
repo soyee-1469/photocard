@@ -1236,6 +1236,86 @@ function homeFlowRows(query) {
   return homeShelfGroups(query).map(flowRow).join("");
 }
 
+// ── 회전 진열대(반원) ──
+// 앨범을 원 둘레(앞쪽 180도)에 세우고 드래그로 원을 돌린다. 뒤로 간 앨범은 어두워지며 사라진다.
+const RING_STEP = 42;    // 앨범 사이 각도
+const RING_RADIUS = 118; // 원 반지름(px)
+
+function ringStage(group) {
+  const covers = (group.covers || []).slice(0, FLOW_MAX_COVERS);
+  const items = covers.map((src) => `<span class="ring-item">${coverBox(src)}</span>`).join("");
+  return `
+    <span class="ring-stage" data-open="${esc(group.id)}" data-hero="album">
+      <span class="ring-scene" data-ring>${items}</span>
+      <img class="flow-mystery ring-mystery" src="${CARD_FRONT_FX}" alt="" />
+    </span>`;
+}
+
+function ringRow(group) {
+  return `
+    <div class="flow-row ring-row">
+      <button type="button" class="flow-copy" data-open="${esc(group.id)}" data-hero="album">
+        <strong class="shelf-artist">${esc(group.artist)}</strong>
+        <span class="shelf-meta">${shelfMeta(group)}</span>
+        <span class="shelf-price">${wonText(group.price)}</span>
+      </button>
+      ${ringStage(group)}
+    </div>`;
+}
+
+function homeRingRows(query) {
+  return homeShelfGroups(query).map(ringRow).join("");
+}
+
+function paintRing(scene, rot) {
+  scene.querySelectorAll(".ring-item").forEach((item, index) => {
+    const angle = index * RING_STEP - rot;
+    const t = Math.min(1, Math.abs(angle) / 90);
+    item.style.transform = `rotateY(${angle}deg) translateZ(${RING_RADIUS}px)`;
+    item.style.opacity = Math.abs(angle) >= 96 ? "0" : String(1 - t * 0.35);
+    item.style.setProperty("--dim", (1 - t * 0.55).toFixed(3));
+    item.style.zIndex = String(100 - Math.round(Math.abs(angle)));
+  });
+}
+
+function armRings() {
+  document.querySelectorAll("[data-ring]").forEach((scene) => {
+    const stage = scene.parentElement;
+    const count = scene.querySelectorAll(".ring-item").length;
+    const max = (count - 1) * RING_STEP;
+    let rot = 0;
+    let down = false;
+    let startX = 0;
+    let startRot = 0;
+    paintRing(scene, rot);
+    if (count < 2) return;
+    scene.addEventListener("pointerdown", (event) => {
+      down = true;
+      startX = event.clientX;
+      startRot = rot;
+      scene.classList.remove("is-snapping");
+      try { scene.setPointerCapture(event.pointerId); } catch (error) { /* 합성 이벤트 */ }
+    });
+    scene.addEventListener("pointermove", (event) => {
+      if (!down) return;
+      const dx = event.clientX - startX;
+      if (Math.abs(dx) > 5) stage.dataset.drag = "1";
+      // 왼쪽으로 끌면 다음 앨범이 앞으로 돈다. 끝에서는 살짝만 더 돌고 되돌아온다.
+      rot = Math.max(-18, Math.min(max + 18, startRot - dx * 0.42));
+      paintRing(scene, rot);
+    });
+    const release = () => {
+      if (!down) return;
+      down = false;
+      rot = Math.max(0, Math.min(max, Math.round(rot / RING_STEP) * RING_STEP));
+      scene.classList.add("is-snapping");
+      paintRing(scene, rot);
+      setTimeout(() => { delete stage.dataset.drag; }, 160);
+    };
+    ["pointerup", "pointercancel"].forEach((type) => scene.addEventListener(type, release));
+  });
+}
+
 function paintFlow(scroller) {
   const center = scroller.scrollLeft + scroller.clientWidth / 2;
   scroller.querySelectorAll(".flow-item").forEach((item) => {
@@ -1404,6 +1484,10 @@ function home() {
       <section class="home-section album-section flow-section">
         <h2>앨범별 랜덤 · 커버플로우</h2>
         ${groups.length ? `<div class="flow rows">${homeFlowRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
+      </section>
+      <section class="home-section album-section flow-section ring-section">
+        <h2>앨범별 랜덤 · 회전 진열대</h2>
+        ${groups.length ? `<div class="flow rows">${homeRingRows(query)}</div>` : `<p class="empty">찾는 상품이 없어요.</p>`}
       </section>`;
   const header = state.searchOpen
     ? `
@@ -5689,6 +5773,7 @@ function render() {
   startBanner();
   startMidBanner();
   armCoverflows();
+  armRings();
   mountPostcode();
   armDeck();
   armOpenCut();
@@ -5702,7 +5787,7 @@ function render() {
 
 app.addEventListener("click", (event) => {
   const open = event.target.closest("[data-open]");
-  if (open && open.querySelector("[data-flow]")?.dataset.drag === "1") return;
+  if (open && (open.dataset.drag === "1" || open.querySelector("[data-flow]")?.dataset.drag === "1")) return;
   const back = event.target.closest("[data-back]");
   const buy = event.target.closest("[data-buy]");
   const pay = event.target.closest("[data-pay]");

@@ -4108,3 +4108,37 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .shelf-boxes .shelf-box:only-child img { max-width: 84px; max-height: 118px; }
 .flow-stage.is-single .flow-item { height: 142px; }
 .flow-stage.is-single .flow-item img { max-width: 192px; max-height: 142px; }
+
+/* 회전 진열대(반원). 무대 가운데 아래를 원의 중심으로 두고 앨범을 원 둘레에 세운다. */
+.ring-stage {
+  position: relative;
+  display: block;
+  height: 160px;
+  min-width: 0;
+  margin-left: -20%;
+  perspective: 720px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ring-scene {
+  position: absolute;
+  left: 44%;
+  top: calc(100% - 12px);
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(-118px);
+  touch-action: pan-y;
+  cursor: grab;
+}
+.ring-item {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -100%;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  --edge: 7px;
+}
+.ring-scene.is-snapping .ring-item { transition: transform 0.38s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.38s; }
+.ring-item img { max-width: 150px; max-height: 112px; }
+.ring-mystery { left: 12%; }
