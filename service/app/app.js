@@ -270,6 +270,10 @@ const WALLET_SEED = [
 // mock 보내기·받기. days는 며칠 전인지(이번 달 안으로 묶는다).
 const WALLET_MOCK_ROWS = {
   "phantom-1": [
+    // 오늘 자: TP 줄(교환·사용)과 TOTT 줄(보내기·받기)을 한 화면에서 비교해 보려는 예시
+    { kind: "receive", days: 0, time: "23:10", tott: 1200, status: "검증완료" },
+    { kind: "exchange", days: 0, time: "23:20", tott: -500, tp: 500, status: "완료" },
+    { kind: "send", days: 0, time: "23:30", tott: -250.5, status: "성공" },
     { kind: "receive", days: 2, tott: 14.51136, status: "검증완료" },
     { kind: "send", days: 2, tott: -14.51136, status: "진행중" },
     { kind: "receive", days: 5, tott: 14.51136, status: "만료" },
@@ -4702,7 +4706,7 @@ function walletLedger(walletId = currentWallet().id) {
   const rows = [];
   state.exchanges
     .filter((entry) => entry.wallet === walletId)
-    .forEach((entry) => rows.push({ kind: "exchange", at: entry.at, label: "교환", tott: -entry.tott, tp: entry.tp, status: "완료" }));
+    .forEach((entry) => rows.push({ kind: "exchange", at: entry.at, label: "TP 교환", tott: -entry.tott, tp: entry.tp, status: "완료" }));
   state.fills
     .filter((entry) => entry.wallet === walletId)
     .forEach((entry) => rows.push({ kind: "fill", at: entry.at, label: "채우기", sol: -entry.sol, tott: entry.tott, status: "완료" }));
@@ -4712,16 +4716,17 @@ function walletLedger(walletId = currentWallet().id) {
       const price = Number(order.price);
       if (!Number.isFinite(price)) return;
       const at = /^\d{4}-\d{2}-\d{2}T/.test(String(order.purchasedOn)) ? order.purchasedOn : `${String(order.purchasedOn || "").slice(0, 10)}T12:00:00`;
-      rows.push({ kind: "use", at, label: "포토카드 구매", tp: -price, status: "완료" });
+      rows.push({ kind: "use", at, label: "TP 사용 · 포토카드 구매", tp: -price, status: "완료" });
     });
   }
   const today = new Date().getDate();
   (WALLET_MOCK_ROWS[walletId] || []).forEach((mock) => {
     rows.push({
       kind: mock.kind,
-      at: `${isoDate(Math.min(mock.days, today - 1))}T14:00:00`,
-      label: mock.kind === "receive" ? "받기" : "보내기",
+      at: `${isoDate(Math.min(mock.days, today - 1))}T${mock.time || "14:00"}:00`,
+      label: mock.kind === "exchange" ? "TP 교환" : mock.kind === "receive" ? "TOTT 받기" : "TOTT 보내기",
       tott: mock.tott,
+      ...(mock.tp ? { tp: mock.tp } : {}),
       status: mock.status,
     });
   });
@@ -4735,7 +4740,7 @@ function ledgerRow(row) {
   const units = {
     sol: [`<small>SOL</small>`, solText, "SOL"],
     tott: [`<small>TOTT</small>`, tottText, "TOTT"],
-    tp: [`<span class="coin-mark tp" aria-hidden="true">TP</span>`, tpText, "TP"],
+    tp: [`<small>TP</small>`, tpText, "TP"],
   };
   const moves = ["sol", "tott", "tp"].filter((key) => row[key]);
   const gained = moves.filter((key) => row[key] > 0);
@@ -4747,7 +4752,9 @@ function ledgerRow(row) {
     : "";
   return `
     <article class="ledger-row">
-      <span class="ledger-icon" aria-hidden="true">${icon(glyph)}</span>
+      ${row.kind === "receive" || row.kind === "send"
+        ? `<img class="ledger-icon-img" src="wallet-tx-${row.kind}.svg" width="40" height="40" alt="" />`
+        : `<span class="ledger-icon" aria-hidden="true">${icon(glyph)}</span>`}
       <span class="ledger-body">
         <strong>${esc(row.label)}</strong>
         <small>${esc(exchangeWhen(row.at))}${esc(spentNote)}</small>
@@ -4798,8 +4805,8 @@ function walletCard(w) {
         </div>
       </div>
       <div class="wallet-tp">
-        <span class="wallet-tp-body"><small>TP 포인트</small><strong>${tpText(w.tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></span>
-        <button type="button" class="wallet-exchange" data-nav="exchange-form">교환하기 ${icon("caretRight")}</button>
+        <span class="wallet-tp-body" aria-label="TP ${tpText(w.tp)}"><span class="coin-mark tp" aria-hidden="true">TP</span><strong>${tpText(w.tp)}</strong></span>
+        <button type="button" class="wallet-exchange" data-nav="exchange-form" aria-label="TOTT를 TP로 교환하기">교환 ${icon("caretRight")}</button>
       </div>
       <div class="wallet-actions">
         <button type="button" data-soon="보내기">${WALLET_SVG.actSend}<span>보내기</span></button>
@@ -4850,9 +4857,9 @@ function wallet() {
         <div class="wallet-top">
           <time data-clock>${clockText()}</time>
           <button type="button" data-ex-refresh aria-label="새로고침">${icon("refresh")}</button>
-          ${dots}
         </div>
-        <div class="wallet-rail" data-wallet-rail data-index="${index}">${list.map(walletPage).join("")}</div>
+        <div class="wallet-rail${list.length > 1 ? " many" : ""}" data-wallet-rail data-index="${index}">${list.map(walletPage).join("")}</div>
+        ${dots}
       </section>
       <section class="wallet-section">
         <div class="wallet-head"><h2>토큰 정보</h2></div>
@@ -4874,8 +4881,9 @@ function wallet() {
   `;
 }
 
-// 지갑 슬라이드: 주소 카드부터 최근 거래내역까지가 한 장이라, 넘기면 그 지갑의 TP·NFT·거래내역이 같이 넘어온다.
-// 장마다 높이가 달라서(거래 5건 vs 없음) 레일 높이는 지금 보이는 장에 맞춘다. 넘기는 중에는 걸친 두 장 중 큰 쪽.
+// 지갑 슬라이드(Figma '지갑 여러개'): 카드는 화면보다 좁아 다음 지갑 카드가 오른쪽에 걸쳐 보인다.
+// 주소 카드부터 최근 거래내역까지가 한 장이라 넘기면 같이 넘어가는데, 지금 장이 아닌 쪽의 NFT·거래내역은 투명하게 둬서
+// 멈춰 있을 때는 옆 카드만 보인다. 장마다 높이가 달라 레일 높이는 지금 장에 맞추고, 넘기는 중에는 걸친 두 장 중 큰 쪽.
 // 넘긴 뒤 다시 그리지 않는다(세로 스크롤 위치가 날아간다): 선택 지갑과 점만 바꾼다.
 function armWalletRail() {
   const rail = document.querySelector("[data-wallet-rail]");
@@ -4885,13 +4893,18 @@ function armWalletRail() {
   if (!pages.length) return;
   const hero = rail.closest(".wallet-hero");
   const card = pages[0].querySelector(".wallet-card");
-  // 빨간 배경은 카드 아래쪽 32px 위에서 끝난다(카드가 배경에 걸쳐 보이게)
-  if (hero && card) hero.style.setProperty("--wallet-red", `${rail.offsetTop + card.offsetHeight - 32}px`);
-  const stride = () => rail.clientWidth || 1;
+  if (hero && card) {
+    // 빨간 배경은 카드 아래쪽 68px 위에서 끝나고, 점은 카드 바로 아래에 고정한다
+    hero.style.setProperty("--wallet-red", `${rail.offsetTop + card.offsetHeight - 68}px`);
+    hero.style.setProperty("--wallet-dots-top", `${rail.offsetTop + card.offsetHeight + 10}px`);
+  }
+  const stride = () => (pages[1] ? pages[1].offsetLeft - pages[0].offsetLeft : rail.clientWidth) || 1;
   const clamp = (value) => Math.max(0, Math.min(pages.length - 1, value));
   const fit = (index) => { rail.style.height = `${pages[clamp(index)].offsetHeight}px`; };
+  const mark = (index) => pages.forEach((page, i) => page.classList.toggle("on", i === index));
   const index = clamp(Number(rail.dataset.index) || 0);
   if (index > 0) rail.scrollLeft = stride() * index;
+  mark(index);
   fit(index);
   if (pages.length < 2) return;
   // 마우스로도 넘긴다: 36px 이상 끌면 한 장씩. 끌고 난 뒤의 click은 장 안 버튼이 눌리지 않게 막는다.
@@ -4923,12 +4936,14 @@ function armWalletRail() {
     const from = clamp(Math.floor(at));
     const to = clamp(Math.ceil(at));
     rail.style.height = `${Math.max(pages[from].offsetHeight, pages[to].offsetHeight)}px`;
+    const near = clamp(Math.round(at));
+    mark(near);
+    document.querySelectorAll("[data-wallet-dot]").forEach((dot, i) => dot.classList.toggle("on", i === near));
     window.clearTimeout(timer);
     timer = window.setTimeout(() => {
       const next = clamp(Math.round(rail.scrollLeft / stride()));
       fit(next);
       rail.dataset.index = String(next);
-      document.querySelectorAll("[data-wallet-dot]").forEach((dot, i) => dot.classList.toggle("on", i === next));
       const id = pages[next].dataset.walletPage;
       if (id === state.walletId) return;
       state.walletId = id;
@@ -4940,9 +4955,10 @@ function armWalletRail() {
 
 function scrollWalletRail(index) {
   const rail = document.querySelector("[data-wallet-rail]");
-  const count = rail ? rail.querySelectorAll("[data-wallet-page]").length : 0;
-  if (!rail || count < 2) return;
-  rail.scrollTo({ left: rail.clientWidth * Math.max(0, Math.min(count - 1, index)), behavior: "smooth" });
+  const pages = rail ? [...rail.querySelectorAll("[data-wallet-page]")] : [];
+  if (!rail || pages.length < 2) return;
+  const stride = pages[1].offsetLeft - pages[0].offsetLeft || rail.clientWidth;
+  rail.scrollTo({ left: stride * Math.max(0, Math.min(pages.length - 1, index)), behavior: "smooth" });
 }
 
 // ---- 지갑 관리 ----
@@ -5115,7 +5131,7 @@ function exchangeHistory() {
   const list = activeWallets();
   const groups = historyGroups();
   const open = historyOpenDays(groups);
-  const chips = [["all", "전체"], ["exchange", "교환"], ["use", "사용"], ["fill", "채우기"], ["move", "보내기·받기"]]
+  const chips = [["all", "전체"], ["exchange", "TP 교환"], ["use", "TP 사용"], ["fill", "채우기"], ["move", "보내기·받기"]]
     .map(([id, label]) => `<button type="button" class="${id === state.ledgerFilter ? "on" : ""}" data-ledger-filter="${id}">${label}</button>`).join("");
   const picker = `
     <div class="hist-pick${state.historyPicker ? " open" : ""}">
