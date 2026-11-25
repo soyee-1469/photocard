@@ -2850,11 +2850,13 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .wallet-toggle button { padding: 3px 10px; border-radius: 999px; color: #888; font-size: 11px; font-weight: 700; }
 .wallet-toggle button.on { background: #222; color: #fff; }
 /* TP 줄: 잔액만 표시. TOTT→TP 교환 버튼은 토마톡 지갑으로 분리 */
-.wallet-tp { display: grid; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: #f3faeb; }
+.wallet-tp { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: #f3faeb; }
 .wallet-tp-body { display: grid; gap: 1px; min-width: 0; }
 .wallet-tp-body small { font-size: 11px; font-weight: 600; color: #6a7f55; }
 .wallet-tp-body strong { display: inline-flex; align-items: center; gap: 6px; font-size: 18px; font-weight: 800; color: #111; line-height: 1.15; }
 .wallet-tp-body strong .coin-mark { vertical-align: 0; }
+.wallet-exchange { display: inline-flex; align-items: center; gap: 2px; padding: 6px 10px 6px 12px; border-radius: 999px; background: #e3243b; color: #fff; font-size: 12px; font-weight: 700; }
+.wallet-exchange .ico { width: 14px; height: 14px; }
 .wallet-actions { display: grid; grid-template-columns: repeat(4, 1fr); padding: 14px 0 6px; }
 .wallet-actions button { display: grid; justify-items: center; gap: 6px; color: #404040; font-size: 13px; font-weight: 600; }
 .wallet-actions .ico { width: 28px; height: 28px; }
@@ -2919,6 +2921,11 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .use-wallet .hist-pick-btn { padding: 12px 14px; }
 .hist-pick-item.on::after { content: "✓"; margin-left: auto; color: #d8262f; font-weight: 800; }
 .hist-pick-item.on { grid-template-columns: 40px 1fr auto; }
+/* 입력 기준 전환 */
+.ex-mode { display: inline-flex; padding: 3px; border-radius: 999px; background: #e9e9ee; }
+.ex-mode button { padding: 5px 12px; border-radius: 999px; color: #666; font-size: 12px; font-weight: 700; }
+.ex-mode button.on { background: #fff; color: #111; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+.ex-head-row .ex-mode { margin-left: auto; }
 /* 받을 TOTT 강조 줄 */
 .ex-big { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid #ececf0; font-size: 14px; color: #333; }
 .ex-big strong { font-size: 18px; font-weight: 800; }
@@ -2955,6 +2962,22 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .ex-preview .green, .ex-big .green { color: #6fae2a; }
 #app .ex-confirm { width: 100%; margin-top: 14px; height: 56px; min-height: 56px; border-radius: 12px; background: #d8262f; font-size: 17px; }
 #app .ex-confirm:disabled { background: #c9c9cf; color: #fff; opacity: 1; }
+.ex-none { margin-top: 10px; text-align: center; }
+.ex-none h2 { margin: 6px 0 4px; font-size: 16px; font-weight: 800; color: #111; }
+.ex-none p { margin: 0 0 12px; color: #666; font-size: 13px; line-height: 1.5; }
+#app .ex-none .primary { width: 100%; min-height: 48px; border-radius: 12px; background: #d8262f; font-size: 15px; font-weight: 700; }
+.ex-preview .ex-line.ex-group { margin-top: 6px; padding-top: 14px; }
+.ex-done-head { display: grid; justify-items: center; gap: 6px; padding: 18px 0 20px; text-align: center; }
+.ex-done-mark { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 6px; border-radius: 50%; background: #e7f6ec; color: #1f9d55; }
+.ex-done-mark .ico { width: 26px; height: 26px; }
+.ex-done-head h2 { margin: 0; font-size: 20px; font-weight: 800; color: #111; }
+.ex-done-head p { margin: 0; color: #555; font-size: 14px; }
+.ex-done-meta { margin-top: 10px; }
+.ex-done-meta .ex-line { font-size: 13px; }
+.ex-done-meta .ex-line > strong { font-size: 13px; font-weight: 700; }
+.ex-done-note { display: flex; align-items: center; justify-content: center; gap: 4px; margin: 14px 0 0; color: #777; font-size: 12px; }
+.ex-done-note .ico { width: 14px; height: 14px; flex: none; }
+.ex-done-more { width: 100%; min-height: 48px; margin-top: 10px; border: 1px solid #e3e3e8; border-radius: 12px; background: #fff; color: #333; font-size: 15px; font-weight: 700; }
 .ex-notice { margin-top: 22px; }
 .ex-notice h3 { display: flex; align-items: center; gap: 4px; margin: 0 0 8px; color: #d8262f; font-size: 15px; font-weight: 800; }
 .ex-notice h3 .ico { width: 16px; height: 16px; }
@@ -3467,19 +3490,17 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .wallet-manage-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 0 4px 8px; color: #333; font-size: 14px; font-weight: 600; }
 .wallet-avatar { width: 30px; height: 30px; display: inline-grid; }
 .wallet-avatar svg { width: 100%; height: 100%; }
-.wallet-hero { position: relative; background: transparent; padding: 8px 12px 0; }
-.wallet-hero::before { content: ""; position: absolute; inset: 0 0 56px; background: #d8262f; border-radius: 0 0 22px 22px; }
-.wallet-top { position: relative; justify-content: flex-start; padding: 2px 6px 10px; font-size: 13px; }
-.wallet-rail { position: relative; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 24px; touch-action: pan-x pan-y; }
+/* 지갑마다 한 장(주소 카드 ~ 최근 거래내역)이 통째로 옆으로 넘어간다. 빨간 배경과 시각·점은 고정.
+   장은 화면 폭 그대로(여백은 장 안쪽 12px)라 다음 장이 옆에 걸쳐 보이지 않는다. */
+.wallet-hero { position: relative; background: transparent; padding: 8px 0 0; }
+.wallet-hero::before { content: ""; position: absolute; inset: 0 0 auto; height: var(--wallet-red, 290px); background: #d8262f; border-radius: 0 0 22px 22px; }
+.wallet-top { position: relative; justify-content: flex-start; padding: 2px 18px 10px; font-size: 13px; }
+.wallet-rail { position: relative; display: flex; align-items: flex-start; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x pan-y; transition: height 0.2s ease; }
 .wallet-rail::-webkit-scrollbar { display: none; }
-.wallet-rail .wallet-card { flex: 0 0 100%; margin-bottom: 0; scroll-snap-align: start; border-radius: 18px; }
-/* 지갑이 여럿이면 레일을 오른쪽 화면 끝까지 늘려(-12px) 다음 카드가 여백에 잘리지 않고 화면 끝까지 이어져 보인다.
-   현재 카드는 오른쪽에 28px(여백 12 + 간격 10 + 다음 카드 18)을 남기고, 마지막 카드는 다음 카드가 없으니 여백 12px만 남기고 꽉 채운다.
-   끝 여백 2px(간격 10 + 2 = 12)로 마지막 카드도 왼쪽에 붙게 스냅되어 이전 카드 조각이 왼쪽에 걸리지 않는다. */
-.wallet-rail.many { margin-right: -12px; }
-.wallet-rail.many .wallet-card { flex-basis: calc(100% - 28px); }
-.wallet-rail.many .wallet-card:last-child { flex-basis: calc(100% - 12px); }
-.wallet-rail.many::after { content: ""; flex: 0 0 2px; }
+.wallet-page { flex: 0 0 100%; min-width: 0; padding: 0 12px 4px; scroll-snap-align: start; scroll-snap-stop: always; }
+.wallet-page .wallet-card { margin-bottom: 0; border-radius: 18px; }
+.wallet-page .wallet-section { padding-left: 4px; padding-right: 4px; }
+.wallet-page .wallet-card + .wallet-section { padding-top: 24px; }
 .wallet-addr { gap: 8px; background: #efedfb; border-radius: 14px; padding: 9px 12px; }
 .wallet-short { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; color: #111; }
 .wallet-star { width: 18px; height: 18px; flex: none; display: inline-grid; }
@@ -3491,11 +3512,27 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .wallet-logo.big svg { width: 100%; height: 100%; }
 .wallet-toggle { background: #ececf0; border-color: transparent; }
 .wallet-toggle button { color: #777; }
-.wallet-dots { display: flex; justify-content: center; gap: 6px; padding: 4px 0 0; }
-.wallet-dots button { width: 6px; height: 6px; border-radius: 999px; background: #c9c9cf; transition: width 0.2s, background 0.2s; }
-.wallet-dots button.on { width: 18px; background: #d8262f; }
+/* 지갑 점: 빨간 배경 위 시각 줄 오른쪽에 고정(장과 같이 넘어가지 않는다) */
+.wallet-dots { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.wallet-top .wallet-dots button { width: 6px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.45); transition: width 0.2s, background 0.2s; }
+.wallet-top .wallet-dots button.on { width: 18px; background: #fff; }
 .wallet-section { padding-top: 28px; }
-.wallet-dots + .wallet-section { padding-top: 20px; }
+/* 결제 시트의 결제 지갑 선택: 시트 안에서 아래로 펼친다(지갑마다 TP가 따로) */
+.pay-wallet { margin-top: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); }
+.pay-wallet + .sheet-box { margin-top: 10px; }
+.pay-wallet-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px; color: #fff; text-align: left; }
+.pay-wallet-btn > svg { width: 18px; height: 18px; flex: none; color: #b5b5bd; transition: transform 0.2s; }
+.pay-wallet.open .pay-wallet-btn > svg { transform: rotate(180deg); }
+.pay-wallet-label { flex: none; margin-right: auto; color: #96969d; font-size: 13px; }
+.pay-wallet-name { display: grid; min-width: 0; text-align: left; }
+.pay-wallet-name b { font-size: 14px; font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pay-wallet-name small { font-size: 11px; color: #96969d; }
+.pay-wallet-btn .pay-wallet-name small { display: none; }
+.pay-wallet-list { display: grid; gap: 2px; padding: 0 6px 6px; }
+.pay-wallet-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 8px; border-radius: 10px; color: #fff; }
+.pay-wallet-item.on { background: rgba(255, 255, 255, 0.1); }
+.pay-wallet-tp { margin-left: auto; flex: none; font-size: 14px; font-weight: 700; color: #fff; }
+.pay-wallet-tp.short { color: #ff5a6a; }
 .wallet-head button { display: inline-flex; align-items: center; gap: 2px; color: #777; font-size: 13px; font-weight: 600; }
 .wallet-head button svg { width: 14px; height: 14px; }
 .nft-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
