@@ -4153,3 +4153,10 @@ p.notice { color: var(--muted); font-size: 12px; margin: 8px 0 0; }
 .wallet-tp-body { display: flex; align-items: center; gap: 8px; }
 .wallet-tp-body small { flex: none; font-size: 12px; }
 .wallet-tp-body strong { min-width: 0; font-size: 16px; }
+/* 교환 화면: [교환하기]는 화면 아래에 고정(키보드·작은 화면에서도 보이게), 안내 줄은 자리를 남겨 입력 중 화면이 들썩이지 않게 */
+#app .ex-buy > .primary { height: 56px; min-height: 56px; border-radius: 12px; background: #cd313e; font-size: 17px; }
+#app .ex-buy > .primary:disabled { background: #c9c9cf; color: #fff; opacity: 1; }
+.ex-hint.is-empty { display: flex; visibility: hidden; }
+.ex-form .ex-notice { margin-top: 18px; }
+/* 지갑 계열 화면(지갑·지갑 관리·교환·교환 완료·채우기·받기)의 큰 버튼 높이는 60px로 통일 */
+#app .light-buy > .primary, #app .ex-buy > .primary, #app .ex-confirm, #app .ex-none .primary, #app .ex-done-more { height: 60px; min-height: 60px; padding-top: 0; padding-bottom: 0; }

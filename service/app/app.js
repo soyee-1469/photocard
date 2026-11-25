@@ -5176,10 +5176,23 @@ function exchangeReady() {
   return tott >= EXCHANGE_MIN && tott <= state.balance;
 }
 
+// 입력칸에 적는 금액 문자열: 숫자와 소수점만 남기고(TP는 정수, TOTT는 소수 6자리까지) 정수부에 쉼표를 넣는다.
+function amountInputText(text, decimals) {
+  const clean = String(text || "").replace(/[^0-9.]/g, "");
+  const [head, ...rest] = clean.split(".");
+  const whole = head.replace(/^0+(?=\d)/, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  if (!decimals || !clean.includes(".")) return whole;
+  return `${whole || "0"}.${rest.join("").slice(0, decimals)}`;
+}
+
 function exchangeHint() {
   const { tott } = exchangeAmounts();
-  if (!tott) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
-  if (tott < EXCHANGE_MIN) return `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
+  // TP 기준으로 적는 중이면 최소 수량도 TP로 알려 준다
+  const min = state.exMode === "tp"
+    ? `최소 ${tpText(tottToTp(EXCHANGE_MIN))} TP(${EXCHANGE_MIN} TOTT)부터 교환할 수 있어요.`
+    : `최소 ${EXCHANGE_MIN} TOTT부터 교환할 수 있어요.`;
+  if (!tott) return min;
+  if (tott < EXCHANGE_MIN) return min;
   if (tott > state.balance) return "보유한 TOTT보다 많아요. 채우기에서 SOL을 TOTT로 바꿔요.";
   return "";
 }
@@ -5371,7 +5384,8 @@ function exchangeForm() {
   const { tott, tp } = exchangeAmounts();
   const ready = exchangeReady();
   const tpMode = state.exMode === "tp";
-  const amount = tpMode ? state.exTp : state.exTott;
+  const amount = tpMode ? amountInputText(state.exTp, 0) : amountInputText(state.exTott, 6);
+  const over = tott > state.balance;
   return `
     ${topBar(`TOTT · TP 교환`, { back: `wallet`, label: "지갑", right: `<span class="bar-spacer" aria-hidden="true"></span>`, cls: "light-bar" })}
     <div class="scroll light ex-form">
@@ -5408,8 +5422,9 @@ function exchangeForm() {
       <section class="ex-card ex-preview">
         <div class="ex-line"><span>받을 TP</span><strong class="green ex-inline" data-ex-get>+ ${tpText(tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
         <div class="ex-line"><span>교환 후 TP</span><strong class="ex-inline" data-ex-after-tp>${tpText(state.tp + tp)} <span class="coin-mark tp" aria-hidden="true">TP</span></strong></div>
+        <div class="ex-line ex-group"><span>사용할 TOTT</span><strong class="ex-inline" data-ex-use>- ${tottText(tott)} <small>TOTT</small></strong></div>
+        <div class="ex-line"><span>교환 후 TOTT</span><strong class="ex-inline" data-ex-after-tott>${over ? "—" : tottText(Number((state.balance - tott).toFixed(6)))} <small>TOTT</small></strong></div>
       </section>
-      <button class="primary ex-confirm" type="button" data-ex-confirm ${ready ? "" : "disabled"}>교환하기</button>
       <section class="ex-notice">
         <h3>${icon("info")} 교환 안내 사항</h3>
         <ol>
@@ -5423,6 +5438,7 @@ function exchangeForm() {
         </ol>
       </section>
     </div>
+    <div class="buy light-buy ex-buy"><button class="primary" type="button" data-ex-confirm ${ready ? "" : "disabled"}>교환하기</button></div>
   `;
 }
 
@@ -5455,6 +5471,8 @@ function syncExchangeForm() {
   }
   set("[data-ex-get]", `+ ${tpText(tp)} `);
   set("[data-ex-after-tp]", `${tpText(state.tp + tp)} `);
+  set("[data-ex-use]", `- ${tottText(tott)} `);
+  set("[data-ex-after-tott]", `${tott > state.balance ? "—" : tottText(Number((state.balance - tott).toFixed(6)))} `);
 }
 
 function setExchangeTott(amount) {
@@ -6560,8 +6578,12 @@ app.addEventListener("input", (event) => {
   if (!field) return;
   state[field] = event.target.value;
   if (field === "exAmount") {
-    if (state.exMode === "tp") state.exTp = event.target.value;
-    else state.exTott = event.target.value;
+    // 숫자 외 문자를 걸러 내고 쉼표를 넣어 다시 적는다(금액은 끝에서 이어 적으므로 커서는 끝으로)
+    const text = amountInputText(event.target.value, state.exMode === "tp" ? 0 : 6);
+    if (text !== event.target.value) event.target.value = text;
+    state.exAmount = text;
+    if (state.exMode === "tp") state.exTp = text;
+    else state.exTott = text;
     syncExchangeForm();
     return;
   }
